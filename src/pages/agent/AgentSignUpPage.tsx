@@ -1,6 +1,6 @@
 import React from 'react';
-import AgentNavbar from '../../components/agent/AgentNavbar';
-import AgentSignUp from '../../components/agent/AgentSignUp';
+import AgentNavbar from '../../components/agent/Navbar';
+import AgentSignUp from '../../components/agent/SignUp';
 
 const AgentSignUpPage:React.FC = () => {
   return (

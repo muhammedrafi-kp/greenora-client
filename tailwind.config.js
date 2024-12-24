@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -7,10 +6,13 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        xs: '480px', 
+      },
       fontFamily: {
         sans: ['Poppins', 'Arial', 'sans-serif'],
       },
     },
   },
   plugins: [],
-}
+};

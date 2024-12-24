@@ -2,7 +2,7 @@ import {Routes,Route} from 'react-router-dom';
 
 
 import React from 'react'
-import AgentLoginPage from '../pages/agent/AgentLoginPage';
+import AgentLoginPage from '../pages/agent/AgentLogin';
 import AgentSignUpPage from '../pages/agent/AgentSignUpPage';
 
 const AgentRoutes:React.FC = () => {

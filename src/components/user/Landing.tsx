@@ -10,7 +10,7 @@ import subscription from '../../assets/subsciption.png';
 import wasteManagmnetIndia from '../../assets/waste-managment-india.jpg'
 
 
-const Home: React.FC = () => {
+const Landing: React.FC = () => {
     return (
         <>
             <div className="w-full mt-16 h-[50vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] bg-cover bg-center" style={{ backgroundImage: `url(${banner})` }}>
@@ -137,7 +137,7 @@ const Home: React.FC = () => {
     );
 };
 
-export default Home;
+export default Landing;
 
 
 

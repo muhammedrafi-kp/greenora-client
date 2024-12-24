@@ -1,11 +1,12 @@
 import React from 'react'
-import AgentNavbar from '../../components/agent/AgentNavbar';
-import AgentLogin from '../../components/agent/AgentLogin';
+import Navbar from '../../components/agent/Navbar';
+import AgentLogin from '../../components/agent/Login';
+
 
 const AgentLoginPage:React.FC = () => {
   return (
     <div>
-      <AgentNavbar/>
+      <Navbar/>
       <AgentLogin/>
     </div>
   )

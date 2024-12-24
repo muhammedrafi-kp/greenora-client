@@ -1,27 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg';
-import { IoIosNotifications, IoIosPricetags } from "react-icons/io";
-import { FaUserCircle, FaUserPlus, FaList, FaClipboardCheck, FaHome, FaInfoCircle } from 'react-icons/fa'; // For profile icon
-import { BiChevronDown } from 'react-icons/bi'; // For the dropdown arrow
-import { MdLogin, MdLogout } from "react-icons/md";
-// import { CgLogOut } from "react-icons/cg";
-import { GrServices, GrContact } from "react-icons/gr";
-// import Login from './Login';
-// import SignUp from './Signup';
-import AuthModal from './AuthModal';
+import { IoIosNotifications } from "react-icons/io";
+import { FaUserCircle, FaList, FaClipboardCheck, FaHome } from 'react-icons/fa';
+import { BiChevronDown } from 'react-icons/bi';
+import { MdLogout, MdDashboard } from "react-icons/md";
+import { RiCustomerService2Fill } from "react-icons/ri";
 
-
-const NavBar: React.FC = () => {
+const AgentNavbar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-    const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
     const navigate = useNavigate();
-
-    const navigateToHome = () => {
-        navigate('/');
-    }
 
     const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -47,25 +36,9 @@ const NavBar: React.FC = () => {
         setIsDropdownOpen(!isDropdownOpen);
     };
 
-    const openLoginModal = () => {
-        setIsLoginModalOpen(true);
-    };
-
-    const closeLoginModal = () => {
-        setIsLoginModalOpen(false);
-    };
-
-    const openSignUpModal = () => {
-        setIsSignUpModalOpen(true);
-    };
-
-    const closeSignUpModal = () => {
-        setIsSignUpModalOpen(false);
-    };
-
     return (
         <>
-            <nav className="bg-slate-100 text-slate-950 p-2 shadow-md  w-full fixed top-0 z-50" >
+            <nav className="bg-slate-100 text-slate-950 p-2 shadow-md w-full z-50">
                 <div className="container mx-auto flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center">
@@ -73,9 +46,10 @@ const NavBar: React.FC = () => {
                             src={logo}
                             alt="Greenora logo"
                             style={{ width: '250px', height: 'auto' }}
+                            className="cursor-pointer"
+                            onClick={() => navigate('/agent')}
                         />
                     </div>
-
 
                     {/* Hamburger Menu (for medium screens and smaller) */}
                     <div className="md:hidden">
@@ -108,25 +82,34 @@ const NavBar: React.FC = () => {
 
                     {/* Navigation Links */}
                     <div className="hidden md:flex md:items-center md:space-x-6 mr-8 font-medium">
-                        <span className="relative hover:text-green-900 cursor-pointer after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300" onClick={navigateToHome}>Home</span>
-                        <a href="#about" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">About</a>
-                        <a href="#services" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Services</a>
-                        <a href="#pricing" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Pricing</a>
-                        <a href="#contact" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Contact</a>
-
+                        <span 
+                            className="relative hover:text-green-900 cursor-pointer after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
+                            onClick={() => navigate('/agent')}
+                        >
+                            Home
+                        </span>
+                        <span 
+                            className="relative hover:text-green-900 cursor-pointer after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
+                            onClick={() => navigate('/agent/dashboard')}
+                        >
+                            Dashboard
+                        </span>
+                        <span 
+                            className="relative hover:text-green-900 cursor-pointer after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
+                            onClick={() => navigate('/agent/services')}
+                        >
+                            Services
+                        </span>
 
                         {/* Notification Icon */}
                         <div className="relative group">
                             <div className="p-2 hover:bg-slate-200 rounded-full transition-colors cursor-pointer">
                                 <IoIosNotifications className="w-6 h-6 text-slate-950" />
                                 <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-white transition-transform group-hover:scale-110">
-                                    6
+                                    3
                                 </span>
                             </div>
                         </div>
-
-                        {/* Profile Icon with Dropdown */}
-                        {/* // ... existing code ... */}
 
                         {/* Profile Icon with Dropdown */}
                         <div className="bg-white relative flex items-center gap-2 border rounded-full cursor-pointer py-1 px-2 hover:shadow-lg transition-all duration-300 hover:border-green-500">
@@ -143,37 +126,30 @@ const NavBar: React.FC = () => {
 
                             {/* Dropdown Menu */}
                             {isDropdownOpen && (
-                                <div className="absolute right-0 mt-96 w-56 bg-white shadow-xl rounded-2xl text-slate-950 border border-gray-100 p-2 transform transition-all duration-300" ref={dropdownRef}>
+                                <div className="absolute right-0 mt-80 w-56 bg-white shadow-xl rounded-2xl text-slate-950 border border-gray-100 p-2 transform transition-all duration-300" ref={dropdownRef}>
                                     <ul className="py-1 font-normal">
-                                        <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={openSignUpModal}>
-                                            <span  className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
-                                                <FaUserPlus className="w-5 h-5" />
-                                                <span className="font-base">Sign up</span>
-                                            </span>
-                                        </li>
-                                        <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={openLoginModal}>
-                                            <span className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
-                                                <MdLogin className="w-5 h-5" />
-                                                <span className="font-base">Login</span>
-                                            </span>
-                                        </li>
-                                        <div className="my-2 border-t border-gray-100"></div>
-                                        <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={()=>navigate('/account')}>
+                                        <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={() => navigate('/agent/profile')}>
                                             <span className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
                                                 <FaUserCircle className="w-5 h-5" />
-                                                <span className="font-base">Account</span>
+                                                <span className="font-base">Profile</span>
+                                            </span>
+                                        </li>
+                                        <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={() => navigate('/agent/dashboard')}>
+                                            <span className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
+                                                <MdDashboard className="w-5 h-5" />
+                                                <span className="font-base">Dashboard</span>
                                             </span>
                                         </li>
                                         <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200">
-                                            <span     className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
+                                            <span className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
                                                 <FaList className="w-5 h-5" />
                                                 <span className="font-base">Requests</span>
                                             </span>
                                         </li>
                                         <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200">
                                             <span className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
-                                                <FaClipboardCheck className="w-5 h-5" />
-                                                <span className="font-base">Plans</span>
+                                                <RiCustomerService2Fill className="w-5 h-5" />
+                                                <span className="font-base">Services</span>
                                             </span>
                                         </li>
                                         <div className="my-2 border-t border-gray-100"></div>
@@ -187,9 +163,6 @@ const NavBar: React.FC = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* // ... rest of the code ... */}
-
                     </div>
                 </div>
 
@@ -224,18 +197,18 @@ const NavBar: React.FC = () => {
                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
                             <div>
-                                <h3 className="text-white font-medium">User Name</h3>
-                                <p className="text-green-100 text-sm">Welcome back!</p>
+                                <h3 className="text-white font-medium">Agent Name</h3>
+                                <p className="text-green-100 text-sm">Professional Agent</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Sidebar Navigation */}
-                    <div className="p-4 z-50">
+                    <div className="p-4">
                         <ul className="space-y-2">
                             <li>
                                 <button 
-                                    onClick={() => navigate('/')}
+                                    onClick={() => navigate('/agent')}
                                     className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
                                 >
                                     <FaHome className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
@@ -244,20 +217,20 @@ const NavBar: React.FC = () => {
                             </li>
                             <li>
                                 <button 
-                                    onClick={() => navigate('/services')}
+                                    onClick={() => navigate('/agent/dashboard')}
                                     className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
                                 >
-                                    <GrServices className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Services</span>
+                                    <MdDashboard className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
+                                    <span className="font-medium group-hover:text-green-900">Dashboard</span>
                                 </button>
                             </li>
                             <li>
                                 <button 
-                                    onClick={() => navigate('/pricing')}
+                                    onClick={() => navigate('/agent/services')}
                                     className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
                                 >
-                                    <IoIosPricetags className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Pricing</span>
+                                    <RiCustomerService2Fill className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
+                                    <span className="font-medium group-hover:text-green-900">Services</span>
                                 </button>
                             </li>
                             <li>
@@ -267,44 +240,18 @@ const NavBar: React.FC = () => {
                                     <IoIosNotifications className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
                                     <span className="font-medium group-hover:text-green-900">Notifications</span>
                                     <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                        6
+                                        3
                                     </span>
-                                </button>
-                            </li>
-                            <li>
-                                <button 
-                                    onClick={() => navigate('/about')}
-                                    className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
-                                >
-                                    <FaInfoCircle className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">About</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button 
-                                    onClick={() => navigate('/contact')}
-                                    className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
-                                >
-                                    <GrContact className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Contact</span>
                                 </button>
                             </li>
                         </ul>
 
-                        <div className="mt-6 border-t border-gray-100 pt-4 space-y-2">
+                        <div className="mt-6 border-t border-gray-100 pt-4">
                             <button 
-                                onClick={openLoginModal}
-                                className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
+                                className="flex items-center w-full gap-4 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
                             >
-                                <MdLogin className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
-                                <span className="font-medium group-hover:text-green-900">Login</span>
-                            </button>
-                            <button 
-                                onClick={openSignUpModal}
-                                className="flex items-center w-full gap-4 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg transition-colors group"
-                            >
-                                <FaUserPlus className="w-5 h-5 text-gray-500 group-hover:text-green-900" />
-                                <span className="font-medium group-hover:text-green-900">Sign Up</span>
+                                <MdLogout className="w-5 h-5 group-hover:text-red-700" />
+                                <span className="font-medium group-hover:text-red-700">Logout</span>
                             </button>
                         </div>
                     </div>
@@ -318,14 +265,8 @@ const NavBar: React.FC = () => {
                     ></div>
                 )}
             </nav>
-
-            {/* {isLoginModalOpen && (<Login closeModal={closeLoginModal} />)} */}
-            {/* {isSignUpModalOpen && (<SignUp closeModal={closeSignUpModal} />)} */}
-            {isLoginModalOpen && <AuthModal closeModal={closeLoginModal} initialMode="login" />}
-            {isSignUpModalOpen && <AuthModal closeModal={closeSignUpModal} initialMode="signup" />}
         </>
     );
 };
 
-export default NavBar;
-
+export default AgentNavbar;
