@@ -41,7 +41,7 @@ const DashboardBody: React.FC = () => {
                     <div key={index} className={`${card.bgClass} p-6 rounded-lg shadow-md`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-gray-600">{card.title}</h3>
+                                <h3 className=" text-gray-600">{card.title}</h3>
                                 <p className="text-2xl font-bold text-gray-800">{card.value}</p>
                             </div>
                             {card.icon}

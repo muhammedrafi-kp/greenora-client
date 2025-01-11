@@ -39,7 +39,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-l from-[#243B55] to-[#141E30]">
       <div className="bg-white p-10 max-w-md w-full shadow-lg rounded-lg">
         <h2 className="mb-3 text-xl font-semibold sm:mb-10 sm:text-2xl md:text-3xl text-center">
           Admin Login
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full bg-green-900 hover:bg-green-800 text-white font-medium mt-8 py-2 md:py-3 rounded-lg"
+            className="w-full bg-[#0E2A39] hover:bg-[#153c52] text-white font-medium mt-8 py-2 md:py-3 rounded-lg"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}

@@ -10,7 +10,7 @@ const Profile: React.FC = () => {
     return (
 
         <main className="flex-1 overflow-x-hidden  overflow-y-auto bg-gray-50 p-4">
-            
+
             <div className="mx-auto">
                 {/* Profile Form */}
                 <form className="space-y-6 bg-white p-6 rounded-lg shadow-md relative mt-10">
@@ -71,7 +71,7 @@ const Profile: React.FC = () => {
                             <button
                                 type="button"
                                 className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                                onClick={()=>navigate('/admin/change-password')}
+                                onClick={() => navigate('/admin/change-password')}
                             >
                                 <Lock className="w-4 h-4" />
                                 Change Password
@@ -84,7 +84,7 @@ const Profile: React.FC = () => {
                         <button
                             type="button"
                             className="px-4 py-2 border  border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            onClick={()=>navigate('/admin')}
+                            onClick={() => navigate('/admin')}
                         >
                             Cancel
                         </button>

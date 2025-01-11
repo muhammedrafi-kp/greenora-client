@@ -1,15 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Phone, Lock, Camera } from 'lucide-react';
+import { getUserData } from "../../services/userService";
+import { IUserData } from '../../interfaces/interfaces';
+import ProfileSkeleton from './skeltons/ProfileSkeleton';
 
 interface ProfileSectionProps {
     onChangePassword: () => void;
 }
 
-const ProfileSection: React.FC <ProfileSectionProps> = ({ onChangePassword }) => {
-    const [isEditing, setIsEditing] = useState(false);
+
+
+const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => {
+
+
+    const [userData, setUserData] = useState<IUserData | null>(null);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await getUserData();
+
+                console.log("Data :", response);
+                setUserData(response.data);
+            } catch (error) {
+                console.error("Failed to fetch user data", error);
+            } finally {
+
+                setTimeout(() => {
+                    setLoading(false);
+
+                }, 1000);
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setUserData((prev) => prev ? { ...prev, [name]: value } : null);
+    };
+
+
+    if (loading) {
+        return <ProfileSkeleton />;
+    }
 
     return (
-        <div>
+        <div >
             <div className="mb-6">
                 <h2 className="lg:text-lg xs:text-base text-sm sm:text-left text-center font-semibold">Profile Details</h2>
             </div>
@@ -18,11 +58,12 @@ const ProfileSection: React.FC <ProfileSectionProps> = ({ onChangePassword }) =>
                 setIsEditing(false);
                 // Handle form submission
             }}>
+
                 {/* Updated Profile Image Section */}
                 <div className="lg:hidden relative sm:inline-block flex justify-center mb-6">
                     <div className="relative group">
                         <img
-                            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                            src={userData?.profileUrl}
                             alt="Profile"
                             className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
                         />
@@ -36,14 +77,15 @@ const ProfileSection: React.FC <ProfileSectionProps> = ({ onChangePassword }) =>
                 {/* Personal Information */}
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                     <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">First Name</label>
+                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">Full Name</label>
                         <input
                             type="text"
-                            defaultValue="John"
+                            name="name"
+                            value={userData?.name}
                             disabled={!isEditing}
-                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent ${
-                                !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                            }`}
+                            onChange={handleInputChange}
+                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''
+                                }`}
                         />
                     </div>
                 </div>
@@ -58,9 +100,9 @@ const ProfileSection: React.FC <ProfileSectionProps> = ({ onChangePassword }) =>
                         </label>
                         <input
                             type="email"
-                            defaultValue="john.doe@example.com"
+                            value={userData?.email}
                             disabled={true}
-                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50 "
                         />
                     </div>
                     <div>
@@ -71,26 +113,27 @@ const ProfileSection: React.FC <ProfileSectionProps> = ({ onChangePassword }) =>
                         </label>
                         <input
                             type="tel"
-                            defaultValue="+1 (555) 123-4567"
+                            name="phone"
+                            value={userData?.phone}
                             disabled={!isEditing}
-                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent ${
-                                !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                            }`}
+                            onChange={handleInputChange}
+                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50 ' : ''
+                                }`}
                         />
                     </div>
                 </div>
 
                 {/* Password Section */}
                 <div className="pt-4">
-                <button
-                    type="button"
-                    onClick={onChangePassword}
-                    className="flex items-center gap-2 px-4 xs:py-2 py-1 xs:text-base text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                    <Lock className="xs:w-4 xs:h-4 w-3 h-3" />
-                    Change Password
-                </button>
-            </div>
+                    <button
+                        type="button"
+                        onClick={onChangePassword}
+                        className="flex items-center gap-2 px-4 xs:py-2 py-1 xs:text-base text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                        <Lock className="xs:w-4 xs:h-4 w-3 h-3" />
+                        Change Password
+                    </button>
+                </div>
 
                 {/* Form Actions - Updated */}
                 <div className="flex justify-end gap-4 pt-6">

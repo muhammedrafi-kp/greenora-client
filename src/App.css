@@ -1,9 +1,11 @@
  #root {
-  background-color: #f3f4f6
+  /* background-color: #f3f4f6 */
+  background-color: #f9fafb;
 /* background-color: white; */
+/* background: linear-gradient(to right, #166534, #16a34a); */
 }
 
-/*
+/* 
 .logo {
   height: 6em;
   padding: 1.5em;

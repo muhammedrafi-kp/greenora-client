@@ -12,6 +12,9 @@ export default {
       fontFamily: {
         sans: ['Poppins', 'Arial', 'sans-serif'],
       },
+      fontSize: {
+        'xxs': '0.625rem', // 10px
+      },
     },
   },
   plugins: [],

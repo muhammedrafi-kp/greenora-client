@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { handleVerifyOtp,handleResendOtp } from "../../services/userService";
+import { useDispatch } from 'react-redux';
+import { userLogin } from "../../redux/userAuthSlice";
 
 interface OtpVerificationProps {
     closeModal: () => void;
@@ -6,9 +9,12 @@ interface OtpVerificationProps {
 }
 
 const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) => {
-    const [otp, setOtp] = useState(['', '', '','']);
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(30);
     const [showModal, setShowModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const dispatch = useDispatch();
 
     useEffect(() => {
         setShowModal(true);
@@ -48,27 +54,55 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Add your OTP verification logic here
-        console.log('OTP:', otp.join(''));
+        const otpString = otp.join('');
+
+        if (otpString.length !== 6) {
+            setError('Please enter complete OTP.');
+            return;
+        }
+
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const response = await handleVerifyOtp(email, otpString);
+            if (response.success) {
+                dispatch(userLogin({ token: response.token }));
+                closeModal();
+            }
+        } catch (error: any) {
+            console.log(error)
+            setError('Invalid OTP, Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleResendOTP = () => {
+    const resendOTP = async () => {
         setTimer(30);
-        // Add your resend OTP logic here
+        setError('');
+        const response  = await handleResendOtp(email);
+        console.log(response);
     };
 
     return (
         <div
             className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-all duration-300 ${showModal ? 'opacity-100' : 'opacity-0'}`}
-            onClick={closeModal}
+        // onClick={closeModal}
         >
             <div
-                className="relative bg-white p-8 rounded-xl shadow-lg max-w-md w-full transform transition-all duration-300"
+                className={`relative bg-white p-8 rounded-xl shadow-lg max-w-md w-full transform transition-all duration-300 ${isLoading ? 'opacity-50' : ''}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <button 
+                {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center z-50">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-900"></div>
+                    </div>
+                )}
+
+                <button
                     onClick={closeModal}
                     className="absolute top-4 right-4 text-2xl font-normal"
                 >
@@ -100,11 +134,16 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
                         ))}
                     </div>
 
+                    {error && (
+                        <p className="text-red-700 text-xs text-center mb-4">{error}</p>
+                    )}
+
                     <button
                         type="submit"
-                        className="w-full bg-green-900 hover:bg-green-800 text-white font-medium py-3 rounded-lg mb-4"
+                        className="w-full bg-green-900 hover:bg-green-800 text-white font-medium py-3 rounded-lg mb-4 disabled:opacity-50"
+                        disabled={isLoading}
                     >
-                        Verify
+                        {isLoading ? 'Verifying...' : 'Verify'}
                     </button>
 
                     <div className="text-center">
@@ -117,7 +156,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
                             ) : (
                                 <button
                                     type="button"
-                                    onClick={handleResendOTP}
+                                    onClick={resendOTP}
                                     className="text-green-900 hover:underline font-medium"
                                 >
                                     Resend OTP

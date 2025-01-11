@@ -1,6 +1,10 @@
 import React from 'react'
 
-const Breadcrumbs: React.FC = () => {
+interface BreadcrumbsProps{
+    title:string
+}
+
+const Breadcrumbs: React.FC<BreadcrumbsProps> = ({title}) => {
     return (
         <>
             {/* <nav className="bg-gray-100 p-4">
@@ -17,8 +21,8 @@ const Breadcrumbs: React.FC = () => {
                         ))}
                     </ol>
                 </nav> */}
-            <div className=' px-4 py-2 mt-4 flex items-center justify-between'>
-                <p className='text-md md:text-lg font-semibold'>Dashboard</p>
+            <div className='flex items-center justify-between px-6 py-4'>
+            <p className='text-lg md:text-xl font-semibold'>{title}</p>
                 <p className='text-md md:text-lg text-gray-700'>breadcrumbs</p>
             </div>
         </>

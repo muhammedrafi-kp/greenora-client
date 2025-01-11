@@ -1,4 +1,6 @@
-import React from 'react';
+import React,{useState} from 'react';
+import { useSelector, UseSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import banner from '../../assets/20036.jpg';
 import whoWeAreImage from '../../assets/greenora-banner.jpeg';
 import wasteCollection from '../../assets/waste-collection.png';
@@ -7,10 +9,34 @@ import scrap from '../../assets/Scrap.png';
 import tracking from '../../assets/tracking.png';
 import ecoFriendly from '../../assets/eco-friendly.png';
 import subscription from '../../assets/subsciption.png';
-import wasteManagmnetIndia from '../../assets/waste-managment-india.jpg'
+import wasteManagmnetIndia from '../../assets/waste-managment-india.jpg';
+import AuthModal from './AuthModal';
+
+
 
 
 const Landing: React.FC = () => {
+
+    const isLoggedIn = useSelector((state: any) => state.userAuth.isLoggedIn);
+
+    const navigate = useNavigate();
+
+    const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+
+    const handleBooknow = () => {
+        if (isLoggedIn) {
+            navigate('/make-request');
+        } else {
+            setShowAuthModal(true);
+        }
+    }
+
+    const closeModal = () => {
+        setShowAuthModal(false);
+    };
+
+
+    console.log("islooged in:", isLoggedIn);
     return (
         <>
             <div className="w-full mt-16 h-[50vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] bg-cover bg-center" style={{ backgroundImage: `url(${banner})` }}>
@@ -27,7 +53,9 @@ const Landing: React.FC = () => {
                         <button className="bg-green-700 hover:bg-green-900 text-white font-medium py-2 px-4 sm:py-2 sm:px-6 md:py-1 md:px-4 lg:py-2 lg:px-6 rounded-full transition duration-300">
                             Learn More
                         </button>
-                        <button className="bg-green-700 hover:bg-green-900 text-white font-medium py-2 px-4 sm:py-2 sm:px-6 md:py-1 md:px-4 lg:py-2 lg:px-6 rounded-full transition duration-300">
+
+                        <button onClick={handleBooknow}
+                            className="bg-green-700 hover:bg-green-900 text-white font-medium py-2 px-4 sm:py-2 sm:px-6 md:py-1 md:px-4 lg:py-2 lg:px-6 rounded-full transition duration-300">
                             Book Now!
                         </button>
                     </div>
@@ -53,7 +81,7 @@ const Landing: React.FC = () => {
                 </section>
 
                 {/* Our services section */}
-                <section className="bg-gray-100 p-8 sm:p-10 md:p-20" id='services'>
+                <section className="bg-gray-50 p-8 sm:p-10 md:p-20" id='services'>
                     <h2 className="text-xl sm:text-2xl md:text-3xl text-center font-bold mb-8 text-green-900">Our Services</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12 max-w-7xl mx-auto px-4">
                         <div className="bg-white rounded-lg shadow-md p-6 text-start">
@@ -133,6 +161,8 @@ const Landing: React.FC = () => {
                     </div>
                 </section>
             </div>
+
+            {showAuthModal&&<AuthModal closeModal={closeModal} />}
         </>
     );
 };

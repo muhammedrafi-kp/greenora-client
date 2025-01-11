@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface SliceState {
-  accessToken: string;
+  isLoggedIn: boolean;
+  token: string;
 }
 
 const INITIAL_STATE: SliceState = {
-  accessToken: '',
+  isLoggedIn: !!localStorage.getItem('adminToken'),
+  token: localStorage.getItem('adminToken') || '',
 };
 
 const adminAuthSlice = createSlice({
@@ -13,11 +15,15 @@ const adminAuthSlice = createSlice({
   initialState: INITIAL_STATE,
   reducers: {
     adminLogin: (state, action: PayloadAction<{ accessToken: string }>) => {
-      state.accessToken = action.payload.accessToken;
+      localStorage.setItem('adminToken', action.payload.accessToken);
+      state.isLoggedIn = true;
+      state.token = action.payload.accessToken;
     },
 
     adminLogout: (state) => {
-      state.accessToken = '';
+      localStorage.removeItem('adminToken');
+      state.isLoggedIn = false;
+      state.token = '';
     },
   },
 });

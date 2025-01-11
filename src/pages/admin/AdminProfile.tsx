@@ -1,7 +1,7 @@
 import React ,{useState}from 'react'
 import Profile from '../../components/admin/Profile';
-import Sidebar from '../../components/admin/Sidebar';
-import Navbar from '../../components/admin/Navbar';
+import Sidebar from '../../components/admin/layout/Sidebar';
+import Navbar from '../../components/admin/layout/Navbar';
 import Breadcrumbs from '../../components/admin/Breadcrumbs';
 
 const AdminProfile:React.FC = () => {

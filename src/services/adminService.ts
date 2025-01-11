@@ -1,4 +1,4 @@
-import { loginAdmin, signupAdmin } from "../api/authApi";
+import { loginAdmin, signUpAdmin } from "../api/authApi";
 
 
 export const handleAdminLogin = async (email: string, password: string) => {
@@ -14,7 +14,7 @@ export const handleAdminLogin = async (email: string, password: string) => {
 
 export const handleAdminSignup = async (email: string, password: string) => {
   try {
-    const data = await signupAdmin(email, password);
+    const data = await signUpAdmin(email, password);
     return data;
   } catch (error) {
     console.error("Signup Error:", error);
