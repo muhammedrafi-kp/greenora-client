@@ -62,11 +62,11 @@ const ScrapCategories: React.FC = () => {
     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
       <div className="max-w-7xl mx-auto bg-white border rounded-lg hover:shadow-md transition-all duration-300">
         <div className="p-6 space-y-6">
-          <div className="flex justify-between items-center">
+          {/* <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-900">Scrap Categories</h2>
-          </div>
+          </div> */}
 
-          <div className="flex justify-between items-center">
+         <div className="flex justify-end items-center gap-4">
             <div className="relative w-64">
               <input
                 type="text"
@@ -85,6 +85,7 @@ const ScrapCategories: React.FC = () => {
               <span>Add New</span>
             </button>
           </div>
+
 
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -133,7 +134,7 @@ const ScrapCategories: React.FC = () => {
         description={
           modalType === 'delete'
             ? `Are you sure you want to delete ${selectedItem?.type}?`
-            : 'Enter the details below:'
+            : ''
         }
         confirmLabel={modalType === 'delete' ? 'Delete' : 'Save'}
         onConfirm={handleSubmit}

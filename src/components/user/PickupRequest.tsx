@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, ChevronDown, ChevronUp, Trash2, Recycle, CheckCircle, CreditCard, Truck } from 'lucide-react';
 
-const WastePickupWizard = () => {
+const PickupRequest: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         wasteCollection: true,
@@ -25,14 +25,14 @@ const WastePickupWizard = () => {
         { number: 2, name: 'Review' },
         { number: 3, name: 'Payment' },
         { number: 4, name: 'Complete' }
-      ];
+    ];
 
     const [sectionsOpen, setSectionsOpen] = useState({
         wasteCollection: true,
         scrapCollection: false
     });
 
-    const handleChange = (e) => {
+    const handleChange = (e:any) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
@@ -40,7 +40,7 @@ const WastePickupWizard = () => {
         }));
     };
 
-    const toggleSection = (section) => {
+    const toggleSection = (section:any) => {
         setSectionsOpen(prevState => ({
             ...prevState,
             [section]: !prevState[section]
@@ -49,41 +49,41 @@ const WastePickupWizard = () => {
 
     const StepperWithLines = () => (
         <div className="w-full py-4">
-          <div className="relative flex items-center justify-between">
-            {/* Background Line */}
-            <div className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-gray-200" />
-            
-            {/* Progress Line */}
-            <div 
-              className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-green-500 transition-all duration-300"
-              style={{ right: `${100 - (((currentStep - 1) / (steps.length - 1)) * 80 + 10)}%` }}
-            />
-            
-            {/* Steps */}
-            <div className="relative z-10 w-full flex justify-between">
-              {steps.map((step) => (
-                <div key={step.number} className="flex flex-col items-center flex-1">
-                  <div 
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+            <div className="relative flex items-center justify-between">
+                {/* Background Line */}
+                <div className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-gray-200" />
+
+                {/* Progress Line */}
+                <div
+                    className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-green-500 transition-all duration-300"
+                    style={{ right: `${100 - (((currentStep - 1) / (steps.length - 1)) * 80 + 10)}%` }}
+                />
+
+                {/* Steps */}
+                <div className="relative z-10 w-full flex justify-between">
+                    {steps.map((step) => (
+                        <div key={step.number} className="flex flex-col items-center flex-1">
+                            <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
                       border-2 transition-all duration-300 
-                      ${step.number <= currentStep 
-                        ? 'border-green-500 bg-green-500 text-white' 
-                        : 'border-gray-300 bg-white text-gray-500'}`}
-                  >
-                    {step.number}
-                  </div>
-                  <span 
-                    className={`mt-2 text-xs font-medium
+                      ${step.number <= currentStep
+                                        ? 'border-green-500 bg-green-500 text-white'
+                                        : 'border-gray-300 bg-white text-gray-500'}`}
+                            >
+                                {step.number}
+                            </div>
+                            <span
+                                className={`mt-2 text-xs font-medium
                       ${step.number <= currentStep ? 'text-green-600' : 'text-gray-500'}`}
-                  >
-                    {step.name}
-                  </span>
+                            >
+                                {step.name}
+                            </span>
+                        </div>
+                    ))}
                 </div>
-              ))}
             </div>
-          </div>
         </div>
-      );
+    );
 
     const renderDetailsForm = () => (
         // <form className="space-y-6">
@@ -497,25 +497,25 @@ const WastePickupWizard = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen py-12">
-          <div className="max-w-3xl mx-auto mt-16 px-4">
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <h1 className="text-2xl font-semibold text-gray-800 mb-8 text-center">Book a Pickup</h1>
-              
-              <StepperWithLines />
-    
-              {currentStep === 1 && renderDetailsForm()}
-              {currentStep === 2 && renderConfirmationPage()}
-              {currentStep === 3 && renderPaymentPage()}
-              {currentStep === 4 && renderSuccessPage()}
+            <div className="max-w-3xl mx-auto mt-16 px-4">
+                <div className="bg-white p-6 rounded-xl shadow-md">
+                    <h1 className="text-2xl font-semibold text-gray-800 mb-8 text-center">Book a Pickup</h1>
+
+                    <StepperWithLines />
+
+                    {currentStep === 1 && renderDetailsForm()}
+                    {currentStep === 2 && renderConfirmationPage()}
+                    {currentStep === 3 && renderPaymentPage()}
+                    {currentStep === 4 && renderSuccessPage()}
+                </div>
             </div>
-          </div>
         </div>
-      );
-    };
-    
+    );
+};
 
 
 
 
 
-export default WastePickupWizard;
+
+export default PickupRequest;

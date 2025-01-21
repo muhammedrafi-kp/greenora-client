@@ -3,9 +3,9 @@ import Login from '../../components/admin/Login'
 
 const AdminLogin: React.FC = () => {
   return (
-    <div>
+    <>
       <Login />
-    </div>
+    </>
   );
 };
 

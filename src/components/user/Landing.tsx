@@ -17,7 +17,7 @@ import AuthModal from './AuthModal';
 
 const Landing: React.FC = () => {
 
-    const isLoggedIn = useSelector((state: any) => state.userAuth.isLoggedIn);
+    const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
 
     const navigate = useNavigate();
 

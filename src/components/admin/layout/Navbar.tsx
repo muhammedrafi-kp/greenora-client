@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     FaSearch,
     FaBars,
@@ -8,8 +7,8 @@ import {
 } from 'react-icons/fa';
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdOutlineLogout } from 'react-icons/md';
-import { useDispatch, UseDispatch } from 'react-redux';
-import { adminLogout } from "../../../redux/adminAuthSlice";
+import { useDispatch, useSelector } from 'react-redux';
+import { Logout } from "../../../redux/authSlice";
 
 interface NavbarProps {
     toggleSidebar: () => void;
@@ -18,8 +17,9 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const navigate = useNavigate();
     const dispatch = useDispatch();
+
+    // const { isLoggedIn, role } = useSelector((state: any) => state.auth);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -28,7 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     };
 
     const handleLogout = () => {
-        dispatch(adminLogout())
+        dispatch(Logout())
     }
 
     // Close the dropdown when clicking outside

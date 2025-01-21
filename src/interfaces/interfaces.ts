@@ -13,6 +13,13 @@ export interface IUserData {
     profileUrl?: string; 
 }
 
+export interface IUserUpdateData {
+    name: string;
+    phone: string;
+    profileUrl?: string; 
+}
+
+
 export interface ICollectorSignUpData {
     name: string;
     email: string;

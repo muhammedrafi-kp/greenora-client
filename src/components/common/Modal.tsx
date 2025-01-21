@@ -10,6 +10,7 @@ interface ModalProps {
   cancelLabel?: string;
   onConfirm: () => void;
   confirmButtonClass?: string;
+  children?: React.ReactNode;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -20,7 +21,8 @@ const Modal: React.FC<ModalProps> = ({
   confirmLabel,
   cancelLabel = 'Cancel',
   onConfirm,
-  confirmButtonClass
+  confirmButtonClass,
+  children
 }) => {
   if (!isOpen) return null;
 
@@ -32,6 +34,7 @@ const Modal: React.FC<ModalProps> = ({
         </h3>
         <p className="text-gray-600 mb-6 font-medium">
           {description}
+          {children}
         </p>
         <div className="flex justify-end gap-4">
           <button

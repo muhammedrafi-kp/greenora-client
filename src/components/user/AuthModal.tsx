@@ -6,10 +6,10 @@ import ForgotPassword from './ForgotPassword';
 import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
 import { validateForm } from "../../validations/userValidation"
 import { useDispatch } from 'react-redux';
-import { userLogin } from "../../redux/userAuthSlice";
+import { loginSuccess } from "../../redux/authSlice";
 import toast from 'react-hot-toast';
 
-import { handleUserLogin, handleUserSignUp } from "../../services/userService";
+import { loginUser, signUpUser } from "../../services/authService";
 
 interface AuthModalProps {
     closeModal: () => void;
@@ -30,11 +30,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
     const dispatch = useDispatch();
 
     const [formData, setFormData] = useState<IUserSignUpData>({
-        name: 'MUHAMMED RAFI K P',
-        email: 'helloworlddev123@gmail.com',
-        phone: '7736382999',
-        password: 'Rafikp@10',
-        confirmPassword: 'Rafikp@10',
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
     });
 
     const [formError, setFormError] = useState<IFormErrors>({
@@ -56,22 +56,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
             setIsLoading(true);
             try {
                 if (isLogin) {
-                    const response = await handleUserLogin(formData.email, formData.password);
+                    const response = await loginUser(formData.email, formData.password);
                     console.log(response)
                     if (response.success) {
                         // Dispatch user login action with user data
-                        dispatch(userLogin({ token: response.token }));
+                        dispatch(loginSuccess({ token: response.token, role: 'user' }));
                         closeModal();
                     }
+                    toast.success("Login successful!")
                 } else {
-                    const response = await handleUserSignUp(formData);
+                    const response = await signUpUser(formData);
                     if (response.success) {
                         setShowOtpVerification(true); // Show OTP verification for signup
                     }
                 }
             } catch (error: any) {
                 if (error.status === 404) {
-                    errors.email = "Email doesn't exists."
+                    errors.email = "User with this Email doesn't exists."
                     setFormError(errors);
                 } else if (error.status === 401) {
                     errors.password = "Incorrect password."
@@ -83,7 +84,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                 // console.error('Authentication error:', error);
             } finally {
                 setIsLoading(false);
-                toast.success("Login successful!")
             }
         }
     };
@@ -99,15 +99,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
         // Add message listener for Google Auth
         const handleAuthMessage = (event: MessageEvent) => {
 
-            console.log("Returned...........!",event.origin)
+            console.log("Returned...........!", event.origin)
             // Check for API gateway origin
             // if (event.origin !== "http://localhost:4000") return;
 
             if (event.data.type === "GOOGLE_AUTH_SUCCESS") {
-               
+
                 const { token } = event.data;
-                console.log("Token :",token);
-                dispatch(userLogin({ token }));
+                console.log("Token :", token);
+                dispatch(loginSuccess({ token, role: 'user' }));
                 closeModal();
                 toast.success("Login successful!");
             }
@@ -118,10 +118,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
             if (e.key === 'tempAuthToken') {
                 const token = e.newValue;
                 if (token) {
-                    dispatch(userLogin({ token }));
+                    dispatch(loginSuccess({ token, role: 'user' }));
                     localStorage.removeItem('tempAuthToken');
                     closeModal();
-                    
+
                 }
             }
         };

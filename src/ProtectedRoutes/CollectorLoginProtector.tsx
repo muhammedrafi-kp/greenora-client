@@ -3,9 +3,9 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const CollectorLoginProtector: React.FC = () => {
-  const { isLoggedIn } = useSelector((state: any) => state.collectorAuth);
+  const { isLoggedIn,role } = useSelector((state: any) => state.auth);
 
-  if (isLoggedIn) {
+  if (isLoggedIn&&role==='collector') {
     return <Navigate to="/collector/dashboard" replace />;
   }
 

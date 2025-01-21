@@ -11,7 +11,7 @@ import { GrServices, GrContact } from "react-icons/gr";
 // import SignUp from './Signup';
 import AuthModal from './AuthModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { userLogout } from '../../redux/userAuthSlice';
+import { Logout } from '../../redux/authSlice';
 
 
 const NavBar: React.FC = () => {
@@ -22,7 +22,7 @@ const NavBar: React.FC = () => {
     const navigate = useNavigate();
 
     const dispatch = useDispatch();
-    const isLoggedIn = useSelector((state: any) => state.userAuth.isLoggedIn);
+    const { isLoggedIn, role } = useSelector((state: any) => state.auth);
 
     const navigateToHome = () => {
         navigate('/');
@@ -69,7 +69,7 @@ const NavBar: React.FC = () => {
     // };
 
     const handleLogout = () => {
-        dispatch(userLogout());
+        dispatch(Logout());
         setIsDropdownOpen(false);
     };
 
@@ -124,7 +124,7 @@ const NavBar: React.FC = () => {
                         <a href="#pricing" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Pricing</a>
                         <a href="#contact" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Contact</a>
 
-                        {isLoggedIn ? (
+                        {isLoggedIn && role === 'user' ? (
                             <>
                                 {/* Notification Icon */}
                                 <div className="relative group">
@@ -199,9 +199,9 @@ const NavBar: React.FC = () => {
                         ) : (
                             <button
                                 onClick={openLoginModal}
-                                className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors duration-300"
+                                className="bg-green-700 hover:bg-green-900  text-white px-6 py-2 rounded-full  transition-colors duration-300"
                             >
-                                Login
+                                Login / Signup
                             </button>
                         )}
                     </div>
@@ -231,7 +231,7 @@ const NavBar: React.FC = () => {
                                 </svg>
                             </button>
                         </div>
-                        {isLoggedIn ? (
+                        {isLoggedIn && role === 'user' ? (
                             <div className="flex items-center gap-4">
                                 <div className="relative">
                                     <FaUserCircle className="w-12 h-12 text-white" />

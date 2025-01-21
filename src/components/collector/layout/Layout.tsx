@@ -1,26 +1,4 @@
-// import React, { useState } from 'react';
-// import Navbar from './Navbar';
-// import Sidebar from './Sidebar';
 
-// const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-//   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-//   return (
-//     <div className="min-h-screen bg-gray-50">
-//       <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-//       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-      
-//       {/* Main Content Area */}
-//       <main className={`pt-16 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
-//         <div className="p-6">
-//           {children}
-//         </div>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default DashboardLayout;
 
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';

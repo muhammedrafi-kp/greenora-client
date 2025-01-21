@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { handleVerifyOtp,handleResendOtp } from "../../services/userService";
+import { verifyOtpUser, resendOtpUser } from "../../services/authService";
 import { useDispatch } from 'react-redux';
-import { userLogin } from "../../redux/userAuthSlice";
+import { loginSuccess } from "../../redux/authSlice";
 
 interface OtpVerificationProps {
     closeModal: () => void;
@@ -9,7 +9,7 @@ interface OtpVerificationProps {
 }
 
 const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) => {
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [otp, setOtp] = useState(['', '', '', '']);
     const [timer, setTimer] = useState(30);
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +58,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
         e.preventDefault();
         const otpString = otp.join('');
 
-        if (otpString.length !== 6) {
+        if (otpString.length !== 4) {
             setError('Please enter complete OTP.');
             return;
         }
@@ -67,9 +67,9 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
         setError('');
 
         try {
-            const response = await handleVerifyOtp(email, otpString);
+            const response = await verifyOtpUser(email, otpString);
             if (response.success) {
-                dispatch(userLogin({ token: response.token }));
+                dispatch(loginSuccess({ token: response.token, role: 'user' }));
                 closeModal();
             }
         } catch (error: any) {
@@ -81,9 +81,10 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
     };
 
     const resendOTP = async () => {
+        setOtp(['', '', '', '']);
         setTimer(30);
         setError('');
-        const response  = await handleResendOtp(email);
+        const response = await resendOtpUser(email);
         console.log(response);
     };
 

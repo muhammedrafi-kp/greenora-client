@@ -2,17 +2,17 @@
 
 import axios, { InternalAxiosRequestConfig, AxiosError } from "axios";
 import store from "../redux/store";
-import { userLogin, userLogout } from "../redux/userAuthSlice";
+// import { loginSuccess, Logout } from "../redux/authSlice";
 
-const axiosInstance = axios.create({
-    baseURL: "http://localhost:3000",
+const apiClient  = axios.create({
+    baseURL: "http://localhost:80",
     withCredentials: true
 });
 
-axiosInstance.interceptors.request.use(
+apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const state = store.getState();
-        const token = state.userAuth.token;
+        const token = state.auth.token;
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -26,9 +26,4 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-
-
-export const getUserDataApi = async () => {
-    const response = await axiosInstance.get("/user-service/user/profile");
-    return response.data;
-}
+export default apiClient;

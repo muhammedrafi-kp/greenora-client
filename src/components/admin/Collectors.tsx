@@ -1,8 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, Download, X, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import Modal from '../common/Modal';
+import { getCollectors, updateCollectorStatus } from "../../services/adminService";
+import toast from 'react-hot-toast';
+
+interface ICollector {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    serviceArea: string;
+    isVerified: boolean;
+    isBlocked: boolean;
+    profileUrl?: string;
+}
 
 const Collectors: React.FC = () => {
+    const [collectors, setCollectors] = useState<ICollector[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [sortField, setSortField] = useState('name');
     const [sortDirection, setSortDirection] = useState('asc');
     const [showFilters, setShowFilters] = useState(false);
@@ -12,25 +28,78 @@ const Collectors: React.FC = () => {
     const [showExportMessage, setShowExportMessage] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [showModal, setShowModal] = useState(false);
-    const [selectedCollector, setSelectedCollector] = useState(null);
+    const [selectedCollector, setSelectedCollector] = useState<ICollector | null>(null);
 
     const collectorsPerPage = 10;
 
-    const collectors = [
-        { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1 (555) 123-4567', status: 'active', verified: true, area: 'North Zone', imageUrl: null },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+1 (555) 234-5678', status: 'blocked', verified: true, area: 'South Zone', imageUrl: null },
-        { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '+1 (555) 345-6789', status: 'active', verified: false, area: 'East Zone', imageUrl: null },
+    useEffect(() => {
+        fetchCollectors();
+    }, []);
 
-    ];
+    const fetchCollectors = async () => {
+        try {
+            setLoading(true);
+            const response = await getCollectors();
+            setCollectors(response.data);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch collectors. Please try again later.');
+            console.error('Error fetching collectors:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleStatusChange = (collector: ICollector) => {
+        if (!collector?._id || !collector?.name) {
+            toast.error('Invalid collector data');
+            return;
+        }
+        setSelectedCollector(collector);
+        setShowModal(true);
+    };
+
+    const confirmStatusChange = async () => {
+        if (!selectedCollector?._id) {
+            toast.error('Invalid collector selected');
+            setShowModal(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await updateCollectorStatus(selectedCollector._id);
+
+            if (response.success) {
+                setCollectors(prevCollectors =>
+                    prevCollectors.map(collector =>
+                        collector._id === selectedCollector._id
+                            ? { ...collector, isBlocked: !collector.isBlocked }
+                            : collector
+                    )
+                );
+                toast.success(response.message);
+            } else {
+                toast.error(response.message || 'Failed to update collector status');
+            }
+            setSelectedCollector(null);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to update collector status';
+            console.error('Error updating collector status:', error);
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
+            setShowModal(false);
+        }
+    };
 
     const filteredCollectors = collectors.filter(collector => {
         const matchesSearch = collector.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            collector.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            collector.phone.includes(searchTerm) ||
-            collector.area.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = selectedStatus === 'all' || collector.status === selectedStatus;
+            collector.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = selectedStatus === 'all' ||
+            (selectedStatus === 'blocked' ? collector.isBlocked : !collector.isBlocked);
         const matchesVerification = selectedVerification === 'all' ||
-            (selectedVerification === 'verified' ? collector.verified : !collector.verified);
+            (selectedVerification === 'verified' ? collector.isVerified : !collector.isVerified);
         return matchesSearch && matchesStatus && matchesVerification;
     });
 
@@ -41,7 +110,7 @@ const Collectors: React.FC = () => {
         } else if (sortField === 'email') {
             compareResult = a.email.localeCompare(b.email);
         } else if (sortField === 'area') {
-            compareResult = a.area.localeCompare(b.area);
+            compareResult = a.serviceArea.localeCompare(b.serviceArea);
         } else {
             compareResult = a.name.localeCompare(b.name);
         }
@@ -54,9 +123,16 @@ const Collectors: React.FC = () => {
     const currentCollectors = sortedCollectors.slice(indexOfFirstCollector, indexOfLastCollector);
 
     const handleExport = () => {
-        const headers = ['Name', 'Email', 'Phone', 'Status', 'Verified', 'Area'];
+        const headers = ['Name', 'Email', 'Phone', 'Area', 'Status', 'Verification'];
         const csvData = collectors.map(collector =>
-            [collector.name, collector.email, collector.phone, collector.status, collector.verified ? 'Yes' : 'No', collector.area].join(',')
+            [
+                collector.name,
+                collector.email,
+                collector.phone,
+                collector.serviceArea,
+                collector.isBlocked ? 'Blocked' : 'Active',
+                collector.isVerified ? 'Verified' : 'Pending'
+            ].join(',')
         );
         const csvContent = [headers.join(','), ...csvData].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -69,6 +145,25 @@ const Collectors: React.FC = () => {
         setShowExportMessage(true);
         setTimeout(() => setShowExportMessage(false), 3000);
     };
+
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
+                    {error}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
@@ -85,10 +180,7 @@ const Collectors: React.FC = () => {
                         </div>
                     )}
 
-
-
                     <div className="flex justify-between items-center flex-wrap gap-4">
-
                         <div className="flex items-center gap-6 xs:px-6 px-4 py-3 bg-gray-50 border-b">
                             <div className="flex items-center gap-2">
                                 <span className="xs:text-sm text-xs font-medium text-gray-600">Total Collectors:</span>
@@ -97,13 +189,13 @@ const Collectors: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <span className="xs:text-sm text-xs font-medium text-gray-600">Verified:</span>
                                 <span className="xs:text-sm text-xs font-semibold text-green-600">
-                                    {collectors.filter(c => c.verified).length}
+                                    {collectors.filter(c => c.isVerified).length}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="xs:text-sm text-xs font-medium text-gray-600">Pending Verification:</span>
+                                <span className="xs:text-sm text-xs font-medium text-gray-600">Pending:</span>
                                 <span className="xs:text-sm text-xs font-semibold text-yellow-600">
-                                    {collectors.filter(c => !c.verified).length}
+                                    {collectors.filter(c => !c.isVerified).length}
                                 </span>
                             </div>
                         </div>
@@ -203,12 +295,12 @@ const Collectors: React.FC = () => {
                                 </thead>
                                 <tbody>
                                     {currentCollectors.map((collector) => (
-                                        <tr key={collector.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                                        <tr key={collector._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden">
-                                                        {collector.imageUrl ? (
-                                                            <img src={collector.imageUrl} alt={collector.name} className="w-full h-full object-cover" />
+                                                        {collector.profileUrl ? (
+                                                            <img src={collector.profileUrl} alt={collector.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <User className="w-6 h-6 text-blue-600" />
                                                         )}
@@ -218,27 +310,24 @@ const Collectors: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-gray-600">{collector.email}</td>
                                             <td className="px-6 py-4 text-gray-600">{collector.phone}</td>
-                                            <td className="px-6 py-4 text-gray-600">{collector.area}</td>
+                                            <td className="px-6 py-4 text-gray-600">{collector.serviceArea}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${collector.verified
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${collector.isVerified
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-yellow-100 text-yellow-800'
                                                     }`}>
-                                                    {collector.verified ? 'Verified' : 'Pending'}
+                                                    {collector.isVerified ? 'Verified' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
-                                                    onClick={() => {
-                                                        setSelectedCollector(collector);
-                                                        setShowModal(true);
-                                                    }}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${collector.status === 'active'
+                                                    onClick={() => handleStatusChange(collector)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!collector.isBlocked
                                                         ? 'border border-red-700 hover:bg-red-700 text-gray-800 hover:text-white'
                                                         : 'border border-green-700 hover:bg-green-700 text-gray-800 hover:text-white'
                                                         }`}
                                                 >
-                                                    {collector.status === 'active' ? 'Block' : 'Unblock'}
+                                                    {!collector.isBlocked ? 'Block' : 'Unblock'}
                                                 </button>
                                             </td>
                                         </tr>
@@ -277,20 +366,15 @@ const Collectors: React.FC = () => {
                     </div>
                 </div>
             </div>
-
             {showModal && selectedCollector && (
                 <Modal
                     isOpen={showModal}
                     onClose={() => setShowModal(false)}
-                    title={`Confirm ${selectedCollector.status === 'active' ? 'Block' : 'Unblock'}`}
-                    description={`Are you sure you want to ${selectedCollector.status === 'active' ? 'block' : 'unblock'} ${selectedCollector.name}?`}
+                    title={`Confirm ${!selectedCollector.isBlocked ? 'Block' : 'Unblock'}`}
+                    description={`Are you sure you want to ${!selectedCollector.isBlocked ? 'block' : 'unblock'} ${selectedCollector.name}?`}
                     confirmLabel="Confirm"
-                    onConfirm={() => {
-                        console.log(`Status changed for collector: ${selectedCollector.name}`);
-                        setShowModal(false);
-                        setSelectedCollector(null);
-                    }}
-                    confirmButtonClass={`px-4 py-2 rounded-lg text-white ${selectedCollector.status === 'active'
+                    onConfirm={confirmStatusChange}
+                    confirmButtonClass={`px-4 py-2 rounded-lg text-white ${!selectedCollector.isBlocked
                         ? 'bg-red-700 hover:bg-red-800'
                         : 'bg-green-700 hover:bg-green-800'
                         } transition-colors`}
@@ -298,6 +382,5 @@ const Collectors: React.FC = () => {
             )}
         </main>
     );
-};
-
+}
 export default Collectors;

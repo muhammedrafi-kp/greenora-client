@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { handleAdminLogin } from "../../services/adminService";
+import { loginAdmin } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; 
-import { adminLogin } from "../../redux/adminAuthSlice"; 
+// import { adminLogin } from "../../redux/adminAuthSlice"; 
+import { loginSuccess } from "../../redux/authSlice";
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,10 +26,10 @@ const Login: React.FC = () => {
     try {
       console.log(email, password);
 
-      const response = await handleAdminLogin(email, password);
+      const response = await loginAdmin(email, password);
       console.log("Login successful:", response);
 
-      dispatch(adminLogin({ accessToken: response.accessToken }));
+      dispatch(loginSuccess({ token: response.token, role: 'admin' }));
 
       navigate("/admin/dashboard");
     } catch (err) {

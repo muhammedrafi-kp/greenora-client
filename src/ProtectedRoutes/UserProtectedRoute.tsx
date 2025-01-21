@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 
 const UserProtectedRoute: React.FC = () => {
 
-    const { isLoggedIn } = useSelector((state: any) => state.userAuth);
+    const { isLoggedIn, role } = useSelector((state: any) => state.auth);
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn || role !== 'user') {
 
         console.log("not logged in")
         return <Navigate to="/" />;

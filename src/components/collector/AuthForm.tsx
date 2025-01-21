@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
-import { collectorLogin } from "../../redux/collectorAuthSlice";
+// import { collectorLogin } from "../../redux/collectorAuthSlice";
+import { loginSuccess } from "../../redux/authSlice";
 import { validateForm } from "../../validations/userValidation";
 import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
 
-import {handleCollectorLogin,handleCollectorSignUp} from "../../services/collectorService";
+import { loginCollector, signUpCollector } from "../../services/authService";
 // import OtpVerification from "./OtpVerification";
 
 interface AuthFormProps {
@@ -21,14 +22,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     // const [showOtpVerification, setShowOtpVerification] = useState(false);
-    
+
     const dispatch = useDispatch();
 
     const [formData, setFormData] = useState<IUserSignUpData>({
         name: '',
-        email: 'helloworlddev123@gmail.com',
+        email: 'collector@gmail.com',
         phone: '',
-        password: 'Rafikp@10',
+        password: 'collector@123',
         confirmPassword: '',
     });
 
@@ -50,21 +51,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
 
         const { isValid, errors } = validateForm(formData, isLogin ? 'login' : 'signup');
         setFormError(errors);
-
+        console.log("clicked!", isValid)
         if (isValid) {
+            console.log("clicked again!")
+
             setIsLoading(true);
             try {
                 if (isLogin) {
                     // Add your collector login API call here
-                    const response = await handleCollectorLogin(formData.email, formData.password);
-                    console.log("response :",response);
+                    const response = await loginCollector(formData.email, formData.password);
+                    console.log("response :", response);
                     if (response.success) {
-                        dispatch(collectorLogin({ accessToken: response.token }));
+                        dispatch(loginSuccess({ token: response.token, role: 'collector' }));
                         // navigate('/collector/dashboard'); // or your desired route
                     }
                 } else {
                     // Add your collector signup API call here
-                    const response = await handleCollectorSignUp(formData);
+                    const response = await signUpCollector(formData);
                     if (response.success) {
                         // setShowOtpVerification(true);
                     }
@@ -81,6 +84,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                 setIsLoading(false);
             }
         }
+        console.log("click failed!")
     };
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword);

@@ -3,7 +3,7 @@ import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import UserRoutes from './routes/UserRoutes';
 import AgentRoutes from './routes/CollectorRoutes';
-import AdminRoutes from './routes/AdminRoutes';
+import AdminRoutes from './routes/AdminRoutes'; 
 
 function App() {
 

@@ -9,7 +9,7 @@ import {
     FaChevronDown,
     FaChevronUp
 } from 'react-icons/fa';
-import { FaPeopleGroup } from "react-icons/fa6";
+import { FaPeopleGroup ,FaLocationDot} from "react-icons/fa6";
 import { IoPricetags } from "react-icons/io5";
 import { BiSolidCategory } from "react-icons/bi";
 
@@ -181,6 +181,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                     ))}
                                 </ul>
                             )}
+                        </li>
+
+                        <li>
+                            <div
+                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                rounded-lg cursor-pointer transition-all duration-200 group
+                                ${activePath === '/admin/service-areas' ? 'bg-[#173C52] text-white' : ''}`}
+                                onClick={() => {
+                                    setActivePath('/admin/service-areas');
+                                    navigate('/admin/service-areas');
+                                }}
+                            >
+                                <span className="group-hover:scale-110 transition-transform duration-200">
+                                    <FaLocationDot />
+                                </span>
+                                <span>Service Areas</span>
+                            </div>
                         </li>
                         <li>
                             <div

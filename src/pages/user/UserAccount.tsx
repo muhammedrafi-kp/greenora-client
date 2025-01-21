@@ -4,10 +4,10 @@ import Account from '../../components/user/Account'
 
 const UserAccount: React.FC = () => {
     return (
-        <div>
+        <>
             <NavBar />
             <Account />
-        </div>
+        </>
     )
 }
 

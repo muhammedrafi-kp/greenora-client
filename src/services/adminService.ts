@@ -1,35 +1,45 @@
-import { loginAdmin, signUpAdmin } from "../api/authApi";
+import apiClient from "./api";
 
-
-export const handleAdminLogin = async (email: string, password: string) => {
+export const getUsers = async () => {
   try {
-    const data = await loginAdmin(email, password);
-    return data;
+    const response = await apiClient.get("/user-service/admin/users");
+    return response.data;
   } catch (error) {
-    console.error("Login Error:", error);
-    throw error;
+    console.error('Error fetching users:', error);
+    throw new Error('Failed to fetch users. Please try again later.');
   }
-};
+}
 
-
-export const handleAdminSignup = async (email: string, password: string) => {
+export const getCollectors = async () => {
   try {
-    const data = await signUpAdmin(email, password);
-    return data;
+    const response = await apiClient.get("/user-service/admin/collectors");
+    return response.data;
   } catch (error) {
-    console.error("Signup Error:", error);
-    throw error;
+    console.error('Error fetching users:', error);
+    throw new Error('Failed to fetch users. Please try again later.');
   }
-};
+}
 
 
-// export const fetchAdminData = async () => {
-//   try {
-//     const data = await getAdminData();
-//     return data;
-//   } catch (error) {
-//     console.error("Fetch Admin Data Error:", error);
-//     throw error;
-//   }
-// };
+export const updateUserStatus = async (id: string) => {
+  try {
+    const response = await apiClient.patch(`/user-service/admin/update-user-status/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    throw new Error('Failed to update user status.');
+  }
+}
+
+export const updateCollectorStatus = async (id: string) => {
+  try {
+    const response = await apiClient.patch(`/user-service/admin/update-collector-status/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating collector status:', error);
+    throw new Error('Failed to update collector status.');
+  }
+}
+
+
 
