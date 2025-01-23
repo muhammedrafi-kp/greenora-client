@@ -5,7 +5,7 @@ import UserAccount from '../pages/user/UserAccount';
 import UserPickupRequest from '../pages/user/UserPickupRequest';
 import OtpVerification from '../components/user/OtpVerification';
 import UserProtectedRoute from '../ProtectedRoutes/UserProtectedRoute';
-import Pickup from '../pages/user/Pickup';
+import UserPricing from '../pages/user/UserPricing';
 
 const UserRoutes: React.FC = () => {
     return (
@@ -15,7 +15,7 @@ const UserRoutes: React.FC = () => {
             <Route element={<UserProtectedRoute />}>
                 <Route path='/account' element={<UserAccount />} />
                 <Route path='/make-request' element={<UserPickupRequest />} />
-                <Route path='/req' element={<Pickup />} />
+                <Route path='/pricing' element={<UserPricing />} />
             </Route>
         </Routes>
     )

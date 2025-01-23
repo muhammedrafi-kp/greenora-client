@@ -23,21 +23,22 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabClick }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await getUserData();
-        setUserData(response.data);
-      } catch (error) {
-        console.log("Failed to fetch user data:", error);
-      } finally {
-        setTimeout(() => {
-          setLoading(false);
-        }, 1000);
-      }
-    };
-
     fetchUserData();
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await getUserData();
+      setUserData(response.data);
+    } catch (error) {
+      console.log("Failed to fetch user data:", error);
+    } finally {
+      // setTimeout(() => {
+      //   setLoading(false);
+      // }, 1000);
+      setLoading(false);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -156,8 +157,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabClick }) => {
               key={item.id}
               onClick={() => onTabClick(item.id)}
               className={`flex items-center gap-3 w-full xs:p-3 p-2 xs:text-base text-xs rounded-lg transition-colors ${activeTab === item.id
-                  ? 'bg-green-100 text-green-800'
-                  : 'hover:bg-gray-100'
+                ? 'bg-green-100 text-green-800'
+                : 'hover:bg-gray-100'
                 }`}
             >
               {item.icon} {item.label}

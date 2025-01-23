@@ -16,7 +16,7 @@ const authSlice = createSlice({
     name: 'auth',
     initialState: INITIAL_STATE,
     reducers: {
-        loginSuccess : (state, action: PayloadAction<{ token: string, role: string }>) => {
+        loginSuccess: (state, action: PayloadAction<{ token: string, role: string }>) => {
             localStorage.setItem('accessToken', action.payload.token);
             localStorage.setItem('role', action.payload.role);
             state.isLoggedIn = true;
@@ -24,7 +24,7 @@ const authSlice = createSlice({
             state.role = action.payload.role;
         },
 
-            Logout: (state) => {
+        Logout: (state) => {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('role');
             state.isLoggedIn = false;

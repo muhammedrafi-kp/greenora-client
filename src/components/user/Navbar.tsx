@@ -118,10 +118,10 @@ const NavBar: React.FC = () => {
 
                     {/* Navigation Links */}
                     <div className="hidden md:flex md:items-center md:space-x-6 mr-8 font-medium">
-                        <span className="relative hover:text-green-900 cursor-pointer after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300" onClick={navigateToHome}>Home</span>
+                        <span onClick={navigateToHome} className="relative hover:text-green-900 cursor-pointer after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300" >Home</span>
                         <a href="#about" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">About</a>
                         <a href="#services" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Services</a>
-                        <a href="#pricing" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Pricing</a>
+                        <span onClick={() => navigate('/pricing')} className="relative  cursor-pointer hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Pricing</span>
                         <a href="#contact" className="relative hover:text-green-900 after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-green-900 after:left-0 after:bottom-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">Contact</a>
 
                         {isLoggedIn && role === 'user' ? (

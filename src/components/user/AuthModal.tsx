@@ -60,7 +60,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                     console.log(response)
                     if (response.success) {
                         // Dispatch user login action with user data
-                        dispatch(loginSuccess({ token: response.token, role: 'user' }));
+                        dispatch(loginSuccess({ token: response.token, role: response.role }));
                         closeModal();
                     }
                     toast.success("Login successful!")

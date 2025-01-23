@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from 'react';
 import { Calendar, ChevronDown, ChevronUp, Trash2, Recycle, CheckCircle, CreditCard, Truck, MapPin } from 'lucide-react';
 
@@ -58,7 +55,7 @@ const steps = [
         setCurrentStep(1);
     };
 
-    const handleAddressSelect = (address) => {
+    const handleAddressSelect = (address: string) => {
         setSelectedAddress(address);
         setShowNewAddress(false);
     };
@@ -521,7 +518,26 @@ const steps = [
             <button type="button"
                 onClick={() => {
                     setCurrentStep(0);
-                    renderSuccessPage();
+                    setFormData({
+                        wasteCategory: '',
+                        quantity: '',
+                        preferredDate: '',
+                        location: '',
+                        contactNo: '',
+                        description: '',
+                        scrapType: '',
+                        scrapQuantity: '',
+                        scrapPreferredDate: '',
+                        scrapLocation: '',
+                        scrapContactNo: '',
+                        scrapDescription: '',
+                        newAddress: {
+                            street: '',
+                            city: '',
+                            state: '',
+                            zipCode: ''
+                        }
+                    });
                 }}
                 className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg text-sm font-medium">
                 Complete Payment
@@ -568,7 +584,13 @@ const steps = [
                         scrapPreferredDate: '',
                         scrapLocation: '',
                         scrapContactNo: '',
-                        scrapDescription: ''
+                        scrapDescription: '',
+                        newAddress: {
+                            street: '',
+                            city: '',
+                            state: '',
+                            zipCode: ''
+                        }
                     });
                 }}
                 className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg text-sm font-medium">
@@ -577,11 +599,39 @@ const steps = [
         </div>
     );
 
+    // const renderSuccessPage = () => (
+    //     <div className="text-center space-y-6">
+    //         <div className="bg-green-50 border border-green-100 rounded-xl p-8">
+    //             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+    //                 <Truck className="w-8 h-8 text-green-600" />
+    //             </div>
+    //             <h3 className="text-xl font-semibold text-gray-800 mb-2">Pickup Scheduled Successfully!</h3>
+    //             <p className="text-gray-600">Your waste collection request has been confirmed.</p>
+
+    //             <div className="mt-6 p-4 bg-white rounded-lg border border-green-100">
+    //                 <div className="flex justify-between items-center mb-2">
+    //                     <span className="text-sm font-medium text-gray-600">Pickup Date</span>
+    //                     <span className="text-sm text-gray-800">{formData.preferredDate}</span>
+    //                 </div>
+    //                 <div className="flex justify-between items-center">
+    //                     <span className="text-sm font-medium text-gray-600">Reference No.</span>
+    //                     <span className="text-sm text-gray-800">#WP{Math.random().toString().slice(2, 8)}</span>
+    //                 </div>
+    //             </div>
+    //         </div>
+
+    //         <button type="button" onClick={() => setCurrentStep(1)}
+    //             className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg text-sm font-medium">
+    //             Book Another Pickup
+    //         </button>
+    //     </div>
+    // );
+
     return (
-        <div className="bg-gray-50 min-h-screen py-12">
-            <div className="max-w-3xl mx-auto mt-16 px-4">
+        <div className="bg-gray-100 mx-auto min-h-screen py-16">
+            <div className="max-w-3xl mx-auto mt-10 px-4">
                 <div className="bg-white p-6 rounded-xl shadow-md">
-                    <h1 className="text-2xl font-semibold text-gray-800 mb-8 text-center">Book a Pickup</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 mb-8 text-center">Book a Pickup</h1>
                     {currentStep > 0 && <StepperWithLines />}
                     
                     {currentStep === 0 && renderPickupTypeSelection()}

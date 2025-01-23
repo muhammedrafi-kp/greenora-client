@@ -26,6 +26,19 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
         fetchUserData();
     }, []);
 
+    const fetchUserData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await getUserData();
+            setUserData(response.data);
+        } catch (error) {
+            console.error("Failed to fetch user data", error);
+            // toast.error('Failed to load profile data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const validateField = (name: string, value: string): string | undefined => {
         if (name === 'name') {
             if (!value.trim()) {
@@ -71,18 +84,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
         return isValid;
     };
 
-    const fetchUserData = async () => {
-        setIsLoading(true);
-        try {
-            const response = await getUserData();
-            setUserData(response.data);
-        } catch (error) {
-            console.error("Failed to fetch user data", error);
-            toast.error('Failed to load profile data');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

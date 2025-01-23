@@ -6,8 +6,6 @@ import authReducer from "./authSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    // collectorAuth: collectorAuthReducer,
-    // adminAuth: adminAuthReducer
   },
 });
 
