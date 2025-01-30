@@ -1,17 +1,17 @@
 import React from 'react';
 import Layout from '../../components/admin/layout/Layout';
-import ServiceArea from '../../components/admin/ServiceArea';
+import ServiceAreas from '../../components/admin/ServiceAreas';
 import Breadcrumbs from '../../components/admin/Breadcrumbs';
 
-const AdminServiceArea: React.FC = () => {
+const AdminServiceAreas: React.FC = () => {
     return (
         <div>
             <Layout>
                 <Breadcrumbs title="Service Area Managment" />
-                <ServiceArea />
+                <ServiceAreas />
             </Layout>
         </div>
     )
 }
 
-export default AdminServiceArea
+export default AdminServiceAreas

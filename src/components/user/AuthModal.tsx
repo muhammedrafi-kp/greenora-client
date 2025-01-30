@@ -72,7 +72,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                 }
             } catch (error: any) {
                 if (error.status === 404) {
-                    errors.email = "User with this Email doesn't exists."
+                    errors.email = "User with this email doesn't exists."
                     setFormError(errors);
                 } else if (error.status === 401) {
                     errors.password = "Incorrect password."

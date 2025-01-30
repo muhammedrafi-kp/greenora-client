@@ -5,7 +5,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
 // import { collectorLogin } from "../../redux/collectorAuthSlice";
 import { loginSuccess } from "../../redux/authSlice";
-import { validateForm } from "../../validations/userValidation";
+import { validateField, validateForm } from "../../validations/userValidation";
 import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
 
 import { loginCollector, signUpCollector } from "../../services/authService";
@@ -14,6 +14,8 @@ import { loginCollector, signUpCollector } from "../../services/authService";
 interface AuthFormProps {
     initialMode?: 'login' | 'signup';
 }
+
+
 
 const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
     const [isLogin, setIsLogin] = useState(initialMode === 'login');
@@ -26,11 +28,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
     const dispatch = useDispatch();
 
     const [formData, setFormData] = useState<IUserSignUpData>({
-        name: '',
+        name: 'collector',
         email: 'collector@gmail.com',
-        phone: '',
-        password: 'collector@123',
-        confirmPassword: '',
+        phone: '1234567890',
+        password: 'Collector@123',
+        confirmPassword: 'Collector@123',
     });
 
     const [formError, setFormError] = useState<IFormErrors>({
@@ -43,15 +45,32 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value.trim() });
+        const trimmedValue = value.trim();
+        setFormData({ ...formData, [name]: trimmedValue });
+
+        const error = validateField(name, trimmedValue, isLogin);
+        setFormError(prev => ({
+            ...prev,
+            [name]: error
+        }));
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const error = validateField(name, value.trim(), isLogin);
+        setFormError(prev => ({
+            ...prev,
+            [name]: error
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const { isValid, errors } = validateForm(formData, isLogin ? 'login' : 'signup');
+
         setFormError(errors);
-        console.log("clicked!", isValid)
+        console.log("clicked! isValid:", isValid)
         if (isValid) {
             console.log("clicked again!")
 
@@ -62,14 +81,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                     const response = await loginCollector(formData.email, formData.password);
                     console.log("response :", response);
                     if (response.success) {
-                        dispatch(loginSuccess({ token: response.token, role: 'collector' }));
-                        // navigate('/collector/dashboard'); // or your desired route
+                        dispatch(loginSuccess({ token: response.token, role: response.role }));
                     }
                 } else {
                     // Add your collector signup API call here
                     const response = await signUpCollector(formData);
                     if (response.success) {
-                        // setShowOtpVerification(true);
+                        navigate('/collector/verify-otp', {
+                            state: {
+                                email: formData.email,
+                                fromSignup: true
+                            }
+                        });
                     }
                 }
             } catch (error: any) {
@@ -136,6 +159,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
+                                onBlur={handleBlur}
                                 className={`w-full border rounded-lg md:h-10 h-8 px-3 md:text-sm text-xs ${formError.name ? 'border-red-700' : 'border-gray-300'
                                     }`}
                                 placeholder="Full Name"
@@ -150,6 +174,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         className={`w-full border rounded-lg md:h-10 h-8 px-3 md:text-sm text-xs ${formError.email ? 'border-red-700' : 'border-gray-300'
                             }`}
                         placeholder="Email Address"
@@ -163,6 +188,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                             name="password"
                             value={formData.password}
                             onChange={handleInputChange}
+                            onBlur={handleBlur}
                             className={`w-full border rounded-lg md:h-10 h-8 px-3 md:text-sm text-xs ${formError.password ? 'border-red-700' : 'border-gray-300'
                                 }`}
                             placeholder="Password"
@@ -184,6 +210,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
+                                onBlur={handleBlur}
                                 className={`w-full border rounded-lg md:h-10 h-8 px-3 md:text-sm text-xs ${formError.confirmPassword ? 'border-red-700' : 'border-gray-300'
                                     }`}
                                 placeholder="Confirm Password"
@@ -218,7 +245,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                         <div className="md:text-sm xs:text-xs text-xs text-green-900 mt-3">
                             <button
                                 type="button"
-                                onClick={() => navigate('/agent/forgot-password')}
+                                onClick={() => navigate('/collector/forgot-password')}
                                 className="hover:underline"
                             >
                                 Forgot Password?

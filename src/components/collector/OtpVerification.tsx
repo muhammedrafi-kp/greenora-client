@@ -1,15 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { verifyOtpCollector, resendOtpCollector } from '../../services/authService';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../../redux/authSlice';
 
-interface OtpVerificationProps {
-    email: string;
-    // closeModal: () => void;
-}
-
-const OtpVerification: React.FC<OtpVerificationProps> = ({ email }) => {
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+const OtpVerification: React.FC = () => {
+    const [otp, setOtp] = useState(['', '', '', '']);
     const [timer, setTimer] = useState(30);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const { email, fromSignup } = location.state || {};
+    console.log("email............ :", email);
+
+    useEffect(() => {
+        if (!email || !fromSignup) {
+            navigate('/signup');
+        }
+    }, [email, fromSignup, navigate]);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -17,6 +29,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email }) => {
             document.body.style.overflow = 'auto';
         };
     }, []);
+
 
     useEffect(() => {
         if (timer > 0) {
@@ -31,7 +44,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email }) => {
         setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
 
         // Focus next input
-        if (element.value && index < 5) {
+        if (element.value && index < 3) {
             const nextInput = element.parentElement?.nextElementSibling?.querySelector('input');
             if (nextInput) nextInput.focus();
         }
@@ -51,7 +64,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email }) => {
         e.preventDefault();
         const otpString = otp.join('');
 
-        if (otpString.length !== 6) {
+        if (otpString.length !== 4) {
             setError('Please enter complete OTP');
             return;
         }
@@ -60,14 +73,11 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email }) => {
         setError('');
 
         try {
-            // Add your OTP verification API call here
-            // const response = await handleVerifyOtp(email, otpString);
-            // if (response.success) {
-            //     closeModal();
-            // }
-            // setTimeout(() => {
-            //     closeModal();
-            // }, 2000);
+            const response = await verifyOtpCollector(email, otpString);
+            console.log("response :", response);
+            if (response.success) {
+                dispatch(loginSuccess({ token: response.token, role: 'collector' }));
+            }
         } catch (error: any) {
             setError('Invalid OTP. Please try again.');
         } finally {
@@ -76,10 +86,11 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email }) => {
     };
 
     const handleResendOtp = async () => {
+        const response = await resendOtpCollector(email);
+        console.log(response);
+        setOtp(['', '', '', '']);
         setTimer(30);
         setError('');
-        // Add your resend OTP API call here
-        // await handleResendOtp(email);
     };
 
     return (

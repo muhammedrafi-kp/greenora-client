@@ -1,10 +1,10 @@
 import { IUserSignUpData, ICollectorSignUpData } from "../interfaces/interfaces";
-import apiClient from "./api";
+import {publicApiClient} from "./api";
 
 //admin auth apis
 export const loginAdmin = async (email: string, password: string) => {
     try {
-        const response = await apiClient.post("/user-service/admin/login", { email, password });
+        const response = await publicApiClient.post("/user-service/admin/login", { email, password });
         return response.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -14,7 +14,7 @@ export const loginAdmin = async (email: string, password: string) => {
 
 export const signUpAdmin = async (email: string, password: string) => {
     try {
-        const response = await apiClient.post("/user-service/admin/signup", { email, password });
+        const response = await publicApiClient.post("/user-service/admin/signup", { email, password });
         return response.data;
     } catch (error) {
         console.error("Signup Error:", error);
@@ -25,7 +25,7 @@ export const signUpAdmin = async (email: string, password: string) => {
 //user auth apis
 export const loginUser = async (email: string, password: string) => {
     try {
-        const response = await apiClient.post("/user-service/user/login", { email, password });
+        const response = await publicApiClient.post("/user-service/user/login", { email, password });
         return response.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -35,7 +35,7 @@ export const loginUser = async (email: string, password: string) => {
 
 export const signUpUser = async (userData: IUserSignUpData) => {
     try {
-        const response = await apiClient.post("/user-service/user/signup", userData);
+        const response = await publicApiClient.post("/user-service/user/signup", userData);
         return response.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -45,7 +45,7 @@ export const signUpUser = async (userData: IUserSignUpData) => {
 
 export const verifyOtpUser = async (email: string, otp: string) => {
     try {
-        const response = await apiClient.post("/user-service/user/verify-otp", { email, otp });
+        const response = await publicApiClient.post("/user-service/user/verify-otp", { email, otp });
         return response.data;
     } catch (error) {
         console.error("Error during OTP verification:", error);
@@ -55,7 +55,7 @@ export const verifyOtpUser = async (email: string, otp: string) => {
 
 export const resendOtpUser = async (email: string) => {
     try {
-        const response = await apiClient.post("/user-service/user/resend-otp", { email });
+        const response = await publicApiClient.post("/user-service/user/resend-otp", { email });
         console.log("response form service :", response);
         return response.data;
     } catch (error) {
@@ -67,7 +67,7 @@ export const resendOtpUser = async (email: string) => {
 //collector auth apis   
 export const loginCollector = async (email: string, password: string) => {
     try {
-        const response = await apiClient.post("/user-service/collector/login", { email, password });
+        const response = await publicApiClient.post("/user-service/collector/login", { email, password });
         return response.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -77,7 +77,7 @@ export const loginCollector = async (email: string, password: string) => {
 
 export const signUpCollector = async (userData: ICollectorSignUpData) => {
     try {
-        const response = await apiClient.post("/user-service/collector/signup", userData);
+        const response = await publicApiClient.post("/user-service/collector/signup", userData);
         return response.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -87,7 +87,7 @@ export const signUpCollector = async (userData: ICollectorSignUpData) => {
 
 export const verifyOtpCollector = async (email: string, otp: string) => {
     try {
-        const response = await apiClient.post("/user-service/collector/verify-otp", { email, otp });
+        const response = await publicApiClient.post("/user-service/collector/verify-otp", { email, otp });
         return response.data;
     } catch (error) {
         console.error("Error during OTP verification:", error);
@@ -97,7 +97,7 @@ export const verifyOtpCollector = async (email: string, otp: string) => {
 
 export const resendOtpCollector = async (email: string) => {
     try {
-        const response = await apiClient.post("/user-service/collector/resend-otp", { email });
+        const response = await publicApiClient.post("/user-service/collector/resend-otp", { email });
         console.log("response form service :", response);
         return response.data;
     } catch (error) {

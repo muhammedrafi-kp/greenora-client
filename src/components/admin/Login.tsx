@@ -29,7 +29,7 @@ const Login: React.FC = () => {
       const response = await loginAdmin(email, password);
       console.log("Login successful:", response);
 
-      dispatch(loginSuccess({ token: response.token, role: 'admin' }));
+      dispatch(loginSuccess({ token: response.token, role: response.role }));
 
       navigate("/admin/dashboard");
     } catch (err) {
@@ -41,7 +41,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-l from-[#243B55] to-[#141E30]">
-      <div className="bg-white p-10 max-w-md w-full shadow-lg rounded-lg">
+      <div className="bg-white p-8 max-w-md w-full shadow-lg rounded-lg">
         <h2 className="mb-3 text-xl font-semibold sm:mb-10 sm:text-2xl md:text-3xl text-center">
           Admin Login
         </h2>

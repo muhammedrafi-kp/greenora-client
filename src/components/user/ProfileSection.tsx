@@ -44,9 +44,9 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
             if (!value.trim()) {
                 return "Full name is required";
             }
-            if (/[^a-zA-Z\s]/.test(value)) {
-                return "Full name cannot contain special characters";
-            }
+            // if (/[^a-zA-Z\s]/.test(value)) {
+            //     return "Full name cannot contain special characters";
+            // }
         }
 
         if (name === 'phone') {
@@ -116,7 +116,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!validateForm()) {
             return;
@@ -152,7 +152,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
             }
         } catch (error) {
             console.error("Error while updating userdata:", error);
-            toast.error('Error updating profile. Please try again.');
+            toast.error('Something went wrong. Please try again.');
         } finally {
             setIsSaving(false);
         }

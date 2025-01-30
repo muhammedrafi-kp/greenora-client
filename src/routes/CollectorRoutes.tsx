@@ -20,9 +20,10 @@ const AgentRoutes: React.FC = () => {
     <Routes>
       {/* Auth Routes */}
 
-       <Route element={<CollectorLoginProtector />}>
+      <Route element={<CollectorLoginProtector />}>
         <Route path="/login" element={<CollectorLogin />} />
         <Route path="/signup" element={<CollectorSignUp />} />
+        <Route path="/verify-otp" element={<OtpVerification />} />
       </Route>
 
       {/* Protected Routes */}
@@ -30,19 +31,20 @@ const AgentRoutes: React.FC = () => {
       <Route element={<CollectorProtectedRoute />}>
         <Route path="/dashboard" element={<CollectorDashboard />} />
         <Route path="/tasks" element={<CollectorAssignedTasks />} />
+        <Route path="/profile" element={<CollectorProfile />} />
       </Route>
       {/* <Route path="/profile" element={<AgentProfile />} /> */}
-      <Route path="/profile" element={<CollectorProfile />} />
-      <Route path="/otp" element={<OtpVerification email='a'  />} />
-      <Route path="/forget" element={<ForgetPassword   />} />
-      <Route path="/reset" element={<ResetPassword token=''  />} />
+
+
+      <Route path="/forgot-password" element={<ForgetPassword />} />
+      <Route path="/reset-password" element={<ResetPassword token='ww' onSuccess={() => { }} />} />
       {/* <Route path="/change-password" element={<ChangePassword />} /> */}
 
       {/* <Route path="/pickup-history" element={<AgentPickupHistory />} /> */}
       {/* <Route path="/route-planning" element={<AgentRoutePlanning />} /> */}
     </Routes>
 
-    
+
   );
 };
 

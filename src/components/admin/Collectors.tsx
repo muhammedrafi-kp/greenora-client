@@ -207,14 +207,14 @@ const Collectors: React.FC = () => {
                                     placeholder="Search collectors..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
                                 />
                                 <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                             </div>
 
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
                             >
                                 <SlidersHorizontal className="w-5 h-5" />
                                 <span className="hidden sm:inline">Filters</span>
@@ -222,7 +222,7 @@ const Collectors: React.FC = () => {
 
                             <button
                                 onClick={handleExport}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
                             >
                                 <Download className="w-5 h-5" />
                                 <span className="hidden sm:inline">Export</span>
@@ -238,7 +238,7 @@ const Collectors: React.FC = () => {
                                     <select
                                         value={selectedStatus}
                                         onChange={(e) => setSelectedStatus(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
                                     >
                                         <option value="all">All Status</option>
                                         <option value="active">Active</option>
@@ -250,7 +250,7 @@ const Collectors: React.FC = () => {
                                     <select
                                         value={selectedVerification}
                                         onChange={(e) => setSelectedVerification(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
                                     >
                                         <option value="all">All</option>
                                         <option value="verified">Verified</option>
@@ -266,7 +266,7 @@ const Collectors: React.FC = () => {
                                             setSortField(field);
                                             setSortDirection(direction);
                                         }}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
                                     >
                                         <option value="name-asc">Name (A-Z)</option>
                                         <option value="name-desc">Name (Z-A)</option>
@@ -296,7 +296,7 @@ const Collectors: React.FC = () => {
                                 <tbody>
                                     {currentCollectors.map((collector) => (
                                         <tr key={collector._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-3">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden">
                                                         {collector.profileUrl ? (
@@ -308,10 +308,10 @@ const Collectors: React.FC = () => {
                                                     <span className="font-medium text-gray-900">{collector.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-gray-600">{collector.email}</td>
-                                            <td className="px-6 py-4 text-gray-600">{collector.phone}</td>
-                                            <td className="px-6 py-4 text-gray-600">{collector.serviceArea}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-3 text-gray-600">{collector.email}</td>
+                                            <td className="px-6 py-3 text-gray-600">{collector.phone}</td>
+                                            <td className="px-6 py-3 text-gray-600">{collector.serviceArea}</td>
+                                            <td className="px-6 py-3">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${collector.isVerified
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-yellow-100 text-yellow-800'

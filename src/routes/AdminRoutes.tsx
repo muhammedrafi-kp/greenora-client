@@ -9,7 +9,7 @@ import AdminLoginProtector from '../ProtectedRoutes/AdminLoginProtector';
 import AdminCollectorsList from '../pages/admin/AdminCollectorsList';
 import AdminWasteCategories from '../pages/admin/AdminWasteCategories';
 import AdminScrapCategories from '../pages/admin/AdminScrapCategories';
-import AdminServiceArea from '../pages/admin/AdminServiceArea';
+import AdminServiceAreas from '../pages/admin/AdminServiceAreas';
 
 const AdminRoutes: React.FC = () => {
     return (
@@ -24,8 +24,7 @@ const AdminRoutes: React.FC = () => {
                 <Route path='/collectors' element={<AdminCollectorsList />} />
                 <Route path='/categories/wastes' element={<AdminWasteCategories />} />
                 <Route path='/categories/scraps' element={<AdminScrapCategories />} />
-                <Route path='/service-areas' element={<AdminServiceArea />} />
-
+                <Route path='/service-areas' element={<AdminServiceAreas />} />
             </Route>
         </Routes>
     )

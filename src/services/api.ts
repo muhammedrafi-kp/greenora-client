@@ -3,7 +3,7 @@ import store from "../redux/store";
 import { loginSuccess, Logout } from "../redux/authSlice";
 
 const apiClient = axios.create({
-    baseURL: "http://localhost:80",
+    baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
     withCredentials: true,
 });
 
@@ -34,7 +34,10 @@ apiClient.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const response = await axios.post("http://localhost:80/user-service/user/refresh-token",
+                const state = store.getState();
+                const role = state.auth.role;
+                console.log("role:", role);
+                const response = await axios.post(`http://localhost:80/user-service/${role}/refresh-token`,
                     {},
                     { withCredentials: true }
                 );
@@ -57,4 +60,13 @@ apiClient.interceptors.response.use(
     }
 );
 
-export default apiClient;
+
+/**
+ * Instance for unauthenticated requests
+ */
+const publicApiClient = axios.create({
+    baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
+    withCredentials: true, // Use if needed for public APIs
+});
+
+export { apiClient, publicApiClient };

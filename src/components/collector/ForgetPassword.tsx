@@ -3,17 +3,17 @@ import { Eye, EyeOff } from "lucide-react";
 import { HiOutlineMail } from "react-icons/hi";
 
 
-interface ForgotPasswordFormProps {
-    onBack: () => void;
-}
+// interface ForgotPasswordFormProps {
+//     onBack: () => void;
+// }
 
 
 // Component for entering email to receive reset link
-const ForgetPassword: React.FC<ForgotPasswordFormProps> = ({ onBack }) => {
+const ForgetPassword: React.FC = ( ) => {
     const [email, setEmail] = useState('asdfg');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(true);
+    const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,7 +63,7 @@ const ForgetPassword: React.FC<ForgotPasswordFormProps> = ({ onBack }) => {
                             <span className="font-medium text-gray-900">{email}</span>
                         </p>
                         <button
-                            onClick={onBack}
+                            // onClick={}
                             className="w-full bg-green-900 hover:bg-green-800 text-white font-medium mt-8 sm:py-2 py-1 xs:text-base text-sm rounded-lg disabled:opacity-50"
                         >
                             Back to Login
@@ -122,7 +122,7 @@ const ForgetPassword: React.FC<ForgotPasswordFormProps> = ({ onBack }) => {
                             <div className="text-center md:text-sm xs:text-xs text-xs mt-4">
                                 <button
                                     type="button"
-                                    onClick={onBack}
+                                    // onClick={onBack}
                                     className="text-green-900 hover:underline"
                                 >
                                     Back to Login

@@ -38,8 +38,12 @@ const Users: React.FC = () => {
     try {
       setLoading(true);
       const response = await getUsers();
-      setUsers(response.data);
-      setError(null);
+      if (response.success) {
+        setUsers(response.data);
+        setError(null);
+      } else {
+        setError(response.message);
+      }
     } catch (err) {
       setError('Failed to fetch users. Please try again later.');
       console.error('Error fetching users:', err);
@@ -223,14 +227,14 @@ const Users: React.FC = () => {
                   placeholder="Search users..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
                 />
                 <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               </div>
 
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
               >
                 <SlidersHorizontal className="w-5 h-5" />
                 <span className="hidden sm:inline">Filters</span>
@@ -238,7 +242,7 @@ const Users: React.FC = () => {
 
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
               >
                 <Download className="w-5 h-5" />
                 <span className="hidden sm:inline">Export</span>
@@ -254,7 +258,7 @@ const Users: React.FC = () => {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -270,7 +274,7 @@ const Users: React.FC = () => {
                       setSortField(field);
                       setSortDirection(direction);
                     }}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
                   >
                     <option value="name-asc">Name (A-Z)</option>
                     <option value="name-desc">Name (Z-A)</option>
@@ -299,7 +303,7 @@ const Users: React.FC = () => {
                 <tbody>
                   {currentUsers.map((user) => (
                     <tr key={user._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden">
                             {user.profileUrl ? (
@@ -311,8 +315,8 @@ const Users: React.FC = () => {
                           <span className="font-medium text-gray-900">{user.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-3 text-gray-600">{user.email}</td>
+                      <td className="px-6 py-3 text-right">
                         <button
                           onClick={() => handleStatusChange(user)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!user.isBlocked
@@ -331,7 +335,7 @@ const Users: React.FC = () => {
 
             {/* pagination area  */}
 
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+            <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100">
               <div className="text-sm text-gray-700">
                 Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, sortedUsers.length)} of {sortedUsers.length} users
               </div>
