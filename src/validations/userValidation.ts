@@ -91,7 +91,7 @@ export interface IFormErrors {
       case 'name':
         if (!isLogin) {
           if (!value.trim()) return "Full name is required";
-        //   if (/[^a-zA-Z\s]/.test(value)) return "Full name cannot contain special characters";
+          // if (/[^a-zA-Z\s]/.test(value)) return "Full name cannot contain special characters";
           if (value.trim().length < 2) return "Full name must be at least 2 characters";
         }
         break;

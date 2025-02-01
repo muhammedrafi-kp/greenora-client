@@ -39,3 +39,12 @@ export const uploadProfileImage = async (data: FormData) => {
     }
 }
 
+export const getCategories = async () => {
+    try {
+        const response = await apiClient.get(`/request-service/category/categories`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        throw error;
+    }
+}

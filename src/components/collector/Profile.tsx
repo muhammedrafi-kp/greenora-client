@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  User, Phone, Mail, MapPin, Award, Shield, Edit, Lock, CheckCircle, AlertCircle, Camera
+  User, Phone, Mail, MapPin, Award, Shield, Edit, Lock, CheckCircle, AlertCircle, Camera, X
 } from 'lucide-react';
 import { ChangePassword } from './ChangePassword';
 import ProfileSkeleton from '../collector/skeltons/ProfileSkelton';
@@ -16,6 +16,7 @@ interface FormErrors {
   name?: string;
   phone?: string;
   serviceArea?: string;
+  district?: string;
 }
 
 const ProfileCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -36,7 +37,11 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [idFrontImage, setIdFrontImage] = useState<string | null>(null);
+  const [idBackImage, setIdBackImage] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const idProofTypes = ['Aadhar', 'Voter-ID', 'Driving-License'];
 
   const performanceStats = [
     { label: "Pickups Completed", value: "1,234" },
@@ -58,6 +63,9 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
       case 'serviceArea':
         if (!value.trim()) return "Service area is required";
         break;
+      case 'district':
+        if (!value.trim()) return "District is required";
+        break;
     }
     return undefined;
   };
@@ -67,7 +75,8 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
     let isValid = true;
 
     if (collectorData) {
-      const fields: Array<keyof Pick<ICollectorData, 'name' | 'phone' | 'serviceArea'>> = ['name', 'phone', 'serviceArea'];
+      const fields: Array<keyof Pick<ICollectorData, 'name' | 'phone' | 'serviceArea' | 'district'>> =
+        ['name', 'phone', 'serviceArea', 'district'];
       fields.forEach((field) => {
         const error = validateField(field, collectorData[field] || '');
         if (error) {
@@ -121,8 +130,32 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const profileUrl = URL.createObjectURL(file);
-      setUploadedImage(profileUrl);
+      setUploadedImage(URL.createObjectURL(file));
+    }
+  };
+
+  const handleIdProofChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setCollectorData(prev => prev ? { ...prev, idProofType: value } : null);
+  };
+
+  const handleIdImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back') => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const imageUrl = URL.createObjectURL(file);
+      if (type === 'front') {
+        setIdFrontImage(imageUrl);
+      } else {
+        setIdBackImage(imageUrl);
+      }
+    }
+  };
+
+  const clearIdImage = (type: 'front' | 'back') => {
+    if (type === 'front') {
+      setIdFrontImage(null);
+    } else {
+      setIdBackImage(null);
     }
   };
 
@@ -138,7 +171,10 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
     if (collectorData?.name) formData.append('name', collectorData.name);
     if (collectorData?.phone) formData.append('phone', collectorData.phone);
     if (collectorData?.serviceArea) formData.append('serviceArea', collectorData.serviceArea);
+    if (collectorData?.district) formData.append('district', collectorData.district);
+    if (collectorData?.idProofType) formData.append('idProofType', collectorData.idProofType);
 
+    // Handle image uploads
     if (uploadedImage) {
       try {
         const imageFile = await fetch(uploadedImage)
@@ -146,10 +182,29 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
           .then(blob => new File([blob], 'profile.jpg', { type: 'image/jpeg' }));
         formData.append('profileImage', imageFile);
       } catch (error) {
-        console.error("Error processing image:", error);
-        toast.error('Error processing image. Please try again.');
-        setIsSaving(false);
-        return;
+        console.error("Error processing profile image:", error);
+      }
+    }
+
+    if (idFrontImage) {
+      try {
+        const frontFile = await fetch(idFrontImage)
+          .then(res => res.blob())
+          .then(blob => new File([blob], 'idfront.jpg', { type: 'image/jpeg' }));
+        formData.append('idProofFront', frontFile);
+      } catch (error) {
+        console.error("Error processing ID front image:", error);
+      }
+    }
+
+    if (idBackImage) {
+      try {
+        const backFile = await fetch(idBackImage)
+          .then(res => res.blob())
+          .then(blob => new File([blob], 'idback.jpg', { type: 'image/jpeg' }));
+        formData.append('idProofBack', backFile);
+      } catch (error) {
+        console.error("Error processing ID back image:", error);
       }
     }
 
@@ -169,6 +224,8 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setUploadedImage(null);
+    setIdFrontImage(null);
+    setIdBackImage(null);
     setErrors({});
     fetchCollectorData();
   };
@@ -181,11 +238,19 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
             <ProfileSkeleton />
           ) : (
             <form className="space-y-6" onSubmit={handleSubmit}>
+
               <div className="flex xs:justify-end justify-center items-center">
-                <div className="flex items-center text-green-600 gap-1">
-                  <CheckCircle className="xs:w-4 w-2 xs:h-4 h-2" />
-                  <span className="xs:text-sm text-xs">Verified</span>
-                </div>
+                {collectorData?.isVerified ? (
+                  <div className="flex items-center text-green-600 gap-1">
+                    <CheckCircle className="xs:w-4 w-2 xs:h-4 h-2" />
+                    <span className="xs:text-sm text-xs">Verified</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-yellow-600 gap-1">
+                    <AlertCircle className="xs:w-4 w-2 xs:h-4 h-2" />
+                    <span className="xs:text-sm text-xs">Verification Pending</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col items-center">
@@ -220,6 +285,15 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                   {collectorData?.name}
                 </h2>
                 <span className="xs:text-sm text-xs text-gray-500">ID: 162735</span>
+
+                {!collectorData?.isVerified && (
+                  <div className="mt-4 text-center">
+                    <p className="xs:text-sm text-xs text-yellow-600 mb-2">
+                      To verify your profile, add your ID proof and submit for review.
+                    </p>
+                    
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -243,6 +317,7 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                   )}
                 </div>
 
+                {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-6"> */}
                 <div>
                   <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
                     <span className="flex items-center gap-2">
@@ -256,6 +331,7 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                     className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
                   />
                 </div>
+                {/* </div> */}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -278,6 +354,31 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                     <p className="mt-1 text-xs text-red-700">{errors.phone}</p>
                   )}
                 </div>
+
+
+
+                <div>
+                  <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" /> District
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="district"
+                    value={collectorData?.district || ''}
+                    disabled={!isEditing}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.district ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
+                  />
+                  {errors.district && (
+                    <p className="mt-1 text-xs text-red-700">{errors.district}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
                     <span className="flex items-center gap-2">
@@ -299,7 +400,103 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                 </div>
               </div>
 
-              <div className="pt-4">
+              {isEditing && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                      <span className="flex items-center gap-2">
+                        <Shield className="w-4 h-4" /> ID Proof Type
+                      </span>
+                    </label>
+                    <select
+                      value={collectorData?.idProofType || ''}
+                      onChange={handleIdProofChange}
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg"
+                    >
+                      <option value="" className='text-gray-400' disabled selected>--Select ID Proof--</option>
+                      {idProofTypes.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {collectorData?.idProofType && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                          Front Side
+                        </label>
+                        <div className="relative">
+                          {idFrontImage || collectorData?.idProofFrontUrl ? (
+                            <div className="relative">
+                              <img
+                                src={idFrontImage || collectorData?.idProofFrontUrl}
+                                alt="ID Front"
+                                className="w-full h-52 object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => clearIdImage('front')}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                              <Camera className="w-8 h-8 text-gray-400" />
+                              <span className="mt-2 text-sm text-gray-500">Upload front side</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleIdImageChange(e, 'front')}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                          Back Side
+                        </label>
+                        <div className="relative">
+                          {idBackImage || collectorData?.idProofBackUrl ? (
+                            <div className="relative">
+                              <img
+                                src={idBackImage || collectorData?.idProofBackUrl}
+                                alt="ID Back"
+                                className="w-full h-52 object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => clearIdImage('back')}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                              <Camera className="w-8 h-8 text-gray-400" />
+                              <span className="mt-2 text-sm text-gray-500">Upload back side</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleIdImageChange(e, 'back')}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* <div className="pt-4">
                 <button
                   type="button"
                   onClick={() => setShowChangePassword(true)}
@@ -308,7 +505,7 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                   <Lock className="xs:w-4 xs:h-4 w-3 h-3" />
                   Change Password
                 </button>
-              </div>
+              </div> */}
 
               <div className="flex justify-end gap-4 pt-6">
                 {isEditing ? (
@@ -341,9 +538,8 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
               </div>
             </form>
           )}
-        </ProfileCard>
 
-        {/* Performance Stats Card */}
+        </ProfileCard>
         <ProfileCard title="Performance Overview">
           <div className="grid xs:grid-cols-2 grid-cols-1 gap-4">
             {performanceStats.map((stat, index) => (
@@ -368,12 +564,13 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
             </div>
           </div>
         </ProfileCard>
-      </div>
+      </div >
 
       {showChangePassword && (
         <ChangePassword onClose={() => setShowChangePassword(false)} />
-      )}
-    </main>
+      )
+      }
+    </main >
   );
 };
 

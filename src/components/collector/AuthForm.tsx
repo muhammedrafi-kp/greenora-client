@@ -28,11 +28,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
     const dispatch = useDispatch();
 
     const [formData, setFormData] = useState<IUserSignUpData>({
-        name: 'collector',
-        email: 'collector@gmail.com',
-        phone: '1234567890',
-        password: 'Collector@123',
-        confirmPassword: 'Collector@123',
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
     });
 
     const [formError, setFormError] = useState<IFormErrors>({
@@ -70,7 +70,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
         const { isValid, errors } = validateForm(formData, isLogin ? 'login' : 'signup');
 
         setFormError(errors);
-        console.log("clicked! isValid:", isValid)
+        console.log("clicked! isValid:", isValid, errors)
         if (isValid) {
             console.log("clicked again!")
 
@@ -180,6 +180,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                         placeholder="Email Address"
                     />
                     {formError.email && <p className="text-xs text-red-700">{formError.email}</p>}
+
+                    {!isLogin && (
+                        <div className="mt-4">
+                            <input
+                                type="text"
+                                id="phone"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                className={`w-full border rounded-lg md:h-10 h-8 px-3 md:text-sm text-xs ${formError.phone ? 'border-red-700' : 'border-gray-300'
+                                    }`}
+                                placeholder="Phone Number"
+                            />
+                            {formError.phone && <p className="text-xs text-red-700">{formError.phone}</p>}
+                        </div>
+                    )}
 
                     <div className="relative mt-4">
                         <input

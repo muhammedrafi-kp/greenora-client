@@ -257,7 +257,7 @@ const ScrapCategories: React.FC = () => {
             <div className="overflow-x-auto">
               {filteredScraps.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
-                  No scrap categories found
+                  No scrap categories found.
                 </div>
               ) : (
                 <table className="w-full">

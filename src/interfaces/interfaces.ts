@@ -32,8 +32,13 @@ export interface ICollectorData{
     name: string;
     email: string;
     phone: string;
-    serviceArea:string;
+    district?: string;
+    serviceArea?: string;
+    idProofType?: string;
+    idProofFrontUrl?: string;
+    idProofBackUrl?: string;
     profileUrl?: string; 
+    isVerified?: boolean;
 }
 
 export interface IFormErrors {

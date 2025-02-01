@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, X } from 'lucide-react';
 import Modal from '../common/Modal';
 import { keralaDistricts } from "../../data/districts";
-import { addDistrict, getDistricts, updateDistrict, deleteDistrict } from '../../services/adminService';
+import { addDistrict, getDistricts, updateDistrict, deleteDistrict, addServiceArea } from '../../services/adminService';
 import toast from 'react-hot-toast';
 
 
@@ -30,13 +30,16 @@ interface ILocationSuggestion {
 }
 
 interface IFormInput {
+  name: string;
   districtId: string;
-  areaName: string;
-  serviceDays: string[];
-  capacity: string;
+  center: {
+    type: string;
+    coordinates: [number, number];
+  };
   location: string;
   radius: string;
-  coordinates: [number, number];
+  capacity: string;
+  serviceDays: string[];
 }
 
 
@@ -57,16 +60,19 @@ const ServiceAreas: React.FC = () => {
   const [selectedArea, setSelectedArea] = useState<any>(null);
   const [expandedDistricts, setExpandedDistricts] = useState<string[]>([]);
   const [formInput, setFormInput] = useState<IFormInput>({
+    name: '',
     districtId: '',
-    areaName: '',
-    serviceDays: [],
     capacity: '',
     location: '',
     radius: '',
-    coordinates: [0, 0],
+    center: {
+      type: 'Point',
+      coordinates: [0, 0]
+    },
+    serviceDays: []
   });
 
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   const fetchDistricts = async () => {
     try {
@@ -106,21 +112,14 @@ const ServiceAreas: React.FC = () => {
 
   const handleAddDistrict = () => {
     setModalType('add-district');
-    // setFormInput({ districtName: '', areaName: '', serviceDays: [], capacity: '', location: '', locationDisplay: '', radius: '', coordinates: [0, 0], place: '' });
     setDistrict('');
-    setShowModal(true);
-  };
-
-  const handleAddArea = (district: any) => {
-    setModalType('add-area');
-    setSelectedDistrict(district);
-    setFormInput({ districtId: '', areaName: '', serviceDays: [], capacity: '', location: '', radius: '', coordinates: [0, 0] });
     setShowModal(true);
   };
 
   const handleEditDistrict = (district: any) => {
     setModalType('edit-district');
     setSelectedDistrict(district);
+    setDistrict(district.name);
     setShowModal(true);
   };
 
@@ -130,18 +129,25 @@ const ServiceAreas: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleAddArea = (district: any) => {
+    setModalType('add-area');
+    setSelectedDistrict(district);
+    setFormInput({ districtId: district._id, name: '', serviceDays: [], capacity: '', location: '', radius: '', center: { type: 'Point', coordinates: [0, 0] } });
+    setShowModal(true);
+  };
+
   const handleEditArea = (district: any, area: any) => {
     setModalType('edit-area');
     setSelectedDistrict(district);
     setSelectedArea(area);
     setFormInput({
       ...formInput,
-      areaName: area.name,
+      name: area.name,
       serviceDays: area.serviceDays,
       capacity: area.capacity.toString(),
       location: area.location,
       radius: area.radius.toString(),
-      coordinates: area.center.coordinates,
+      center: area.center,
     });
     setShowModal(true);
   };
@@ -164,16 +170,19 @@ const ServiceAreas: React.FC = () => {
       }
     }
     else if (modalType === 'edit-district') {
-      console.log("selectedDistrict :", selectedDistrict);  
+      console.log("selectedDistrict :", selectedDistrict);
       const response = await updateDistrict(selectedDistrict._id, district);
+      console.log("response :", response);
       if (response.success) {
         await fetchDistricts();
         toast.success('District updated.');
+      } else {
+        toast.error(response.message);
       }
       setDistrict('');
     }
     else if (modalType === 'delete-district') {
-      console.log("selectedDistrict :", selectedDistrict);  
+      console.log("selectedDistrict :", selectedDistrict);
       const response = await deleteDistrict(selectedDistrict._id);
       if (response.success) {
         await fetchDistricts();
@@ -181,56 +190,48 @@ const ServiceAreas: React.FC = () => {
       }
     }
     else if (modalType === 'add-area') {
-      // const newArea = {
-      //   id: Math.random(),
-      //   name: formInput.areaName,
-      //   serviceDays: formInput.serviceDays,
-      //   capacity: parseInt(formInput.capacity),
-      //   location: formInput.location,
-      //   radius: parseInt(formInput.radius),
-      //   center: { type: 'Point', coordinates: formInput.coordinates },
-      //   place: formInput.place
-      // };
+      console.log("formInput :", formInput);
+      const response = await addServiceArea(formInput);
+      if (response.success) {
+        console.log("response :", response);
+        await fetchDistricts();
+        toast.success('New Service Area added.');
+      }
+    }
+    else if (modalType === 'edit-area') {
       // setDistricts(districts.map(d =>
       //   d._id === selectedDistrict._id
-      //     ? { ...d, serviceAreas: [...d.serviceAreas, newArea] }
+      //     ? {
+      //       ...d,
+      //       serviceAreas: d.serviceAreas.map(a =>
+      //         a._id === selectedArea._id
+      //           ? {
+      //             ...a,
+      //             name: formInput.name,
+      //             serviceDays: formInput.serviceDays,
+      //             capacity: parseInt(formInput.capacity),
+      //             location: formInput.location,
+      //             radius: parseInt(formInput.radius),
+      //             center: formInput.center,
+      //           }
+      //           : a
+      //       )
+      //     }
       //     : d
       // ));
     }
-    else if (modalType === 'edit-area') {
-      setDistricts(districts.map(d =>
-        d._id === selectedDistrict._id
-          ? {
-            ...d,
-            serviceAreas: d.serviceAreas.map(a =>
-              a._id === selectedArea._id
-                ? {
-                  ...a,
-                  name: formInput.areaName,
-                  serviceDays: formInput.serviceDays,
-                  capacity: parseInt(formInput.capacity),
-                  location: formInput.location,
-                  radius: parseInt(formInput.radius),
-                  center: { type: 'Point', coordinates: formInput.coordinates },
-                }
-                : a
-            )
-          }
-          : d
-      ));
-    }
     else if (modalType === 'delete-area') {
-      setDistricts(districts.map(d =>
-        d._id === selectedDistrict._id
-          ? { ...d, serviceAreas: d.serviceAreas.filter(a => a._id !== selectedArea._id) }
-          : d
-      ));
+      // setDistricts(districts.map(d =>
+      //   d._id === selectedDistrict._id
+      //     ? { ...d, serviceAreas: d.serviceAreas.filter(a => a._id !== selectedArea._id) }
+      //     : d
+      // ));
     }
 
     setShowModal(false);
     setSelectedDistrict(null);
     setSelectedArea(null);
-    setFormInput({ districtId: '', areaName: '', serviceDays: [], capacity: '', location: '', radius: '', coordinates: [0, 0] });
+    setFormInput({ districtId: '', name: '', serviceDays: [], capacity: '', location: '', radius: '', center: { type: 'Point', coordinates: [0, 0] } });
   };
 
 
@@ -271,7 +272,10 @@ const ServiceAreas: React.FC = () => {
     console.log("suggestion :", suggestion);
     setFormInput({
       ...formInput,
-      coordinates: [Number(suggestion.lat), Number(suggestion.lon)],
+      center: {
+        type: 'Point',
+        coordinates: [Number(suggestion.lat), Number(suggestion.lon)]
+      },
       location: suggestion.display_name
     });
     console.log("formInput :", formInput);
@@ -309,8 +313,8 @@ const ServiceAreas: React.FC = () => {
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full bg-white shadow-sm"
-              />
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full bg-white shadow-sm"
+                />
                 <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               </div>
             )}
@@ -326,93 +330,93 @@ const ServiceAreas: React.FC = () => {
           <div className="space-y-4">
             {filteredDistricts.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                No districts found.   
+                No districts found.
               </div>
             ) : (
               filteredDistricts.map(district => (
                 <div key={district._id} className="border rounded-lg overflow-hidden">
                   <div className="bg-gray-50 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => toggleDistrict(district._id)}
-                      className="p-1 hover:bg-gray-200 rounded"
-                    >
-                      {expandedDistricts.includes(district._id) ? (
-                        <ChevronUp className="w-5 h-5" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5" />
-                      )}
-                    </button>
-                    <h3 className="font-medium text-gray-900">{district.name}</h3>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => toggleDistrict(district._id)}
+                        className="p-1 hover:bg-gray-200 rounded"
+                      >
+                        {expandedDistricts.includes(district._id) ? (
+                          <ChevronUp className="w-5 h-5" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5" />
+                        )}
+                      </button>
+                      <h3 className="font-medium text-gray-900">{district.name}</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleAddArea(district)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors text-sm"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Area</span>
+                      </button>
+                      <button
+                        onClick={() => handleEditDistrict(district)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Pencil className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteDistrict(district)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleAddArea(district)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors text-sm"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add Area</span>
-                    </button>
-                    <button
-                      onClick={() => handleEditDistrict(district)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      <Pencil className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteDistrict(district)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
 
-                {expandedDistricts.includes(district._id) && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-gray-100 border-b border-gray-200">
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Area Name</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Service Days</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Daily Capacity</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Location</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Radius (km)</th>
-                          <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {district.serviceAreas.map(area => (
-                          <tr key={area._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-3 font-medium text-gray-900">{area.name}</td>
-                            <td className="px-6 py-3 text-gray-600">
-                              {area.serviceDays.map(day => day.slice(0, 3)).join(', ')}
-                            </td>
-                            <td className="px-6 py-3 text-gray-600">{area.capacity}</td>
-                            <td className="px-6 py-3 text-gray-600">{area.location}</td>
-                            <td className="px-6 py-3 text-gray-600">{area.radius}</td>
-                            <td className="px-6 py-3 text-right">
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  onClick={() => handleEditArea(district, area)}
-                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                  <Pencil className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteArea(district, area)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
-                              </div>
-                            </td>
+                  {expandedDistricts.includes(district._id) && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-gray-100 border-b border-gray-200">
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Area Name</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Service Days</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Daily Capacity</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Location</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Radius (km)</th>
+                            <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {district.serviceAreas.map(area => (
+                            <tr key={area._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                              <td className="px-6 py-3 font-medium text-gray-900">{area.name}</td>
+                              <td className="px-6 py-3 text-gray-600">
+                                {area.serviceDays.map(day => day.slice(0, 3)).join(', ')}
+                              </td>
+                              <td className="px-6 py-3 text-gray-600">{area.capacity}</td>
+                              <td className="px-6 py-3 text-gray-600">{area.location}</td>
+                              <td className="px-6 py-3 text-gray-600">{area.radius}</td>
+                              <td className="px-6 py-3 text-right">
+                                <div className="flex gap-2 justify-end">
+                                  <button
+                                    onClick={() => handleEditArea(district, area)}
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  >
+                                    <Pencil className="w-5 h-5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteArea(district, area)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  >
+                                    <Trash2 className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -453,7 +457,7 @@ const ServiceAreas: React.FC = () => {
                   onChange={(e) => setDistrict(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none z-10"
                 >
-                  <option value="">--Select a district--</option>
+                  <option value="" className='text-gray-400' disabled selected>--Select a district--</option>
                   {keralaDistricts.map((district) => (
                     <option key={district.id} value={district.name}>
                       {district.name}
@@ -469,9 +473,9 @@ const ServiceAreas: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Area Name</label>
                   <input
                     type="text"
-                    name="areaName"
-                    value={formInput.areaName}
-                    onChange={(e) => setFormInput({ ...formInput, areaName: e.target.value })}
+                    name="name"
+                    value={formInput.name}
+                    onChange={(e) => setFormInput({ ...formInput, name: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
                   />
                 </div>
@@ -531,7 +535,7 @@ const ServiceAreas: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          setFormInput({ ...formInput, location: '', coordinates: [0, 0] });
+                          setFormInput({ ...formInput, location: '', center: { type: 'Point', coordinates: [0, 0] } });
                           setLocationSuggestions([]);
                           setShowSuggestions(false);
                         }}

@@ -83,7 +83,7 @@ export const deleteCategory = async (categoryId: string) => {
 
 export const addDistrict = async (name: string) => {
   try {
-    const response = await apiClient.post("/location-service/district/create-district", { name });
+    const response = await apiClient.post("/location-service/admin/create-district", { name });
     return response.data;
   } catch (error) {
     console.error('Error fetching districts:', error);
@@ -93,7 +93,7 @@ export const addDistrict = async (name: string) => {
 
 export const getDistricts = async () => {
   try {
-    const response = await apiClient.get("/location-service/district/districts-with-servic-areas");
+    const response = await apiClient.get("/location-service/admin/districts-with-servic-areas");
     return response.data;
   } catch (error) {
     console.error('Error fetching districts:', error);
@@ -103,7 +103,7 @@ export const getDistricts = async () => {
 
 export const updateDistrict = async (districtId: string, name: string) => {
   try {
-    const response = await apiClient.put(`/location-service/district/update-district/${districtId}`, { name });
+    const response = await apiClient.put(`/location-service/admin/update-district/${districtId}`, { name });
     return response.data;
   } catch (error) {
     console.error('Error updating district:', error);
@@ -113,7 +113,7 @@ export const updateDistrict = async (districtId: string, name: string) => {
 
 export const deleteDistrict = async (districtId: string) => {
   try {
-    const response = await apiClient.put(`/location-service/district/delete-district/${districtId}`);
+    const response = await apiClient.put(`/location-service/admin/delete-district/${districtId}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting district:', error);
@@ -121,3 +121,22 @@ export const deleteDistrict = async (districtId: string) => {
   }
 }
 
+export const addServiceArea = async (serviceAreaData: object) => {
+  try {
+    const response = await apiClient.post("/location-service/admin/create-service-area", serviceAreaData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding service area:', error);
+    throw new Error('Failed to add service area.');
+  }
+}
+
+export const updateServiceArea = async (serviceAreaId: string, serviceAreaData: object) => {
+  try {
+    const response = await apiClient.put(`/location-service/admin/update-service-area/${serviceAreaId}`, serviceAreaData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating service area:', error);
+    throw new Error('Failed to update service area.');
+  }
+}

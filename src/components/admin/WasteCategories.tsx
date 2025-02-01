@@ -262,7 +262,7 @@ const WasteCategories: React.FC = () => {
             <div className="overflow-x-auto">
               {filteredWastes.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
-                  No waste categories found
+                  No waste categories found.
                 </div>
               ) : (
                 <table className="w-full">

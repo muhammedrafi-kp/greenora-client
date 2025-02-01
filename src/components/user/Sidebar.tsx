@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { FaUser, FaHistory, FaAddressCard, FaBell, FaLock, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaClipboardList ,FaWallet,  FaAddressCard, FaBell, FaLock, FaSignOutAlt } from 'react-icons/fa';
+import { TbCoinRupeeFilled  } from "react-icons/tb";
 import { MdPayment } from 'react-icons/md';
 import { Camera } from 'lucide-react';
 import { getUserData, uploadProfileImage } from "../../services/userService";
@@ -147,8 +148,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabClick }) => {
         <nav className="mt-4 flex lg:justify-center flex-col gap-2">
           {[
             { id: 'account', icon: <FaUser />, label: 'Profile' },
-            { id: 'history', icon: <FaHistory />, label: 'Collection History' },
-            { id: 'address', icon: <FaAddressCard />, label: 'Addresses' },
+            { id: 'history', icon: <FaClipboardList  />, label: 'Collection History' },
+            { id: 'wallet', icon: <FaWallet  />, label: 'Wallet' },
+            // { id: 'address', icon: <FaAddressCard />, label: 'Addresses' },
+            { id: 'charges', icon: <TbCoinRupeeFilled />, label: 'Charges' },
             { id: 'payments', icon: <MdPayment />, label: 'Payments' },
             { id: 'notifications', icon: <FaBell />, label: 'Notifications' },
             { id: 'security', icon: <FaLock />, label: 'Security' },

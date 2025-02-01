@@ -30,10 +30,12 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
         setIsLoading(true);
         try {
             const response = await getUserData();
-            setUserData(response.data);
+            if(response.success){
+                setUserData(response.data);
+                console.log(response.data);
+            }
         } catch (error) {
             console.error("Failed to fetch user data", error);
-            // toast.error('Failed to load profile data');
         } finally {
             setIsLoading(false);
         }

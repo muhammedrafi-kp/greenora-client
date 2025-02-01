@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { FaArrowCircleLeft } from 'react-icons/fa';
 import Sidebar from './Sidebar';
 import ProfileSection from './ProfileSection';
 import ChangePassword from './ChangePassword';
-
+import Charges from './Charges';
+import AddressSection from './AddressSection';
+import Notifications from './Notifications';
+import Wallet from './Wallet';
+import CollectionHistory from './CollectionHistory';
 // import HistorySection from './sections/HistorySection';
-// import AddressSection from './sections/AddressSection';
 // import PaymentSection from './sections/PaymentSection';
 // import NotificationSection from './sections/NotificationSection';
 // import SecuritySection from './sections/SecuritySection';
@@ -37,10 +40,13 @@ const Account: React.FC = () => {
             case 'account':
                 return <ProfileSection onChangePassword={() => setIsChangingPassword(true)} />;
             // case 'history': return <HistorySection />;
-            // case 'address': return <AddressSection />;
+            case 'address': return <AddressSection />;
             // case 'payments': return <PaymentSection />;
-            // case 'notifications': return <NotificationSection />;
+            case 'notifications': return <Notifications />;
             // case 'security': return <SecuritySection />;
+            case 'charges': return <Charges />;
+            case 'wallet': return <Wallet />;
+            case 'history': return <CollectionHistory />;
             default: return null;
         }
     };

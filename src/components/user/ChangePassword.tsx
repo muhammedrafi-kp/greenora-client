@@ -11,7 +11,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onCancel }) => {
         <div >
             <form className="space-y-6">
                 <span className="flex items-center gap-2 lg:text-lg xs:text-base text-sm sm:text-left text-center font-semibold mb-6" >
-                <Lock className="w-4 h-4"  />
+                {/* <Lock className="w-4 h-4"  /> */}
                 <h2 >Change Password</h2>
 
                 </span>
