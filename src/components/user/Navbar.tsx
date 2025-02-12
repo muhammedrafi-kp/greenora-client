@@ -587,7 +587,7 @@ const NavBar: React.FC = () => {
                         ) : (
                             <button
                                 onClick={openLoginModal}
-                                className="bg-green-700 hover:bg-green-900 text-white px-6 py-2 rounded-full transition-colors duration-300"
+                                className="bg-green-800 hover:bg-green-900 text-white px-6 py-2 rounded-full transition-colors duration-300"
                             >
                                 Sign In
                             </button>

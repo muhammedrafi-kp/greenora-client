@@ -638,7 +638,7 @@ const PickupRequest = () => {
         }}
         className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg text-sm font-medium"
       >
-        Book Another Pickup
+        Schedule Another Pickup
       </button>
     </div>
   )
@@ -647,7 +647,7 @@ const PickupRequest = () => {
     <div className="bg-gray-100 mx-auto min-h-screen py-16">
       <div className="max-w-3xl mx-auto mt-10 px-4">
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h1 className="text-2xl font-bold text-gray-800 mb-8 text-center">Book a Pickup</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-8 text-center">Schedule a Pickup</h1>
           {currentStep > 0 && <StepperWithLines />}
 
           {currentStep === 0 && renderPickupTypeSelection()}

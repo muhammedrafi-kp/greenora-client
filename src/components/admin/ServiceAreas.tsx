@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, X } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, X, LocateFixed } from 'lucide-react';
 import Modal from '../common/Modal';
 import { keralaDistricts } from "../../data/districts";
 import { addDistrict, getDistricts, updateDistrict, deleteDistrict, addServiceArea } from '../../services/adminService';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 
 interface IServiceArea {
@@ -11,7 +12,7 @@ interface IServiceArea {
   name: string;
   center: { type: string; coordinates: [number, number] };
   location: string;
-  radius: number;
+  postalCodes: string[];
   capacity: number;
   serviceDays: string[];
   collectors: string[];
@@ -37,7 +38,7 @@ interface IFormInput {
     coordinates: [number, number];
   };
   location: string;
-  radius: string;
+  postalCodes: string[];
   capacity: string;
   serviceDays: string[];
 }
@@ -64,13 +65,15 @@ const ServiceAreas: React.FC = () => {
     districtId: '',
     capacity: '',
     location: '',
-    radius: '',
+    postalCodes: [],
     center: {
       type: 'Point',
       coordinates: [0, 0]
     },
     serviceDays: []
   });
+
+  const [newPostalCode, setNewPostalCode] = useState('');
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -132,7 +135,7 @@ const ServiceAreas: React.FC = () => {
   const handleAddArea = (district: any) => {
     setModalType('add-area');
     setSelectedDistrict(district);
-    setFormInput({ districtId: district._id, name: '', serviceDays: [], capacity: '', location: '', radius: '', center: { type: 'Point', coordinates: [0, 0] } });
+    setFormInput({ districtId: district._id, name: '', serviceDays: [], capacity: '', location: '', postalCodes: [], center: { type: 'Point', coordinates: [0, 0] } });
     setShowModal(true);
   };
 
@@ -146,8 +149,6 @@ const ServiceAreas: React.FC = () => {
       serviceDays: area.serviceDays,
       capacity: area.capacity.toString(),
       location: area.location,
-      radius: area.radius.toString(),
-      center: area.center,
     });
     setShowModal(true);
   };
@@ -231,7 +232,7 @@ const ServiceAreas: React.FC = () => {
     setShowModal(false);
     setSelectedDistrict(null);
     setSelectedArea(null);
-    setFormInput({ districtId: '', name: '', serviceDays: [], capacity: '', location: '', radius: '', center: { type: 'Point', coordinates: [0, 0] } });
+    setFormInput({ districtId: '', name: '', serviceDays: [], capacity: '', location: '', postalCodes: [], center: { type: 'Point', coordinates: [0, 0] } });
   };
 
 
@@ -244,13 +245,17 @@ const ServiceAreas: React.FC = () => {
 
     setIsLoadingSuggestions(true);
     try {
-      const response = await fetch(
-        `https://api.locationiq.com/v1/autocomplete?key=pk.99d62c10fe5ff3c54c5d6e83671878ec&q=${encodeURIComponent(
-          query
-        )}&limit=5&dedupe=1`
+      const response = await axios.get(
+        `https://api.locationiq.com/v1/autocomplete`, {
+          params: {
+            key: 'pk.99d62c10fe5ff3c54c5d6e83671878ec',
+            q: query,
+            limit: 5,
+            dedupe: 1
+          }
+        }
       );
-      const data = await response.json();
-      setLocationSuggestions(data);
+      setLocationSuggestions(response.data);
     } catch (error) {
       console.error('Error fetching location suggestions:', error);
       setLocationSuggestions([]);
@@ -282,6 +287,58 @@ const ServiceAreas: React.FC = () => {
     setShowSuggestions(false);
   };
 
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          try {
+            // Perform reverse geocoding using LocationIQ API
+            const response = await axios.get(
+              `https://api.locationiq.com/v1/reverse`, {
+              params: {
+                key: 'pk.99d62c10fe5ff3c54c5d6e83671878ec',
+                lat: latitude,
+                lon: longitude,
+                format: 'json',
+                'accept-language': 'en'
+              }
+            });
+
+            const locationData = response.data;
+            
+            setFormInput({
+              ...formInput,
+              center: {
+                type: 'Point',
+                coordinates: [latitude, longitude]
+              },
+              location: locationData.display_name
+            });
+            
+            setShowSuggestions(false);
+          } catch (error) {
+            console.error('Error getting location details:', error);
+            setFormInput({
+              ...formInput,
+              center: {
+                type: 'Point',
+                coordinates: [latitude, longitude]
+              },
+              location: `${latitude}, ${longitude}`
+            });
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          toast.error('Unable to get current location');
+        }
+      );
+    } else {
+      toast.error('Geolocation is not supported by your browser');
+    }
+  };
 
   if (loading) {
     return (
@@ -381,7 +438,7 @@ const ServiceAreas: React.FC = () => {
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Service Days</th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Daily Capacity</th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Location</th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Radius (km)</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Postal Codes</th>
                             <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">Actions</th>
                           </tr>
                         </thead>
@@ -394,7 +451,9 @@ const ServiceAreas: React.FC = () => {
                               </td>
                               <td className="px-6 py-3 text-gray-600">{area.capacity}</td>
                               <td className="px-6 py-3 text-gray-600">{area.location}</td>
-                              <td className="px-6 py-3 text-gray-600">{area.radius}</td>
+                              <td className="px-6 py-3 text-gray-600">
+                                {area.postalCodes.join(', ')}
+                              </td>
                               <td className="px-6 py-3 text-right">
                                 <div className="flex gap-2 justify-end">
                                   <button
@@ -513,74 +572,133 @@ const ServiceAreas: React.FC = () => {
                 </div>
 
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Service Postal Codes
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newPostalCode}
+                        onChange={(e) => setNewPostalCode(e.target.value)}
+                        placeholder="Enter postal code"
+                        className="flex-1 p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newPostalCode && !formInput.postalCodes.includes(newPostalCode)) {
+                            setFormInput({
+                              ...formInput,
+                              postalCodes: [...formInput.postalCodes, newPostalCode]
+                            });
+                            setNewPostalCode('');
+                          }
+                        }}
+                        className="px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {formInput.postalCodes.map((code, index) => (
+                        <div 
+                          key={index}
+                          className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg"
+                        >
+                          <span className="text-sm">{code}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormInput({
+                                ...formInput,
+                                postalCodes: formInput.postalCodes.filter((_, i) => i !== index)
+                              });
+                            }}
+                            className="text-gray-500 hover:text-red-500"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                  </div>
+                </div>
+
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="location"
-                      value={formInput.location}
-                      onChange={(e) => {
-                        setFormInput({ ...formInput, location: e.target.value });
-                        setShowSuggestions(true);
-                      }}
-                      onFocus={() => setShowSuggestions(true)}
-                      placeholder="Search for a location..."
-                      className="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
-                    />
-                    <MapPin className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                    {formInput.location && ( // Show the X button only if there's input
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormInput({ ...formInput, location: '', center: { type: 'Point', coordinates: [0, 0] } });
-                          setLocationSuggestions([]);
-                          setShowSuggestions(false);
+                  <div className="flex gap-2">
+                    <div className="relative flex-[8]">
+                      <input
+                        type="text"
+                        name="location"
+                        value={formInput.location}
+                        onChange={(e) => {
+                          setFormInput({ ...formInput, location: e.target.value });
+                          setShowSuggestions(true);
                         }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <X className="w-5 h-5" /> {/* Use the X icon from Lucide */}
-                      </button>
-                    )}
-                  </div>
-
-                  {showSuggestions && formInput.location && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-                      {isLoadingSuggestions ? (
-                        <div className="p-4 text-center text-gray-500">Loading...</div>
-                      ) : locationSuggestions.length > 0 ? (
-                        <ul className="max-h-60 overflow-auto">
-                          {locationSuggestions.map((suggestion, index) => (
-                            <li
-                              key={index}
-                              className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-start gap-2"
-                              onClick={() => handleLocationSelect(suggestion)}
-                            >
-                              <MapPin className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{suggestion.display_name}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="p-4 text-center text-gray-500">No results found</div>
+                        onFocus={() => setShowSuggestions(true)}
+                        placeholder="Search for a location"
+                        className="w-full p-2 pl-10 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
+                      />
+                      <MapPin className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                      {formInput.location && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormInput({ 
+                              ...formInput, 
+                              location: '', 
+                              center: { type: 'Point', coordinates: [0, 0] } 
+                            });
+                            setLocationSuggestions([]);
+                            setShowSuggestions(false);
+                          }}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+                        >
+                          <X className="w-4 h-4 text-gray-400" />
+                        </button>
+                      )}
+                      {showSuggestions && formInput.location && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                          {isLoadingSuggestions ? (
+                            <div className="p-4 text-center text-gray-500">Loading...</div>
+                          ) : locationSuggestions.length > 0 ? (
+                            <ul className="max-h-60 overflow-auto">
+                              {locationSuggestions.map((suggestion, index) => (
+                                <li
+                                  key={index}
+                                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-start gap-2"
+                                  onClick={() => handleLocationSelect(suggestion)}
+                                >
+                                  <MapPin className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
+                                  <span className="text-sm text-gray-700">{suggestion.display_name}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="p-4 text-center text-gray-500">No results found</div>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={handleGetCurrentLocation}
+                      className="flex-1 flex items-center justify-center p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                      title="Use current location"
+                    >
+                      <LocateFixed className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Service Radius (km)</label>
-                  <input
-                    type="number"
-                    name="radius"
-                    value={formInput.radius}
-                    onChange={(e) => setFormInput({ ...formInput, radius: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
-                  />
-                </div>
+              
               </>
             )}
           </div>

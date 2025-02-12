@@ -349,7 +349,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                             )}
 
                             <button
-                                className="w-full bg-green-900 hover:bg-green-800 text-white font-medium mt-8 xs:py-2 py-1 md:py-3 rounded-lg disabled:opacity-50"
+                                className="w-full bg-green-800 hover:bg-green-900 text-white font-medium mt-8 xs:py-2 py-1 md:py-3 rounded-lg disabled:opacity-50"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}

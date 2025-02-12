@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Info } from "lucide-react";
-import { getCategories } from '../../services/userService';
+import { getCategories } from '../../../services/userService';
 import { TbCoinRupeeFilled } from "react-icons/tb";
 
 export interface IWasteCategory {

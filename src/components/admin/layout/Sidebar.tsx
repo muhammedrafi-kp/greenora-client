@@ -33,8 +33,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         setActivePath(location.pathname);
     }, [location]);
 
-
-
     return (
         <>
             <div className={`

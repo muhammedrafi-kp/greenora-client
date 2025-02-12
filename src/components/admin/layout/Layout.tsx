@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Breadcrumbs from '../Breadcrumbs';
+import { Outlet } from 'react-router-dom';
 
-interface DashboardLayoutProps {
+interface LayoutProps {
     children: React.ReactNode;
 }
 
-const Layout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {

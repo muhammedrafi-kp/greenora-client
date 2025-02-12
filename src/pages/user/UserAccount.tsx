@@ -1,12 +1,14 @@
 import React from 'react'
 import NavBar from '../../components/user/Navbar'
-import Account from '../../components/user/Account'
+import AccountLayout from '../../components/user/AccountLayout/AccountLayout'
 
 const UserAccount: React.FC = () => {
     return (
         <>
             <NavBar />
-            <Account />
+            {/* <Account> */}
+                {/* <Activity /> */}
+            <AccountLayout/>
         </>
     )
 }

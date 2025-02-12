@@ -1,12 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-// import adminAuthReducer from "./adminAuthSlice";
 import authReducer from "./authSlice";
-// import collectorAuthReducer from "./collectorAuthSlice";
+import pickupReducer from "./pickupSlice";
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
+    pickup: pickupReducer,
   },
+
 });
 
 export default store;

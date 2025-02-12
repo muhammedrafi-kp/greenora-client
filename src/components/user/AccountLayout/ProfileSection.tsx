@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Mail, Phone, Lock, Camera } from 'lucide-react';
-import { getUserData, updateUserData } from "../../services/userService";
-import { IUserData } from '../../interfaces/interfaces';
-import ProfileSkeleton from './skeltons/ProfileSkeleton';
+import { getUserData, updateUserData } from "../../../services/userService";
+import { IUserData } from '../../../interfaces/interfaces';
+import ProfileSkeleton from '../skeltons/ProfileSkeleton';
 import toast from 'react-hot-toast';
 
-interface ProfileSectionProps {
-    onChangePassword: () => void;
-}
+// interface ProfileSectionProps {
+//     onChangePassword: () => void;
+// }
 
 interface FormErrors {
     name?: string;
     phone?: string;
 }
 
-const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => {
+// const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => {
+    const ProfileSection: React.FC = () => {
+
     const [userData, setUserData] = useState<IUserData | null>(null);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -148,7 +150,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
         try {
             const response = await updateUserData(formData);
             if (response.success) {
-                toast.success("Profile updated successfully!");
+                toast.success("Profile updated.");
                 setIsEditing(false);
                 await fetchUserData();
             }
@@ -258,7 +260,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => 
                 <div className="pt-4">
                     <button
                         type="button"
-                        onClick={onChangePassword}
+                        // onClick={onChangePassword}
                         className="flex items-center gap-2 px-4 xs:py-2 py-1 xs:text-base text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                     >
                         <Lock className="xs:w-4 xs:h-4 w-3 h-3" />

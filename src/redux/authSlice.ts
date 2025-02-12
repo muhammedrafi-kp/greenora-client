@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface SliceState {
+interface AuthSliceState {
     isLoggedIn: boolean;
     token: string;
     role: string;
 }
 
-const INITIAL_STATE: SliceState = {
+const INITIAL_STATE: AuthSliceState = {
     isLoggedIn: !!localStorage.getItem('accessToken'),
     token: localStorage.getItem('accessToken') || '',
     role: localStorage.getItem('role') || '',
