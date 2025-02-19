@@ -126,3 +126,55 @@ export const checkPinCode = async (serviceAreaId: string, pinCode: string) => {
         };
     }
 }
+
+export const calculatePickupCost = async (items: Array<object>) => {
+    try {
+        console.log("items:", items);
+        const response = await apiClient.post('/request-service/category/calculate-cost', { items });
+        return response.data;
+    } catch (error) {
+        console.error("Error calculating pickup cost:", error);
+        throw error;
+    }
+}
+
+export const initiatePayment = async (collectionData: any) => {
+    try {
+        const response = await apiClient.post('/payment-service/collection-payment/initiate-payment', collectionData);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating payment order:", error);
+        throw error;
+    }
+}
+
+export const verifyPayment = async (paymentData: any) => {
+    try {
+        const response = await apiClient.post('/payment-service/collection-payment/verify-payment', paymentData);
+        return response.data;
+    } catch (error) {
+        console.error("Error verifying payment:", error);
+        throw error;
+    }
+}
+
+// export const createPickupRequest = async (collectionData: object) => {
+//     try {
+//         const response = await apiClient.post('/request-service/collection', collectionData);
+//         return response.data;
+//     } catch (error) {
+//         console.error("Error creating pickup request:", error);
+//         throw error;
+//     }
+// }
+
+export const getCollectionHistory = async () => {
+    try {
+        const response = await apiClient.get('/request-service/collection/history');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching collection histories:", error);
+        throw error;
+    }
+}
+

@@ -5,7 +5,7 @@ import {
 import { ChangePassword } from './ChangePassword';
 import ProfileSkeleton from '../collector/skeltons/ProfileSkelton';
 import { ICollectorData } from '../../interfaces/interfaces';
-import { getCollectorData, updateCollectorData } from "../../services/collectorService";
+import { getCollectorData, updateCollectorData, getDistricts, getServiceAreas } from "../../services/collectorService";
 import toast from 'react-hot-toast';
 
 interface ProfileProps {
@@ -19,6 +19,17 @@ interface FormErrors {
   district?: string;
 }
 
+interface IDistrict {
+  _id: string;
+  name: string;
+}
+
+interface IServiceArea {
+  _id: string;
+  name: string;
+  districtId: string;
+}
+
 const ProfileCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="bg-white rounded-lg border shadow-sm">
     <div className="md:p-6 xs:p-4 p-3 border-b xs:text-start text-center">
@@ -30,8 +41,11 @@ const ProfileCard = ({ title, children }: { title: string; children: React.React
   </div>
 );
 
-const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
+const Profile: React.FC<ProfileProps> = () => {
   const [collectorData, setCollectorData] = useState<ICollectorData | null>(null);
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -54,7 +68,7 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
     switch (name) {
       case 'name':
         if (!value.trim()) return "Full name is required";
-        if (/[^a-zA-Z\s]/.test(value)) return "Full name cannot contain special characters";
+        // if (/[^a-zA-Z\s]/.test(value)) return "Full name cannot contain special characters";
         break;
       case 'phone':
         if (!value.trim()) return "Phone number is required";
@@ -94,16 +108,67 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
     fetchCollectorData();
   }, []);
 
+  useEffect(() => {
+    if (isEditing) {
+      fetchDistricts();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (selectedDistrict) {
+      fetchServiceAreas(selectedDistrict);
+    }
+  }, [selectedDistrict]);
+
   const fetchCollectorData = async () => {
     setLoading(true);
     try {
       const response = await getCollectorData();
-      setCollectorData(response.data);
+      console.log("response :", response);
+      if(response.success){
+        setCollectorData(response.data);
+      }
+      else{
+        console.error(response.message);
+      }
     } catch (error) {
       console.error("Failed to fetch collector data", error);
       toast.error('Failed to load profile data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDistricts = async () => {
+    try {
+      const response = await getDistricts();
+      console.log("response :", response);
+      if (response.success) {
+        setDistricts(response.data);
+        if (collectorData?.district) {
+          setSelectedDistrict(collectorData.district);
+        }
+      } else {
+        toast.error('Failed to fetch districts');
+      }
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+      toast.error('Failed to load districts');
+    }
+  };
+
+  const fetchServiceAreas = async (districtId: string) => {
+    try {
+      const response = await getServiceAreas(districtId);
+      console.log("response :", response);
+      if (response.success) {
+        setServiceAreas(response.data);
+      } else {
+        toast.error('Failed to fetch service areas');
+      }
+    } catch (error) {
+      console.error('Error fetching service areas:', error);
+      toast.error('Failed to load service areas');
     }
   };
 
@@ -159,8 +224,33 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
     }
   };
 
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setSelectedDistrict(value);
+    setCollectorData(prev => prev ? { ...prev, district: value, serviceArea: '' } : null);
+    setServiceAreas([]);
+  };
+
+  const handleServiceAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setCollectorData(prev => prev ? { ...prev, serviceArea: value } : null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Add validation for ID proof images
+    if ((idFrontImage || collectorData?.idProofFrontUrl) && 
+        !(idBackImage || collectorData?.idProofBackUrl)) {
+      toast.error("Please upload both sides of your ID proof");
+      return;
+    }
+    if (!(idFrontImage || collectorData?.idProofFrontUrl) && 
+        (idBackImage || collectorData?.idProofBackUrl)) {
+      toast.error("Please upload both sides of your ID proof");
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -209,10 +299,16 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
     }
 
     try {
-      await updateCollectorData(formData);
-      toast.success("Profile updated successfully!");
-      setIsEditing(false);
-      await fetchCollectorData();
+      console.log("formData :", formData);
+      const response = await updateCollectorData(formData);
+      console.log("response :", response);
+      if (response.success) {
+        toast.success("Profile updated");
+        setIsEditing(false);
+        await fetchCollectorData();
+      } else {
+        toast.error("Failed to update profile.");
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error('Failed to update profile. Please try again.');
@@ -240,10 +336,15 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
             <form className="space-y-6" onSubmit={handleSubmit}>
 
               <div className="flex xs:justify-end justify-center items-center">
-                {collectorData?.isVerified ? (
+                {collectorData?.verificationStatus === "approved" ? (
                   <div className="flex items-center text-green-600 gap-1">
                     <CheckCircle className="xs:w-4 w-2 xs:h-4 h-2" />
                     <span className="xs:text-sm text-xs">Verified</span>
+                  </div>
+                ) : collectorData?.verificationStatus === "rejected" ? (
+                  <div className="flex items-center text-red-600 gap-1">
+                    <AlertCircle className="xs:w-4 w-2 xs:h-4 h-2" />
+                    <span className="xs:text-sm text-xs">Verification Rejected</span>
                   </div>
                 ) : (
                   <div className="flex items-center text-yellow-600 gap-1">
@@ -286,14 +387,30 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                 </h2>
                 <span className="xs:text-sm text-xs text-gray-500">ID: 162735</span>
 
-                {!collectorData?.isVerified && (
+                {collectorData?.verificationStatus === "pending" && (
                   <div className="mt-4 text-center">
-                    <p className="xs:text-sm text-xs text-yellow-600 mb-2">
-                      To verify your profile, add your ID proof and submit for review.
-                    </p>
-                    
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="xs:text-sm text-xs text-yellow-600">
+                        To verify your profile, add your ID proof and submit for review.
+                      </p>
+                    </div>
                   </div>
                 )}
+                {collectorData?.verificationStatus === "requested" && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p className="xs:text-sm text-xs text-yellow-600">
+                      Your profile verification has been requested. Please wait for approval.
+                    </p>
+                  </div>
+                )}
+                {collectorData?.verificationStatus === "rejected" && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="xs:text-sm text-xs text-red-600">
+                      Your profile verification has been rejected. Please contact support.
+                    </p>
+                  </div>
+                )}
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -363,15 +480,28 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                       <MapPin className="w-4 h-4" /> District
                     </span>
                   </label>
-                  <input
-                    type="text"
-                    name="district"
-                    value={collectorData?.district || ''}
-                    disabled={!isEditing}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.district ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
-                  />
+                  {isEditing ? (
+                    <select
+                      name="district"
+                      value={collectorData?.district || ''}
+                      onChange={handleDistrictChange}
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
+                    >
+                      <option value="">Select District</option>
+                      {districts.map((district) => (
+                        <option key={district._id} value={district._id}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={collectorData?.district || 'N/A'}
+                      disabled
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
+                    />
+                  )}
                   {errors.district && (
                     <p className="mt-1 text-xs text-red-700">{errors.district}</p>
                   )}
@@ -385,15 +515,29 @@ const Profile: React.FC<ProfileProps> = ({ isVerified = false }) => {
                       <MapPin className="w-4 h-4" /> Service Area
                     </span>
                   </label>
-                  <input
-                    type="text"
-                    name="serviceArea"
-                    value={collectorData?.serviceArea || ''}
-                    disabled={!isEditing}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.serviceArea ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
-                  />
+                  {isEditing ? (
+                    <select
+                      name="serviceArea"
+                      value={collectorData?.serviceArea || ''}
+                      onChange={handleServiceAreaChange}
+                      disabled={!selectedDistrict}
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
+                    >
+                      <option value="">Select Service Area</option>
+                      {serviceAreas.map((area) => (
+                        <option key={area._id} value={area._id}>
+                          {area.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={collectorData?.serviceArea || 'N/A'}
+                      disabled
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
+                    />
+                  )}
                   {errors.serviceArea && (
                     <p className="mt-1 text-xs text-red-700">{errors.serviceArea}</p>
                   )}

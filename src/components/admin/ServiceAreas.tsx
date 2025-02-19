@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, X, LocateFixed } from 'lucide-react';
 import Modal from '../common/Modal';
 import { keralaDistricts } from "../../data/districts";
-import { addDistrict, getDistricts, updateDistrict, deleteDistrict, addServiceArea } from '../../services/adminService';
+import { addDistrict, getDistrictsWithServiceAreas, updateDistrict, deleteDistrict, addServiceArea } from '../../services/adminService';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -77,10 +77,19 @@ const ServiceAreas: React.FC = () => {
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+  // Add error state to track field-specific errors
+  const [errors, setErrors] = useState<{
+    name?: string;
+    serviceDays?: string;
+    capacity?: string;
+    location?: string;
+    postalCodes?: string;
+  }>({});
+
   const fetchDistricts = async () => {
     try {
       setLoading(true);
-      const response = await getDistricts();
+      const response = await getDistrictsWithServiceAreas();
       console.log("response :", response);
       if (response.success) {
         setDistricts(response.data);
@@ -160,7 +169,50 @@ const ServiceAreas: React.FC = () => {
     setShowModal(true);
   };
 
+  const validateForm = () => {
+    const newErrors: any = {};
+
+    // For district operations
+    if ((modalType === 'add-district' || modalType === 'edit-district') && !district) {
+      newErrors.district = 'Please select a district';
+    }
+
+    // For service area operations
+    if (modalType === 'add-area' || modalType === 'edit-area') {
+      if (!formInput.name.trim()) {
+        newErrors.name = 'Area name is required';
+      }
+
+      if (!formInput.serviceDays.length) {
+        newErrors.serviceDays = 'Please select at least one service day';
+      }
+
+      if (!formInput.capacity || parseInt(formInput.capacity) <= 0) {
+        newErrors.capacity = 'Please enter a valid capacity (greater than 0)';
+      }
+
+      if (!formInput.location.trim()) {
+        newErrors.location = 'Location is required';
+      }
+
+      if (!formInput.postalCodes.length) {
+        newErrors.postalCodes = 'Please add at least one postal code';
+      }
+
+      if (formInput.center.coordinates[0] === 0 && formInput.center.coordinates[1] === 0) {
+        newErrors.location = 'Please select a valid location from the suggestions or use current location';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     if (modalType === 'add-district') {
       console.log("district :", district);
       const response = await addDistrict(district);
@@ -234,8 +286,6 @@ const ServiceAreas: React.FC = () => {
     setSelectedArea(null);
     setFormInput({ districtId: '', name: '', serviceDays: [], capacity: '', location: '', postalCodes: [], center: { type: 'Point', coordinates: [0, 0] } });
   };
-
-
 
   const fetchLocationSuggestions = async (query: string) => {
     if (!query) {
@@ -338,6 +388,32 @@ const ServiceAreas: React.FC = () => {
     } else {
       toast.error('Geolocation is not supported by your browser');
     }
+  };
+
+  // Add validation for postal code input
+  const handleAddPostalCode = () => {
+    const postalCodeRegex = /^\d{6}$/;  // Indian postal code format
+    
+    if (!newPostalCode.trim()) {
+      toast.error('Please enter a postal code');
+      return;
+    }
+
+    if (!postalCodeRegex.test(newPostalCode)) {
+      toast.error('Please enter a valid 6-digit postal code');
+      return;
+    }
+
+    if (formInput.postalCodes.includes(newPostalCode)) {
+      toast.error('This postal code has already been added');
+      return;
+    }
+
+    setFormInput({
+      ...formInput,
+      postalCodes: [...formInput.postalCodes, newPostalCode]
+    });
+    setNewPostalCode('');
   };
 
   if (loading) {
@@ -534,9 +610,17 @@ const ServiceAreas: React.FC = () => {
                     type="text"
                     name="name"
                     value={formInput.name}
-                    onChange={(e) => setFormInput({ ...formInput, name: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
+                    onChange={(e) => {
+                      setFormInput({ ...formInput, name: e.target.value });
+                      if (errors.name) {
+                        setErrors({ ...errors, name: undefined });
+                      }
+                    }}
+                    className={`w-full p-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Service Days</label>
@@ -552,6 +636,9 @@ const ServiceAreas: React.FC = () => {
                               ? [...formInput.serviceDays, day]
                               : formInput.serviceDays.filter(d => d !== day);
                             setFormInput({ ...formInput, serviceDays: updatedDays });
+                            if (errors.serviceDays) {
+                              setErrors({ ...errors, serviceDays: undefined });
+                            }
                           }}
                           className="form-checkbox h-4 w-4 text-blue-950"
                         />
@@ -559,6 +646,9 @@ const ServiceAreas: React.FC = () => {
                       </label>
                     ))}
                   </div>
+                  {errors.serviceDays && (
+                    <p className="mt-1 text-sm text-red-600">{errors.serviceDays}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Daily Capacity</label>
@@ -566,11 +656,18 @@ const ServiceAreas: React.FC = () => {
                     type="number"
                     name="capacity"
                     value={formInput.capacity}
-                    onChange={(e) => setFormInput({ ...formInput, capacity: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
+                    onChange={(e) => {
+                      setFormInput({ ...formInput, capacity: e.target.value });
+                      if (errors.capacity) {
+                        setErrors({ ...errors, capacity: undefined });
+                      }
+                    }}
+                    className={`w-full p-2 border ${errors.capacity ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
                   />
+                  {errors.capacity && (
+                    <p className="mt-1 text-sm text-red-600">{errors.capacity}</p>
+                  )}
                 </div>
-
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -581,27 +678,26 @@ const ServiceAreas: React.FC = () => {
                       <input
                         type="text"
                         value={newPostalCode}
-                        onChange={(e) => setNewPostalCode(e.target.value)}
+                        onChange={(e) => {
+                          setNewPostalCode(e.target.value);
+                          if (errors.postalCodes) {
+                            setErrors({ ...errors, postalCodes: undefined });
+                          }
+                        }}
                         placeholder="Enter postal code"
-                        className="flex-1 p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
+                        className={`flex-1 p-2 text-sm border ${errors.postalCodes ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
                       />
                       <button
                         type="button"
-                        onClick={() => {
-                          if (newPostalCode && !formInput.postalCodes.includes(newPostalCode)) {
-                            setFormInput({
-                              ...formInput,
-                              postalCodes: [...formInput.postalCodes, newPostalCode]
-                            });
-                            setNewPostalCode('');
-                          }
-                        }}
+                        onClick={handleAddPostalCode}
                         className="px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors"
                       >
                         Add
                       </button>
                     </div>
-                    
+                    {errors.postalCodes && (
+                      <p className="mt-1 text-sm text-red-600">{errors.postalCodes}</p>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       {formInput.postalCodes.map((code, index) => (
                         <div 
@@ -624,7 +720,6 @@ const ServiceAreas: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    
                   </div>
                 </div>
 
@@ -641,11 +736,17 @@ const ServiceAreas: React.FC = () => {
                         onChange={(e) => {
                           setFormInput({ ...formInput, location: e.target.value });
                           setShowSuggestions(true);
+                          if (errors.location) {
+                            setErrors({ ...errors, location: undefined });
+                          }
                         }}
                         onFocus={() => setShowSuggestions(true)}
                         placeholder="Search for a location"
-                        className="w-full p-2 pl-10 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none"
+                        className={`w-full p-2 pl-10 pr-10 border ${errors.location ? 'border-red-500' : 'border-gray-300'} rounded-lg text-sm focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
                       />
+                      {errors.location && (
+                        <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                      )}
                       <MapPin className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                       {formInput.location && (
                         <button
@@ -697,8 +798,6 @@ const ServiceAreas: React.FC = () => {
                     </button>
                   </div>
                 </div>
-
-              
               </>
             )}
           </div>

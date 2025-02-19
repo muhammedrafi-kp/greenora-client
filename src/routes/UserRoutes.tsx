@@ -40,17 +40,17 @@ const UserRoutes: React.FC = () => {
                 </Route>
 
                 <Route path='/pricing' element={<UserPricing />} />
-            </Route>
 
-            <Route path='/pickup' element={<UserPickupLayout />}>
-                <Route index element={<UserPickupType />} />
-                <Route path="address" element={<UserPickupAddress />} />
-                <Route path="details" element={<UserPickupDetailsForm />} />
-                <Route path="review" element={<UserPickupReview />} />
-                <Route path="payment" element={<UserPickupPayment />} />
-                <Route path="success" element={<UserPickupSuccess />} />
-            </Route>
 
+                <Route path='/pickup' element={<UserPickupLayout />}>
+                    <Route index element={<UserPickupType />} />
+                    <Route path="address" element={<UserPickupAddress />} />
+                    <Route path="details" element={<UserPickupDetailsForm />} />
+                    <Route path="review" element={<UserPickupReview />} />
+                    <Route path="payment" element={<UserPickupPayment />} />
+                </Route>
+                <Route path="/pickup/success" element={<UserPickupSuccess />} />
+            </Route>
         </Routes>
     )
 }

@@ -201,16 +201,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                             <div
                                 className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
-                                ${activePath === '/admin/requests' ? 'bg-[#173C52] text-white' : ''}`}
+                                ${activePath === '/admin/collection-histories' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
-                                    setActivePath('/admin/requests');
-                                    navigate('/admin/requests');
+                                    setActivePath('/admin/collection-histories');
+                                    navigate('/admin/collection-histories');
                                 }}
                             >
                                 <span className="group-hover:scale-110 transition-transform duration-200">
                                     <FaClipboardList />
                                 </span>
-                                <span>Requests</span>
+                                <span>Collection Requests</span>
                             </div>
                         </li>
                         <li>

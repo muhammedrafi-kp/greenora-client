@@ -30,8 +30,8 @@ const authSlice = createSlice({
             state.isLoggedIn = false;
             state.token = '';
             state.role = '';
-        },
-    },
+        }
+    }
 });
 
 export const { loginSuccess, Logout } = authSlice.actions;

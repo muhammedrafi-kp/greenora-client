@@ -1,54 +1,28 @@
 import { useState } from "react"
-import { ChevronUp, ChevronDown,Info  } from "lucide-react"
+import { ChevronUp, ChevronDown,Info  } from "lucide-react";
+
+export interface ICategory {
+  _id: string;
+  name: string;
+  type: "waste" | "scrap";
+  description: string;
+  rate: number;
+}
 
 interface PriceTableProps {
   type: "waste" | "scrap"
+  categories: ICategory[]
 }
 
-interface PriceItem {
-  name: string
-  price: string
-}
 
-const PriceTable: React.FC<PriceTableProps> = ({ type }) => {
-  const [sortField, setSortField] = useState<"name" | "price">("name")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [selectedRow, setSelectedRow] = useState<number | null>(null)
 
-  const prices: PriceItem[] =
-    type === "waste"
-      ? [
-        { name: "Household Waste", price: "$10/bag" },
-        { name: "Recyclable Waste", price: "$5/bag" },
-        { name: "Green Waste", price: "$8/bag" },
-        { name: "Bulky Items", price: "$20/item" },
-      ]
-      : [
-        { name: "Metal Scrap", price: "$0.50/kg" },
-        { name: "Paper", price: "$0.20/kg" },
-        { name: "Plastic", price: "$0.30/kg" },
-        { name: "Electronics", price: "$1.00/kg" },
-      ]
+const PriceTable: React.FC<PriceTableProps> = ({ categories, type }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  // const [sortField, setSortField] = useState<"name" | "price">("name")
+  // const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  // const [selectedRow, setSelectedRow] = useState<number | null>(null)
 
-  const handleSort = (field: "name" | "price") => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortField(field)
-      setSortDirection("asc")
-    }
-  }
-
-  const sortedPrices = [...prices].sort((a, b) => {
-    const modifier = sortDirection === "asc" ? 1 : -1
-    if (sortField === "name") {
-      return a.name.localeCompare(b.name) * modifier
-    } else {
-      const priceA = parseFloat(a.price.replace(/[^0-9.]/g, ""))
-      const priceB = parseFloat(b.price.replace(/[^0-9.]/g, ""))
-      return (priceA - priceB) * modifier
-    }
-  })
+  const filteredCategories = categories.filter(category => category.type === type);
 
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white ">
@@ -58,39 +32,30 @@ const PriceTable: React.FC<PriceTableProps> = ({ type }) => {
             <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">No.</th>
             <th
               className="py-3 px-4 text-left text-sm font-medium text-gray-500 cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSort("name")}
             >
               <div className="flex items-center gap-2">
                 Name
-                {sortField === "name" && (
-                  sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                )}
               </div>
             </th>
             <th
               className="py-3 px-4 text-left text-sm font-medium text-gray-500 cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSort("price")}
             >
               <div className="flex items-center gap-2">
-                Price
-                {sortField === "price" && (
-                  sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                )}
+                Price (₹)
               </div>
             </th>
           </tr>
         </thead>
         <tbody>
-          {sortedPrices.map((item, index) => (
+          {filteredCategories.map((item, index) => (
             <tr
               key={item.name}
-              className={`border-t transition-colors hover:bg-gray-50 cursor-pointer
-                ${selectedRow === index ? 'bg-green-50' : ''}`}
-              onClick={() => setSelectedRow(index)}
+              className={`border-t transition-colors hover:bg-gray-50 cursor-pointer`}
+              // onClick={() => setSelectedRow(index)}
             >
               <td className="py-3 px-4 text-sm text-gray-600">{index + 1}</td>
               <td className="py-3 px-4 text-sm text-gray-900 font-medium">{item.name}</td>
-              <td className="py-3 px-4 text-sm text-gray-600">{item.price}</td>
+              <td className="py-3 px-4 text-sm text-gray-600">{item.rate}</td>
             </tr>
           ))}
         </tbody>

@@ -269,7 +269,7 @@ const WasteCategories: React.FC = () => {
                   <thead>
                     <tr className="bg-gray-100 border-b border-gray-100">
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Name</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Price (₹/kg)</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Price (₹/bag)</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Description</th>
                       <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">Actions</th>
                     </tr>
@@ -351,7 +351,7 @@ const WasteCategories: React.FC = () => {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹/kg)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹/bag)</label>
               <input
                 type="text"
                 name="rate"

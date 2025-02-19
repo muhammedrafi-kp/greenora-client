@@ -61,12 +61,9 @@ apiClient.interceptors.response.use(
 );
 
 
-/**
- * Instance for unauthenticated requests
- */
 const publicApiClient = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
-    withCredentials: true, // Use if needed for public APIs
+    withCredentials: true, 
 });
 
 export { apiClient, publicApiClient };

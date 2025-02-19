@@ -528,7 +528,7 @@ const NavBar: React.FC = () => {
                                                 ))}
                                             </div>
                                             <button
-                                                onClick={() => navigate('/notifications')}
+                                                onClick={() => navigate('/account/notifications')}
                                                 className="w-full mt-4 text-sm text-green-700 hover:text-green-800 hover:underline text-center"
                                             >
                                                 View All Notifications
@@ -554,7 +554,7 @@ const NavBar: React.FC = () => {
                                     {isDropdownOpen && (
                                         <div className="absolute right-0 mt-64 w-56 bg-white shadow-xl rounded-2xl text-slate-950 border border-gray-100 p-2 transform transition-all duration-300" ref={dropdownRef}>
                                             <ul className="py-1 font-normal">
-                                                <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={() => navigate('/account')}>
+                                                <li className="px-3 py-2 hover:bg-green-100 rounded-xl transition-colors duration-200" onClick={() => navigate('/account/')}>
                                                     <span className="flex items-center space-x-3 text-gray-700 hover:text-green-900">
                                                         <FaUserCircle className="w-5 h-5" />
                                                         <span className="font-base">Account</span>

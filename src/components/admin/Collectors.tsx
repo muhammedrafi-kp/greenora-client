@@ -10,9 +10,14 @@ interface ICollector {
     email: string;
     phone: string;
     serviceArea: string;
+    district: string;
+    gender: string;
+    verificationStatus: string;
     isVerified: boolean;
     isBlocked: boolean;
     profileUrl?: string;
+    idProofFrontUrl?: string;
+    idProofBackUrl?: string;
 }
 
 const Collectors: React.FC = () => {
@@ -29,6 +34,8 @@ const Collectors: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [showModal, setShowModal] = useState(false);
     const [selectedCollector, setSelectedCollector] = useState<ICollector | null>(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedCollectorDetails, setSelectedCollectorDetails] = useState<ICollector | null>(null);
 
     const collectorsPerPage = 10;
 
@@ -40,8 +47,13 @@ const Collectors: React.FC = () => {
         try {
             setLoading(true);
             const response = await getCollectors();
-            setCollectors(response.data);
-            setError(null);
+            console.log("response :", response);
+            if(response.success) {
+                setCollectors(response.data);
+                setError(null);
+            } else {
+                setError(response.message);
+            }
         } catch (err) {
             setError('Failed to fetch collectors. Please try again later.');
             console.error('Error fetching collectors:', err);
@@ -91,6 +103,11 @@ const Collectors: React.FC = () => {
             setLoading(false);
             setShowModal(false);
         }
+    };
+
+    const handleViewDetails = (collector: ICollector) => {
+        setSelectedCollectorDetails(collector);
+        setShowDetailsModal(true);
     };
 
     const filteredCollectors = collectors.filter(collector => {
@@ -180,53 +197,67 @@ const Collectors: React.FC = () => {
                         </div>
                     )}
 
-                    <div className="flex justify-between items-center flex-wrap gap-4">
-                        <div className="flex items-center gap-6 xs:px-6 px-4 py-3 bg-gray-50 border-b">
-                            <div className="flex items-center gap-2">
-                                <span className="xs:text-sm text-xs font-medium text-gray-600">Total Collectors:</span>
-                                <span className="xs:text-sm text-xs font-semibold text-gray-900">{collectors.length}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="xs:text-sm text-xs font-medium text-gray-600">Verified:</span>
-                                <span className="xs:text-sm text-xs font-semibold text-green-600">
-                                    {collectors.filter(c => c.isVerified).length}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="xs:text-sm text-xs font-medium text-gray-600">Pending:</span>
-                                <span className="xs:text-sm text-xs font-semibold text-yellow-600">
-                                    {collectors.filter(c => !c.isVerified).length}
-                                </span>
-                            </div>
+                    <div className="flex flex-col gap-4">
+                        {/* Verification Requests Button */}
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => window.location.href = '/admin/collector-verification'}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors shadow-sm"
+                            >
+                                <User className="w-5 h-5" />
+                                <span className="hidden sm:inline">Verification Requests</span>
+                            </button>
                         </div>
 
-                        <div className="flex gap-4 items-center ml-auto">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Search collectors..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
-                                />
-                                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                        {/* Search, Filters, and Export Controls */}
+                        <div className="flex justify-between items-center flex-wrap gap-4">
+                            <div className="flex items-center gap-6 xs:px-6 px-4 py-3 bg-gray-50 border-b">
+                                <div className="flex items-center gap-2">
+                                    <span className="xs:text-sm text-xs font-medium text-gray-600">Total Collectors:</span>
+                                    <span className="xs:text-sm text-xs font-semibold text-gray-900">{collectors.length}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="xs:text-sm text-xs font-medium text-gray-600">Verified:</span>
+                                    <span className="xs:text-sm text-xs font-semibold text-green-600">
+                                        {collectors.filter(c => c.isVerified).length}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="xs:text-sm text-xs font-medium text-gray-600">Pending:</span>
+                                    <span className="xs:text-sm text-xs font-semibold text-yellow-600">
+                                        {collectors.filter(c => !c.isVerified).length}
+                                    </span>
+                                </div>
                             </div>
 
-                            <button
-                                onClick={() => setShowFilters(!showFilters)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
-                            >
-                                <SlidersHorizontal className="w-5 h-5" />
-                                <span className="hidden sm:inline">Filters</span>
-                            </button>
+                            <div className="flex gap-4 items-center ml-auto">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Search collectors..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
+                                    />
+                                    <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                                </div>
 
-                            <button
-                                onClick={handleExport}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
-                            >
-                                <Download className="w-5 h-5" />
-                                <span className="hidden sm:inline">Export</span>
-                            </button>
+                                <button
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                                >
+                                    <SlidersHorizontal className="w-5 h-5" />
+                                    <span className="hidden sm:inline">Filters</span>
+                                </button>
+
+                                <button
+                                    onClick={handleExport}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
+                                >
+                                    <Download className="w-5 h-5" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -288,7 +319,7 @@ const Collectors: React.FC = () => {
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Full name</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Email</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Phone</th>
-                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Area</th>
+                                        {/* <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Area</th> */}
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Verification</th>
                                         <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">Action</th>
                                     </tr>
@@ -310,25 +341,36 @@ const Collectors: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-3 text-gray-600">{collector.email}</td>
                                             <td className="px-6 py-3 text-gray-600">{collector.phone}</td>
-                                            <td className="px-6 py-3 text-gray-600">{collector.serviceArea}</td>
+                                            {/* <td className="px-6 py-3 text-gray-600">{collector.serviceArea}</td> */}
                                             <td className="px-6 py-3">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${collector.isVerified
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${collector.verificationStatus === 'approved'
                                                     ? 'bg-green-100 text-green-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                                    : collector.verificationStatus === 'rejected'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
                                                     }`}>
-                                                    {collector.isVerified ? 'Verified' : 'Pending'}
+                                                    {collector.verificationStatus === 'approved' ? 'Verified' : collector.verificationStatus === 'rejected' ? 'Rejected' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => handleStatusChange(collector)}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!collector.isBlocked
-                                                        ? 'border border-red-700 hover:bg-red-700 text-gray-800 hover:text-white'
-                                                        : 'border border-green-700 hover:bg-green-700 text-gray-800 hover:text-white'
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleViewDetails(collector)}
+                                                        className="px-4 py-2 rounded-lg text-sm font-medium border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleStatusChange(collector)}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                            !collector.isBlocked
+                                                                ? 'border border-red-700 hover:bg-red-700 text-gray-800 hover:text-white'
+                                                                : 'border border-green-700 hover:bg-green-700 text-gray-800 hover:text-white'
                                                         }`}
-                                                >
-                                                    {!collector.isBlocked ? 'Block' : 'Unblock'}
-                                                </button>
+                                                    >
+                                                        {!collector.isBlocked ? 'Block' : 'Unblock'}
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -379,6 +421,130 @@ const Collectors: React.FC = () => {
                         : 'bg-green-700 hover:bg-green-800'
                         } transition-colors`}
                 />
+            )}
+            {showDetailsModal && selectedCollectorDetails && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg max-w-3xl w-full mx-4 overflow-hidden max-h-[90vh] overflow-y-auto">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+                            <h3 className="text-xl font-semibold text-gray-900">Collector Details</h3>
+                            <button 
+                                onClick={() => setShowDetailsModal(false)}
+                                className="text-gray-400 hover:text-gray-500"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="px-6 py-4">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden">
+                                    {selectedCollectorDetails.profileUrl ? (
+                                        <img 
+                                            src={selectedCollectorDetails.profileUrl} 
+                                            alt={selectedCollectorDetails.name} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <User className="w-10 h-10 text-blue-600" />
+                                    )}
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-semibold text-gray-900">{selectedCollectorDetails.name}</h4>
+                                    <p className="text-gray-500">{selectedCollectorDetails.email}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Phone Number</p>
+                                    <p className="text-gray-900">{selectedCollectorDetails.phone || 'N/A'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Service Area</p>
+                                    <p className="text-gray-900">{selectedCollectorDetails.serviceArea || 'N/A'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">District</p>
+                                    <p className="text-gray-900">{selectedCollectorDetails.district || 'N/A'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Gender</p>
+                                    <p className="text-gray-900">{selectedCollectorDetails.gender || 'N/A'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Verification Status</p>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        selectedCollectorDetails.verificationStatus === 'approved'
+                                            ? 'bg-green-100 text-green-800'
+                                            : selectedCollectorDetails.verificationStatus === 'rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                        {selectedCollectorDetails.verificationStatus === 'approved' ? 'Verified' : selectedCollectorDetails.verificationStatus === 'rejected' ? 'Rejected' : 'Pending'}
+                                    </span>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Account Status</p>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        !selectedCollectorDetails.isBlocked
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {!selectedCollectorDetails.isBlocked ? 'Active' : 'Blocked'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* ID Proof Images Section */}
+                            <div className="mt-6">
+                                <h5 className="text-sm font-semibold text-gray-900 mb-4">ID Proof Documents</h5>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium text-gray-500">Front Side</p>
+                                        <div className="border rounded-lg overflow-hidden">
+                                            {selectedCollectorDetails.idProofFrontUrl ? (
+                                                <img 
+                                                    src={selectedCollectorDetails.idProofFrontUrl} 
+                                                    alt="ID Front" 
+                                                    className="w-full h-48 object-cover cursor-pointer"
+                                                    onClick={() => window.open(selectedCollectorDetails.idProofFrontUrl, '_blank')}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+                                                    <p className="text-gray-500">No front ID proof uploaded</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium text-gray-500">Back Side</p>
+                                        <div className="border rounded-lg overflow-hidden">
+                                            {selectedCollectorDetails.idProofBackUrl ? (
+                                                <img 
+                                                    src={selectedCollectorDetails.idProofBackUrl} 
+                                                    alt="ID Back" 
+                                                    className="w-full h-48 object-cover cursor-pointer"
+                                                    onClick={() => window.open(selectedCollectorDetails.idProofBackUrl, '_blank')}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+                                                    <p className="text-gray-500">No back ID proof uploaded</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 sticky bottom-0">
+                            <button
+                                onClick={() => setShowDetailsModal(false)}
+                                className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </main>
     );

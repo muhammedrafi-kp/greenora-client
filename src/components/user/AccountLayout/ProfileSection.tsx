@@ -257,7 +257,7 @@ interface FormErrors {
                     </div>
                 </div>
 
-                <div className="pt-4">
+                {/* <div className="pt-4">
                     <button
                         type="button"
                         // onClick={onChangePassword}
@@ -266,7 +266,7 @@ interface FormErrors {
                         <Lock className="xs:w-4 xs:h-4 w-3 h-3" />
                         Change Password
                     </button>
-                </div>
+                </div> */}
                 <div className="flex justify-end gap-4 pt-6">
                     {isEditing ? (
                         <>

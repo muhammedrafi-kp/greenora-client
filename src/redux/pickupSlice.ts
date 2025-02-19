@@ -4,6 +4,7 @@ interface PickupRequest {
     type: string;
     address: object;
     details: object;
+    estimatedCost: number;
 }
 
 interface PickupSliceState {
@@ -18,7 +19,8 @@ const INITIAL_STATE: PickupSliceState = {
     pickupRequest: {
         type: localStorage.getItem('type') || '',
         address: JSON.parse(localStorage.getItem('address') || '{}'),
-        details: JSON.parse(localStorage.getItem('details') || '{}')
+        details: JSON.parse(localStorage.getItem('details') || '{}'),
+        estimatedCost: 0,
     },
     isLoading: false,
     error: null,
@@ -43,6 +45,9 @@ const pickupSlice = createSlice({
             state.pickupRequest.details = action.payload.details;
             localStorage.setItem('details', JSON.stringify(action.payload.details));
         },
+        setCost: (state, action: PayloadAction<{ cost: number }>) => {
+            state.pickupRequest.estimatedCost = action.payload.cost;
+        },
         setStep: (state, action: PayloadAction<{ step: number }>) => {
             state.step = action.payload.step;
             localStorage.setItem('step', action.payload.step.toString());
@@ -55,7 +60,7 @@ const pickupSlice = createSlice({
         },
         resetPickup: (state) => {
             state.step = 1;
-            state.pickupRequest = { type: '', address: {}, details: {} };
+            state.pickupRequest = { type: '', address: {}, details: {}, estimatedCost: 0 };
             localStorage.removeItem('type');
             localStorage.removeItem('address');
             localStorage.removeItem('details');
@@ -63,6 +68,6 @@ const pickupSlice = createSlice({
     },
 });
 
-export const { setType, setAddress, setDetails, setStep, setLoading, setError, resetPickup } = pickupSlice.actions;
+export const { setType, setAddress, setDetails, setCost, setStep, setLoading, setError, resetPickup } = pickupSlice.actions;
 
 export default pickupSlice.reducer;

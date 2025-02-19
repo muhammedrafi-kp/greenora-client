@@ -38,6 +38,7 @@ export interface ICollectorData{
     idProofFrontUrl?: string;
     idProofBackUrl?: string;
     profileUrl?: string; 
+    verificationStatus?: string;
     isVerified?: boolean;
 }
 

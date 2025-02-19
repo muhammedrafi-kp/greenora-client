@@ -20,6 +20,25 @@ export const getCollectors = async () => {
   }
 }
 
+export const getVerificationRequests = async () => {
+  try {
+    const response = await apiClient.get("/user-service/admin/verification-requests");
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching verification requests:', error);
+    throw new Error('Failed to fetch verification requests. Please try again later.');
+  }
+}
+
+export const updateVerificationStatus = async (id: string, status: string) => {
+  try {
+    const response = await apiClient.patch(`/user-service/admin/update-verification-status/${id}`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating verification status:', error);
+    throw new Error('Failed to update verification status.');
+  }
+}
 
 export const updateUserStatus = async (id: string) => {
   try {
@@ -91,7 +110,8 @@ export const addDistrict = async (name: string) => {
   }
 }
 
-export const getDistricts = async () => {
+
+export const getDistrictsWithServiceAreas = async () => {
   try {
     const response = await apiClient.get("/location-service/service-area/admin/districts-with-servic-areas");
     return response.data;
@@ -138,5 +158,16 @@ export const updateServiceArea = async (serviceAreaId: string, serviceAreaData: 
   } catch (error) {
     console.error('Error updating service area:', error);
     throw new Error('Failed to update service area.');
+  }
+}
+
+
+export const getCollectionHistories = async () => {
+  try {
+      const response = await apiClient.get('/request-service/collection/histories');
+      return response.data;
+  } catch (error) {
+      console.error("Error fetching collection histories:", error);
+      throw error;
   }
 }

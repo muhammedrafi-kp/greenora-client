@@ -45,7 +45,7 @@ const AddressSelection = () => {
   const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
   const [addresses, setAddresses] = useState<IAddresses[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState ('');
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [newAddress, setNewAddress] = useState<IAddressFormData>({
     name: '',
@@ -152,16 +152,14 @@ const AddressSelection = () => {
     setNewAddress({
       ...newAddress,
       districtId,
-      serviceAreaId: '', // Reset service area when district changes
-      // pinCode: '',      // Reset pin code when district changes
-      // locality: ''      // Reset locality when district changes
+      serviceAreaId: '',
     });
     setErrors({ ...errors, districtId: '' });
 
     if (districtId) {
       fetchServiceAreas(districtId);
     } else {
-      setServiceAreas([]); // Clear service areas if no district selected
+      setServiceAreas([]); 
     }
   };
 
@@ -171,8 +169,6 @@ const AddressSelection = () => {
     setNewAddress({
       ...newAddress,
       serviceAreaId,
-      // pinCode: '',  // Reset pin code when service area changes
-      // locality: ''  // Reset locality when service area changes
     });
     setErrors({ ...errors, serviceAreaId: '' });
   };

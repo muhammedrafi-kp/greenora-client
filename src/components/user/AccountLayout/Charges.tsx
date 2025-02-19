@@ -11,9 +11,6 @@ export interface IWasteCategory {
   type: "waste" | "scrap";
   description: string;
   rate: number;
-  isActive: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 const Charges: React.FC = () => {
@@ -23,6 +20,7 @@ const Charges: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       const response = await getCategories();
+      console.log("response", response);
       if (response.success) {
         console.log(response.data);
         setCategories(response.data);
@@ -52,8 +50,8 @@ const Charges: React.FC = () => {
           <button
             onClick={() => setShowWaste(true)}
             className={`px-4 py-2 xs:text-sm text-xs transition-colors ${showWaste
-                ? 'bg-green-800 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? 'bg-green-800 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
           >
 
@@ -62,8 +60,8 @@ const Charges: React.FC = () => {
           <button
             onClick={() => setShowWaste(false)}
             className={`px-4 py-2 xs:text-sm text-xs transition-colors ${!showWaste
-                ? 'bg-green-800 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? 'bg-green-800 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
           >
             Scrap
