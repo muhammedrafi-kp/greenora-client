@@ -197,6 +197,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 <span>Service Areas</span>
                             </div>
                         </li>
+
+                        <li>
+                            <div
+                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                rounded-lg cursor-pointer transition-all duration-200 group
+                                ${activePath === '/admin/pricing' ? 'bg-[#173C52] text-white' : ''}`}
+                                onClick={() => {
+                                    setActivePath('/admin/pricing');
+                                    navigate('/admin/pricing');
+                                }}
+                            >
+                                <span className="group-hover:scale-110 transition-transform duration-200">
+                                    <IoPricetags />
+                                </span>
+                                <span>Pricing</span>
+                            </div>
+                        </li>
                         <li>
                             <div
                                 className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 

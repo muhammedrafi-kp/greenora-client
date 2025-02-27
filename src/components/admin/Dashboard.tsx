@@ -6,7 +6,7 @@ import {
     FaWrench
 } from 'react-icons/fa';
 
-import Breadcrumbs from './Breadcrumbs';
+// import Breadcrumbs from './Breadcrumbs';
 
 const Dashboard: React.FC = () => {
     return (

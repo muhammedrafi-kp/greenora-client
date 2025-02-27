@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
 // import { collectorLogin } from "../../redux/collectorAuthSlice";
 import { loginSuccess } from "../../redux/authSlice";
 import { validateField, validateForm } from "../../validations/userValidation";
 import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
-
-import { loginCollector, signUpCollector } from "../../services/authService";
+import { loginCollector, signUpCollector,googleCallbackCollector } from "../../services/authService";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import toast from 'react-hot-toast';
 // import OtpVerification from "./OtpVerification";
 
 interface AuthFormProps {
@@ -126,6 +127,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
         setIsLogin(!isLogin);
     }
 
+    const handleGoogleSuccess = async (credentialResponse: any) => {
+        setIsLoading(true);
+        try {
+            const response = await googleCallbackCollector(credentialResponse.credential);
+            if (response.success) {
+                dispatch(loginSuccess({ token: response.token, role: response.role }));
+                navigate('/collector');
+                toast.success("Login successful!");
+            }
+        } catch (error) {
+            console.error('Google login error:', error);
+            toast.error("Google login failed. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#237A57] to-[#093028]">
             <div className="relative bg-white xs:p-8 p-6 max-w-md sm:w-full w-3/4 border rounded-lg shadow-md">
@@ -139,10 +157,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
                     {isLogin ? 'Login' : 'Sign Up'}
                 </h2>
 
-                <button className="w-full rounded-lg xs:py-2 py-1 px-2 border  md:text-sm text-xs font-sans font-medium shadow-sm hover:bg-slate-50 flex items-center justify-center gap-2">
-                    <FcGoogle />
-                    <span>Continue with Google</span>
-                </button>
+                <div className="w-full">
+                    <GoogleOAuthProvider clientId="180114315510-l6uvuq8k7kcj93re4uf79ae6dh1kaejt.apps.googleusercontent.com">
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={() => {
+                                toast.error("Google login failed. Please try again.");
+                            }}
+                            useOneTap
+                            type="standard"
+                            theme="outline"
+                            size="large"
+                            text="continue_with"
+                            shape="rectangular"
+                            width="100%"
+                        />
+                    </GoogleOAuthProvider>
+                </div>
 
                 <p className="flex items-center justify-center my-5">
                     <span className="flex-1 border-t border-gray-300"></span>

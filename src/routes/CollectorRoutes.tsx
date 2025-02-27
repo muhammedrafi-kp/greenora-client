@@ -29,7 +29,7 @@ const AgentRoutes: React.FC = () => {
       {/* Protected Routes */}
 
       <Route element={<CollectorProtectedRoute />}>
-        <Route path="/dashboard" element={<CollectorDashboard />} />
+        <Route path="/" element={<CollectorDashboard />} />
         <Route path="/tasks" element={<CollectorAssignedTasks />} />
         <Route path="/profile" element={<CollectorProfile />} />
       </Route>

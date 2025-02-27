@@ -11,7 +11,9 @@ import AdminCollectorVerification from '../pages/admin/AdminCollectorVerificatio
 import AdminWasteCategories from '../pages/admin/AdminWasteCategories';
 import AdminScrapCategories from '../pages/admin/AdminScrapCategories';
 import AdminServiceAreas from '../pages/admin/AdminServiceAreas';
+import AdminPricing from '../pages/admin/AdminPricing';
 import AdminCollectionHistories from '../pages/admin/AdminCollectionHistories';
+
 const AdminRoutes: React.FC = () => {
     return (
         <Routes>
@@ -27,6 +29,7 @@ const AdminRoutes: React.FC = () => {
                 <Route path='/categories/wastes' element={<AdminWasteCategories />} />
                 <Route path='/categories/scraps' element={<AdminScrapCategories />} />
                 <Route path='/service-areas' element={<AdminServiceAreas />} />
+                <Route path='/pricing' element={<AdminPricing />} />
                 <Route path='/collection-histories' element={<AdminCollectionHistories />} />
             </Route>
         </Routes>

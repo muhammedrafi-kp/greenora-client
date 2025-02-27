@@ -3,18 +3,16 @@ import { Mail, Phone, Lock, Camera } from 'lucide-react';
 import { getUserData, updateUserData } from "../../../services/userService";
 import { IUserData } from '../../../interfaces/interfaces';
 import ProfileSkeleton from '../skeltons/ProfileSkeleton';
+import { ChangePassword } from '../../common/ChangePassword';
 import toast from 'react-hot-toast';
 
-// interface ProfileSectionProps {
-//     onChangePassword: () => void;
-// }
+
 
 interface FormErrors {
     name?: string;
     phone?: string;
 }
 
-// const ProfileSection: React.FC<ProfileSectionProps> = ({ onChangePassword }) => {
     const ProfileSection: React.FC = () => {
 
     const [userData, setUserData] = useState<IUserData | null>(null);
@@ -23,6 +21,7 @@ interface FormErrors {
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [errors, setErrors] = useState<FormErrors>({});
+    const [showChangePassword, setShowChangePassword] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -257,16 +256,16 @@ interface FormErrors {
                     </div>
                 </div>
 
-                {/* <div className="pt-4">
+                <div className="pt-4">
                     <button
                         type="button"
-                        // onClick={onChangePassword}
+                        onClick={() => setShowChangePassword(true)}
                         className="flex items-center gap-2 px-4 xs:py-2 py-1 xs:text-base text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                     >
                         <Lock className="xs:w-4 xs:h-4 w-3 h-3" />
                         Change Password
                     </button>
-                </div> */}
+                </div> 
                 <div className="flex justify-end gap-4 pt-6">
                     {isEditing ? (
                         <>
@@ -297,6 +296,14 @@ interface FormErrors {
                     )}
                 </div>
             </form>
+
+            {showChangePassword && (
+                <ChangePassword 
+                    isOpen={showChangePassword}
+                    onClose={() => setShowChangePassword(false)} 
+                    role="user" 
+                />
+            )}
         </div>
     );
 };

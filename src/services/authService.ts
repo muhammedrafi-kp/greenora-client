@@ -1,5 +1,6 @@
 import { IUserSignUpData, ICollectorSignUpData } from "../interfaces/interfaces";
-import {publicApiClient} from "./api";
+import {publicApiClient} from "../apis/api";
+import {apiClient} from "../apis/api";
 
 //admin auth apis
 export const loginAdmin = async (email: string, password: string) => {
@@ -64,6 +65,16 @@ export const resendOtpUser = async (email: string) => {
     }
 };
 
+export const googleCallbackUser = async (credential: string) => {
+    try {
+        const response = await publicApiClient.post("/user-service/user/google/callback", { credential });
+        return response.data;
+    } catch (error) {
+        console.error("Error during Google callback:", error);
+        throw error;
+    }
+};
+
 //collector auth apis   
 export const loginCollector = async (email: string, password: string) => {
     try {
@@ -106,3 +117,23 @@ export const resendOtpCollector = async (email: string) => {
     }
 };
 
+export const googleCallbackCollector = async (credential: string) => {
+    try {
+        const response = await publicApiClient.post("/user-service/collector/google/callback", { credential });
+        return response.data;
+    } catch (error) {
+        console.error("Error during Google callback:", error);
+        throw error;
+    }
+};
+
+//common auth apis
+export const changePassword = async (role: string, currentPassword: string, newPassword: string) => {
+    try {
+        const response = await apiClient.patch(`/user-service/${role}/change-password`, { currentPassword, newPassword });
+        return response.data;
+    } catch (error) {
+        console.error("Error changing password:", error);
+        throw error;
+    }
+}

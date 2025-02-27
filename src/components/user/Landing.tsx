@@ -201,7 +201,7 @@ const Landing = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const handleBooknow = () => {
+    const handleSchedulePickup = () => {
         if (isLoggedIn) {
             navigate('/pickup');
         } else {
@@ -262,7 +262,7 @@ const Landing = () => {
                         </motion.p>
 
                         <motion.button
-                            onClick={handleBooknow}
+                            onClick={handleSchedulePickup}
                             className="mt-6 bg-green-800 hover:bg-green-900 text-white font-medium py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}

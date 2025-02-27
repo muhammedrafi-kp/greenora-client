@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                 <nav className="md:p-4 xs:p-3 p-2">
                     <ul className="space-y-2">
                         {[
-                            { icon: <FaHome className="md:w-5 md:h-5 w-4 h-4" />, text: 'Dashboard', path: '/collector/dashboard' },
+                            { icon: <FaHome className="md:w-5 md:h-5 w-4 h-4" />, text: 'Dashboard', path: '/collector' },
                             { icon: <FaClipboardList className="md:w-5 md:h-5 w-4 h-4" />, text: 'Assigned Tasks', path: '/collector/tasks' },
                             { icon: <FaTruck className="md:w-5 md:h-5 w-4 h-4" />, text: 'Route Planning', path: '/collector/route-planning' },
                             { icon: <FaHistory className="md:w-5 md:h-5 w-4 h-4" />, text: 'Pickup History', path: '/collector/pickup-history' },

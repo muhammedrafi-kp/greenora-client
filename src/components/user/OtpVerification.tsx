@@ -69,7 +69,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
         try {
             const response = await verifyOtpUser(email, otpString);
             if (response.success) {
-                dispatch(loginSuccess({ token: response.token, role: 'user' }));
+                dispatch(loginSuccess({ token: response.token, role: response.role }));
                 closeModal();
             }
         } catch (error: any) {

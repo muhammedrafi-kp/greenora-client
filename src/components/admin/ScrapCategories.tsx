@@ -262,7 +262,7 @@ const ScrapCategories: React.FC = () => {
               ) : (
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gray-100 border-b border-gray-100">
+                    <tr className="bg-gray-100 border-b border-gray-300">
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Name</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Price (₹/kg)</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Description</th>

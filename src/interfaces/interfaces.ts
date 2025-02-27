@@ -29,9 +29,11 @@ export interface ICollectorSignUpData {
 }
 
 export interface ICollectorData{
+    collectorId:string;
     name: string;
     email: string;
     phone: string;
+    gender?: string;
     district?: string;
     serviceArea?: string;
     idProofType?: string;
@@ -40,6 +42,7 @@ export interface ICollectorData{
     profileUrl?: string; 
     verificationStatus?: string;
     isVerified?: boolean;
+    editAccess?:boolean;
 }
 
 export interface IFormErrors {

@@ -50,19 +50,28 @@ const Payment: React.FC = () => {
             description: "Test Transaction",
             order_id: response.orderId, // Order ID from Backend
             handler: async (response: any) => {
-              console.log("Payment Success", response);
-
-              //Verify Payment 
-              const verifyResponse = await verifyPayment(response);
-              console.log("verifyResponse:", verifyResponse);
-
-              if (verifyResponse.success) {
-                // toast.success(verifyResponse.message);
-                dispatch(setStep({ step: 1 }));
-                dispatch(resetPickup());
-                navigate('/pickup/success');
-              } else {
-                toast.error(verifyResponse.message);
+              try {
+                const verifyResponse = await verifyPayment(response);
+                
+                if (verifyResponse.success) {
+                  dispatch(setStep({ step: 1 }));
+                  dispatch(resetPickup());
+                  navigate('/pickup/success');
+                } else {
+                  navigate('/pickup/failure', { 
+                    state: { 
+                      error: verifyResponse.message,
+                      collectionData: collectionData
+                    } 
+                  });
+                }
+              } catch (error: any) {
+                navigate('/pickup/failure', { 
+                  state: { 
+                    error: error.message || 'Payment verification failed',
+                    collectionData: collectionData
+                  } 
+                });
               }
             },
             prefill: {
@@ -74,16 +83,30 @@ const Payment: React.FC = () => {
             theme: {
               color: "#3399cc",
             },
+            modal: {
+              ondismiss: function() {
+                navigate('/pickup/failure', {
+                  state: { 
+                    error: 'Payment was cancelled',
+                    collectionData: collectionData
+                  }
+                });
+              }
+            }
           };
 
           const razorpay = new Razorpay(options);
           razorpay.open();
 
         } else {
-          toast.error(response.message);
+          navigate('/pickup/failure', { 
+            state: { error: response.message || 'Failed to initiate payment' } 
+          });
         }
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        navigate('/pickup/failure', { 
+          state: { error: error.message || 'Something went wrong' } 
+        });
       } finally {
         setLoading(false);
       }

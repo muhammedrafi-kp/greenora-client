@@ -20,7 +20,7 @@ import UserPickupDetailsForm from '../pages/user/UserPickupDetailsForm';
 import UserPickupReview from '../pages/user/UserPickupReview';
 import UserPickupPayment from '../pages/user/UserPickupPayment';
 import UserPickupSuccess from '../pages/user/UserPickupSuccess';
-
+import UserPickupFailure from '../pages/user/UserPickupFailure';
 // import UserPickupRequest from '../pages/user/UserPickupRequest';
 import UserProtectedRoute from '../ProtectedRoutes/UserProtectedRoute';
 
@@ -50,6 +50,7 @@ const UserRoutes: React.FC = () => {
                     <Route path="payment" element={<UserPickupPayment />} />
                 </Route>
                 <Route path="/pickup/success" element={<UserPickupSuccess />} />
+                <Route path="/pickup/failure" element={<UserPickupFailure />} />
             </Route>
         </Routes>
     )

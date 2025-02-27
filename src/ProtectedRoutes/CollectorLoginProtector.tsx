@@ -6,7 +6,7 @@ const CollectorLoginProtector: React.FC = () => {
   const { isLoggedIn,role } = useSelector((state: any) => state.auth);
 
   if (isLoggedIn&&role==='collector') {
-    return <Navigate to="/collector/dashboard" replace />;
+    return <Navigate to="/collector" replace />;
   }
 
   return <Outlet />;

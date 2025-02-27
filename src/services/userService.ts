@@ -1,4 +1,4 @@
-import { apiClient } from "./api";
+import { apiClient } from "../apis/api";
 
 export const getUserData = async () => {
     try {
@@ -40,6 +40,7 @@ export const uploadProfileImage = async (data: FormData) => {
         throw error;
     }
 }
+
 
 export const getCategories = async () => {
     try {
@@ -178,3 +179,12 @@ export const getCollectionHistory = async () => {
     }
 }
 
+export const getPricingPlans = async () => {
+    try {
+        const response = await apiClient.get("/subscription-service/subscription/plans");
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching pricing plans:', error);
+        throw new Error('Failed to fetch pricing plans.');
+    }
+}

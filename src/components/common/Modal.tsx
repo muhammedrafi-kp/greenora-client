@@ -1,17 +1,37 @@
-// Modal.tsx
-// import React from 'react';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: string | React.ReactNode;
   description: string;
-  confirmLabel: string;
+  confirmLabel: string| React.ReactNode;
   cancelLabel?: string;
   onConfirm: () => void;
   confirmButtonClass?: string;
   children?: React.ReactNode;
+  isDisabled?: boolean;
 }
+
+const scrollbarStyles = `
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+`;
 
 const Modal: React.FC<ModalProps> = ({
   isOpen,
@@ -22,36 +42,49 @@ const Modal: React.FC<ModalProps> = ({
   cancelLabel = 'Cancel',
   onConfirm,
   confirmButtonClass,
-  children
+  children,
+  isDisabled
 }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 overflow-y-auto max-h-[90vh]">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {title}
-        </h3>
-        <p className="text-gray-600 mb-6 font-medium">
-          {description}
-          {children}
-        </p>
-        <div className="flex justify-end gap-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            onClick={onConfirm}
-            className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors"}
-          >
-            {confirmLabel}
-          </button>
+    <>
+      <style>{scrollbarStyles}</style>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 overflow-y-auto max-h-[90vh] scrollbar-thin">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {title}
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <p className="text-gray-600 mb-6 font-medium">
+            {description}
+            {children}
+          </p>
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              {cancelLabel}
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDisabled}
+              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors"}
+            >
+              {confirmLabel}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

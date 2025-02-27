@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import OtpVerification from './OtpVerification';
 import ForgotPassword from './ForgotPassword';
@@ -7,8 +7,9 @@ import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
 import { validateForm } from "../../validations/userValidation"
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from "../../redux/authSlice";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"
 import toast from 'react-hot-toast';
-
+import { googleCallbackUser } from "../../services/authService";
 import { loginUser, signUpUser } from "../../services/authService";
 
 interface AuthModalProps {
@@ -63,7 +64,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                         dispatch(loginSuccess({ token: response.token, role: response.role }));
                         closeModal();
                     }
-                    toast.success("Login successful!")
+                    toast.success("Login successful!");
                 } else {
                     const response = await signUpUser(formData);
                     if (response.success) {
@@ -72,13 +73,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                 }
             } catch (error: any) {
                 if (error.status === 404) {
-                    errors.email = "User with this email doesn't exists."
+                    errors.email = "User with this email doesn't exists"
                     setFormError(errors);
                 } else if (error.status === 401) {
-                    errors.password = "Incorrect password."
+                    errors.password = "Incorrect password"
                     setFormError(errors);
                 } if (error.status === 409) {
-                    errors.email = "Email already exists.";
+                    errors.email = "Email already exists";
                     setFormError(errors);
                 }
                 // console.error('Authentication error:', error);
@@ -88,68 +89,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
         }
     };
 
-    // const handleGoogleLogin = () => {
-    //     // Redirect user to the backend's Google login route
-    //     console.log("Google auth........")
-    //     window.location.href = 'http://localhost:3000/user-service/user/google';
-    // };
+    const handleGoogleSuccess = async (credentialResponse: any) => {
+        setIsLoading(true);
+        try {
+            console.log("credentialResponse", credentialResponse)
 
-    // Frontend: AuthModal.tsx
-    useEffect(() => {
-        // Add message listener for Google Auth
-        const handleAuthMessage = (event: MessageEvent) => {
-
-            console.log("Returned...........!", event.origin)
-            // Check for API gateway origin
-            // if (event.origin !== "http://localhost:4000") return;
-
-            if (event.data.type === "GOOGLE_AUTH_SUCCESS") {
-
-                const { token } = event.data;
-                console.log("Token :", token);
-                dispatch(loginSuccess({ token, role: 'user' }));
+            const response = await googleCallbackUser(credentialResponse.credential);
+            console.log("response", response)
+            if (response.success) {
+                dispatch(loginSuccess({ token: response.token, role: response.role }));
                 closeModal();
                 toast.success("Login successful!");
             }
-        };
 
-        // Add fallback for localStorage
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'tempAuthToken') {
-                const token = e.newValue;
-                if (token) {
-                    dispatch(loginSuccess({ token, role: 'user' }));
-                    localStorage.removeItem('tempAuthToken');
-                    closeModal();
-
-                }
-            }
-        };
-
-        window.addEventListener("message", handleAuthMessage);
-        window.addEventListener("storage", handleStorageChange);
-
-        return () => {
-            window.removeEventListener("message", handleAuthMessage);
-            window.removeEventListener("storage", handleStorageChange);
-        };
-    }, [dispatch, closeModal]);
-
-    const handleGoogleLogin = () => {
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-
-        const popup = window.open(
-            'http://localhost:3000/user-service/user/google',
-            'Google Auth',
-            `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        // Fallback if popup is blocked
-        if (!popup) {
-            window.location.href = 'http://localhost:3000/user-service/user/google';
+        } catch (error) {
+            console.error('Google login error:', error);
+            toast.error("Google login failed. Please try again.");
+        }finally{
+            setIsLoading(false)
         }
     };
 
@@ -213,12 +170,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                             {isLogin ? 'Login' : 'Sign Up'}
                         </h2>
 
-                        <button className="w-full rounded-lg xs:py-2 py-1 border  sm:text-base text-xs font-sans font-medium shadow-sm hover:bg-slate-50 flex items-center justify-center gap-2"
-                            onClick={handleGoogleLogin}
-                        >
-                            <FcGoogle />
-                            <span>Continue with Google</span>
-                        </button>
+                        <GoogleOAuthProvider clientId="180114315510-l6uvuq8k7kcj93re4uf79ae6dh1kaejt.apps.googleusercontent.com">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => {
+                                    toast.error("Google login failed. Please try again.");
+                                }}
+                                useOneTap
+                                type="standard"
+                                theme="outline"
+                                size="large"
+                                text="continue_with"
+                                shape="rectangular"
+                                width="100%"
+                            />
+                        </GoogleOAuthProvider>
 
                         <p className="flex items-center justify-center my-5">
                             <span className="flex-1 border-t border-gray-300"></span>

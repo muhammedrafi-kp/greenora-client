@@ -1,4 +1,4 @@
-import { apiClient } from "./api";
+import { apiClient } from "../apis/api";
 
 export const getCollectorData = async () => {
     try {
@@ -25,6 +25,7 @@ export const updateCollectorData = async (collectorData: FormData) => {
     }
 }
 
+
 export const getDistricts = async () => {
     try {
         const response = await apiClient.get(`/location-service/service-area/user/districts`);
@@ -44,3 +45,4 @@ export const getServiceAreas = async (districtId: string) => {
         throw error;
     }
 }
+

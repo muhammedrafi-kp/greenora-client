@@ -1,58 +1,74 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Check, X } from "lucide-react"
+import { getPricingPlans } from "../../services/userService";
 
-interface PricingPlan {
-    duration: string
-    price: string
-    pricePerUnit: string
-    features: Array<{ name: string; included: boolean }>
-    highlighted?: boolean
+export interface ISubscriptionPlan {
+    _id: string;
+    name: string;
+    description?: string;
+    price: number;
+    duration: number;
+    features: string[];
 }
 
-const plans: PricingPlan[] = [
-    {
-        duration: "1 Month",
-        price: "400",
-        pricePerUnit: "₹80/Pickup",
-        features: [
-            { name: "5 pickups in a Month", included: true },
-            { name: "Full Recycling & Scrap Management", included: true },
-            { name: "24/7 Customer Support", included: true },
-            { name: "Exclusive Eco-Impact Updates", included: false },
-            { name: "Priority Scheduling", included: false },
-        ],
-    },
-    {
-        duration: "3 Months",
-        price: "1125",
-        pricePerUnit: "₹375/Month",
-        features: [
-            { name: "5 pickups in a Month", included: true },
-            { name: "Full Recycling & Scrap Management", included: true },
-            { name: "24/7 Customer Support", included: true },
-            { name: "Exclusive Eco-Impact Updates", included: true },
-            { name: "Priority Scheduling", included: false },
-        ],
-        highlighted: true,
-    },
-    {
-        duration: "6 Months",
-        price: "2100",
-        pricePerUnit: "₹350/Month",
-        features: [
-            { name: "5 pickups in a Month", included: true },
-            { name: "Full Recycling & Scrap Management", included: true },
-            { name: "24/7 Customer Support", included: true },
-            { name: "Exclusive Eco-Impact Updates", included: true },
-            { name: "Priority Scheduling", included: true },
-        ],
-    },
-]
+interface PlanFeature {
+    name: string;
+    included: boolean;
+}
+
+interface FormattedPlan {
+    _id: string;
+    name: string;
+    duration: string;
+    price: string;
+    pricePerUnit: string;
+    features: PlanFeature[];
+    highlighted?: boolean;
+}
 
 export default function EnhancedPricingPlans() {
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+    const [plans, setPlans] = useState<FormattedPlan[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const response = await getPricingPlans();
+                if (response.success) {
+                    // Transform the API plans into the display format
+                    const formattedPlans = response.data.map((plan: ISubscriptionPlan, index: number) => ({
+                        _id: plan._id,
+                        name: plan.name,
+                        duration: `${plan.duration} ${plan.duration === 1 ? 'Month' : 'Months'}`,
+                        price: plan.price.toString(),
+                        pricePerUnit: `₹${Math.round(plan.price / plan.duration)}/Month`,
+                        features: plan.features.map(feature => ({
+                            name: feature,
+                            included: true
+                        })),
+                        // Highlight the middle plan
+                        highlighted: index === 1
+                    }));
+                    setPlans(formattedPlans);
+                }
+            } catch (error) {
+                console.error('Error fetching plans:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPlans();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0B4619]" />
+            </div>
+        );
+    }
 
     return (
         <div className="bg-gray-100 mx-auto min-h-screen py-16">
