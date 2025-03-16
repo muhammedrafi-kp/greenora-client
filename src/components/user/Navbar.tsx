@@ -17,7 +17,7 @@
 // const NavBar: React.FC = () => {
 //     const [isOpen, setIsOpen] = useState(false);
 //     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-//     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+//     const [isLoginModalO pen, setIsLoginModalOpen] = useState<boolean>(false);
 //     // const [isSignUpModalOpen, setIsSignUpModalOpen] = useState<boolean>(false);
 //     const navigate = useNavigate();
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { FaUser, FaClipboardList, FaWallet, FaAddressCard, FaBell, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaClipboardList, FaWallet, FaAddressCard, FaBell, FaSignOutAlt, FaComments } from 'react-icons/fa';
 import { TbCoinRupeeFilled } from "react-icons/tb";
 import { VscGraph } from "react-icons/vsc";
 import { Camera } from 'lucide-react';
@@ -12,13 +12,12 @@ import { Logout } from "../../../redux/authSlice";
 import { NavLink } from 'react-router-dom';
 
 const navLinks = [
-  { icon: <VscGraph />, label: 'Activity', path: '/account/'  ,end: true },
+  { icon: <VscGraph />, label: 'Activity', path: '/account/', end: true },
   { icon: <FaUser />, label: 'Profile', path: '/account/profile' },
   { icon: <FaClipboardList />, label: 'Waste Collection History', path: '/account/waste-collection-history' },
   { icon: <FaWallet />, label: 'Wallet', path: '/account/wallet' },
-  // { icon: <FaAddressCard />, label: 'Addresses', path: '/account/address' },
+  { icon: <FaComments />, label: 'Chats', path: '/account/chats' },
   { icon: <TbCoinRupeeFilled />, label: 'Charges', path: '/account/charges' },
-  // { icon: <MdPayment />, label: 'Payments', path: '/account/payments' },
   { icon: <FaBell />, label: 'Notifications', path: '/account/notifications' },
   // { icon: <FaLock />, label: 'Security', path: '/account/security' },
 ];
@@ -52,7 +51,10 @@ const Sidebar: React.FC = () => {
   const fetchUserData = async () => {
     try {
       const response = await getUserData();
-      setUserData(response.data);
+      console.log("response :",response);
+      if (response.success) {
+        setUserData(response.data);
+      }
     } catch (error) {
       console.log("Failed to fetch user data:", error);
     } finally {
@@ -102,11 +104,11 @@ const Sidebar: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center p-4 border-b">
             <div className="relative group">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center relative">
+              <div className="w-20 h-20  rounded-full flex items-center justify-center relative">
                 <img
                   src={uploadedImage || userData?.profileUrl}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+                    alt="Profile"
+                    className="sm:w-24 sm:h-24 xs:w-20 xs:h-20 w-16 h-16 rounded-full sm:border-4 border-2 border-white shadow-lg object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                   <label htmlFor="profileImageInSidebar" className="cursor-pointer">
@@ -157,9 +159,9 @@ const Sidebar: React.FC = () => {
             <NavLink
               key={index}
               to={item.path}
-              end={item.end} 
+              end={item.end}
               className={({ isActive }) => `
-                                flex items-center gap-3 w-full p-3 rounded-lg transition-colors
+                                flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm rounded-lg transition-colors
                                 ${isLargeScreen && isActive ? 'bg-green-100 text-green-800' : 'hover:bg-gray-100'}
                             `}
             >

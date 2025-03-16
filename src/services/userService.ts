@@ -2,7 +2,7 @@ import { apiClient } from "../apis/api";
 
 export const getUserData = async () => {
     try {
-        const response = await apiClient.get("/user-service/user/profile");
+        const response = await apiClient.get("/user-service/user");
         return response.data;
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -10,9 +10,29 @@ export const getUserData = async () => {
     }
 }
 
+export const getAdminData = async () => {
+    try {
+        const response = await apiClient.get("/user-service/user/admin");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching admin data:", error);
+        throw error;
+    }
+}
+
+export const initiateChat = async (chatData: object) => {
+    try {
+        const response = await apiClient.post('/chat-service/chat',chatData);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching chat history:", error);
+        throw error;
+    }
+}
+
 export const updateUserData = async (userData: FormData) => {
     try {
-        const response = await apiClient.put("/user-service/user/update-profile", userData, {
+        const response = await apiClient.put("/user-service/user", userData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -131,7 +151,7 @@ export const checkPinCode = async (serviceAreaId: string, pinCode: string) => {
 export const calculatePickupCost = async (items: Array<object>) => {
     try {
         console.log("items:", items);
-        const response = await apiClient.post('/request-service/category/calculate-cost', { items });
+        const response = await apiClient.post('/request-service/category/total-cost', { items });
         return response.data;
     } catch (error) {
         console.error("Error calculating pickup cost:", error);
@@ -171,10 +191,30 @@ export const verifyPayment = async (paymentData: any) => {
 
 export const getCollectionHistory = async () => {
     try {
-        const response = await apiClient.get('/request-service/collection/history');
+        const response = await apiClient.get('/request-service/collection');
         return response.data;
     } catch (error) {
         console.error("Error fetching collection histories:", error);
+        throw error;
+    }
+}
+
+export const getCollectorData = async (collectorId?: string) => {
+    try {
+        const response = await apiClient.get(`/user-service/user/collector/${collectorId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching collector data:", error);
+        throw error;
+    }
+}
+
+export const getPaymentData = async (paymentId: string) => {
+    try {
+        const response = await apiClient.get(`/payment-service/collection-payment/${paymentId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching payment data:", error);
         throw error;
     }
 }
@@ -188,3 +228,15 @@ export const getPricingPlans = async () => {
         throw new Error('Failed to fetch pricing plans.');
     }
 }
+
+export const getDistrictAndServiceArea = async (districtId: string, serviceAreaId: string) => {
+    try {
+        const response = await apiClient.get(`/location-service/service-area/user/district/${districtId}/service-area/${serviceAreaId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching district and service area:', error);
+        throw error;
+    }
+};
+
+

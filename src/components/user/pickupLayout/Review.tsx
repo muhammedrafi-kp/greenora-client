@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { MapPin, Package } from 'lucide-react';
-import { getCategories, calculatePickupCost } from '../../../services/userService';
+import { getCategories, calculatePickupCost, getDistrictAndServiceArea } from '../../../services/userService';
 import { setStep, setCost } from '../../../redux/pickupSlice';
 
 interface ICollectionData {
   type: "waste" | "scrap";
+  districtId: string;
+  serviceAreaId: string;
   address: object;
   items: {
     categoryId: string;
@@ -26,6 +28,11 @@ interface ICategory {
   rate: number;
 }
 
+interface IAreaNames {
+  district: string;
+  serviceArea: string;
+}
+
 const Review = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -34,12 +41,20 @@ const Review = () => {
   const pickupType = pickupRequest.type;
   const address = pickupRequest.address;
   const details = pickupRequest.details;
+  const districtId = pickupRequest.district;
+  const serviceAreaId = pickupRequest.serviceArea;
 
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<ICategory[]>([]);
+  const [areaNames, setAreaNames] = useState<IAreaNames>({
+    district: '',
+    serviceArea: ''
+  });
 
   const [collectionData, setCollectionData] = useState<ICollectionData>({
     "type": pickupType,
+    "districtId": districtId,
+    "serviceAreaId": serviceAreaId,
     "address": address,
     "items": details.items,
     "estimatedCost": 0,
@@ -88,6 +103,25 @@ const Review = () => {
     fetchCost();
   }, [collectionData.items]);
 
+  const fetchDistrictAndServiceArea = async () => {
+    try {
+      const response = await getDistrictAndServiceArea(districtId, serviceAreaId);
+      console.log("response :", response)
+      if (response.success) {
+        setAreaNames({
+          district: response.district.name,
+          serviceArea: response.serviceArea.name
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching area names:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDistrictAndServiceArea();
+  }, [pickupRequest.district, pickupRequest.serviceArea]);
+
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(cat => cat._id === categoryId);
     return category ? category.name : categoryId;
@@ -103,7 +137,7 @@ const Review = () => {
     dispatch(setStep({ step: 5 }));
     navigate('/pickup/payment', {
       state: {
-        collectionData: collectionData
+        collectionData
       }
     });
   };
@@ -131,9 +165,10 @@ const Review = () => {
             <div>
               <p className="text-sm font-medium text-gray-700">Pickup Address</p>
               <p className="text-sm text-gray-800 mt-1 font-semibold">{address.name}</p>
-              <p className="text-sm text-gray-600 mt-1">{address.addressLine}, {address.locality}, {address.district}</p>
+              <p className="text-sm text-gray-600 mt-1">{address.addressLine}, {address.locality}</p>
               <p className="text-sm text-gray-600 mt-1">PIN : {address.pinCode}, Mobile : {address.mobile}</p>
-              <p className="text-sm text-gray-600 mt-1">Service Area : {address.serviceArea}</p>
+              <p className="text-sm text-gray-600 mt-1">District : {areaNames.district}</p>
+              <p className="text-sm text-gray-600 mt-1">Service Area : {areaNames.serviceArea}</p>
             </div>
           </div>
 

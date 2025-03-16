@@ -183,7 +183,7 @@ interface FormErrors {
                         <img
                             src={uploadedImage || userData?.profileUrl}
                             alt="Profile"
-                            className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+                            className="sm:w-24 sm:h-24 xs:w-20 xs:h-20 w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
                         />
                         {isEditing && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">

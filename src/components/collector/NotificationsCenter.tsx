@@ -18,7 +18,8 @@ interface Notification {
   bgColor: string;
 }
 
-const NotificationsCenter: React.FC = () => {
+const Notifications: React.FC = () => {
+
   const notifications: Notification[] = [
     {
       id: 1,
@@ -53,59 +54,61 @@ const NotificationsCenter: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">Notifications</h1>
-          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
-            3 new
-          </span>
+    <main className="flex-1 overflow-x-hidden overflow-y-auto">
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex justify-end items-center mb-6">
+          {/* <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-800">Notifications</h1>
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+              3 new
+            </span>
+          </div> */}
+          <button className="text-blue-500 hover:text-blue-600 text-sm">
+            Mark all as read
+          </button>
         </div>
-        <button className="text-blue-500 hover:text-blue-600 text-sm">
-          Mark all as read
-        </button>
-      </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
-        <div className="p-6">
-          <div className="space-y-4">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`${notification.bgColor} p-4 rounded-lg flex items-start gap-4`}
-              >
-                <div className={`${notification.color} mt-1`}>
-                  <notification.icon className="w-5 h-5" />
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-medium">{notification.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {notification.message}
-                      </p>
-                      <span className="text-xs text-gray-500 mt-2 block">
-                        {notification.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <Trash2 className="w-4 h-4 text-gray-400" />
-                      </button>
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <MoreVertical className="w-4 h-4 text-gray-400" />
-                      </button>
+        <div className="bg-white rounded-lg border shadow-sm">
+          <div className="p-6">
+            <div className="space-y-4">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`${notification.bgColor} p-4 rounded-lg flex items-start gap-4`}
+                >
+                  <div className={`${notification.color} mt-1`}>
+                    <notification.icon className="w-5 h-5" />
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-medium">{notification.title}</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {notification.message}
+                        </p>
+                        <span className="text-xs text-gray-500 mt-2 block">
+                          {notification.time}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button className="p-1 hover:bg-gray-100 rounded">
+                          <Trash2 className="w-4 h-4 text-gray-400" />
+                        </button>
+                        <button className="p-1 hover:bg-gray-100 rounded">
+                          <MoreVertical className="w-4 h-4 text-gray-400" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </main >
   );
 };
 
-export default NotificationsCenter;
+export default Notifications;

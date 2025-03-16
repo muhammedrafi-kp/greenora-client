@@ -2,7 +2,7 @@ import { apiClient } from "../apis/api";
 
 export const getCollectorData = async () => {
     try {
-        const response = await apiClient.get("/user-service/collector/profile");
+        const response = await apiClient.get("/user-service/collector");
         return response.data;
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -12,7 +12,7 @@ export const getCollectorData = async () => {
 
 export const updateCollectorData = async (collectorData: FormData) => {
     try {
-        const response = await apiClient.put("/user-service/collector/update-profile", collectorData, {
+        const response = await apiClient.put("/user-service/collector", collectorData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -42,6 +42,15 @@ export const getServiceAreas = async (districtId: string) => {
         return response.data;
     } catch (error) {
         console.error("Error fetching service areas:", error);
+        throw error;
+    }
+}
+
+export const getAssignedCollections = async () => {
+    try {
+        const response = await apiClient.get('/request-service/collection/collector/assigned-collections');
+        return response.data;
+    } catch (error) {
         throw error;
     }
 }

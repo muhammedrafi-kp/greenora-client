@@ -174,13 +174,14 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
   const passwordFormContent = (
     <form className="space-y-4 mt-4">
       <div>
-        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+        {/* <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
           Current Password
-        </label>
+        </label> */}
         <div className="relative">
           <input
             type={showPasswords.currentPassword ? "text" : "password"}
             name="currentPassword"
+            placeholder='Current Password'
             value={passwords.currentPassword}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -204,13 +205,14 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
       </div>
 
       <div>
-        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+        {/* <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
           New Password
-        </label>
+        </label> */}
         <div className="relative">
           <input
             type={showPasswords.newPassword ? "text" : "password"}
             name="newPassword"
+             placeholder='New Password'
             value={passwords.newPassword}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -234,13 +236,14 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
       </div>
 
       <div>
-        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+        {/* <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
           Confirm New Password
-        </label>
+        </label> */}
         <div className="relative">
           <input
             type={showPasswords.confirmPassword ? "text" : "password"}
             name="confirmPassword"
+             placeholder='Confirm New Password'
             value={passwords.confirmPassword}
             onChange={handleChange}
             onBlur={handleBlur}

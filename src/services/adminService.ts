@@ -62,7 +62,7 @@ export const updateCollectorStatus = async (id: string) => {
 
 export const addCategory = async (categoryData: object) => {
   try {
-    const response = await apiClient.post("/request-service/category/create-category", categoryData);
+    const response = await apiClient.post("/request-service/category", categoryData);
     return response.data;
   } catch (error) {
     console.error('Error adding waste category:', error);
@@ -82,7 +82,7 @@ export const getCategories = async (type: string) => {
 
 export const updateCategory = async (categoryId: string, categoryData: object) => {
   try {
-    const response = await apiClient.put(`/request-service/category/update-category/${categoryId}`, categoryData);
+    const response = await apiClient.put(`/request-service/category/${categoryId}`, categoryData);
     return response.data;
   } catch (error) {
     console.error('Error updating waste category:', error);
@@ -92,7 +92,7 @@ export const updateCategory = async (categoryId: string, categoryData: object) =
 
 export const deleteCategory = async (categoryId: string) => {
   try {
-    const response = await apiClient.put(`/request-service/category/delete-category/${categoryId}`);
+    const response = await apiClient.delete(`/request-service/category/${categoryId}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting waste category:', error);
@@ -120,6 +120,16 @@ export const getDistrictsWithServiceAreas = async () => {
     throw new Error('Failed to fetch districts.');
   }
 }
+
+export const getDistrictAndServiceArea = async (districtId: string, serviceAreaId: string) => {
+  try {
+      const response = await apiClient.get(`/location-service/service-area/user/district/${districtId}/service-area/${serviceAreaId}`);
+      return response.data;
+  } catch (error) {
+      console.error('Error fetching district and service area:', error);
+      throw error;
+  }
+};
 
 export const updateDistrict = async (districtId: string, name: string) => {
   try {
@@ -164,13 +174,35 @@ export const updateServiceArea = async (serviceAreaId: string, serviceAreaData: 
 
 export const getCollectionHistories = async () => {
   try {
-    const response = await apiClient.get('/request-service/collection/histories');
+    const response = await apiClient.get('/request-service/collection/collections');
     return response.data;
   } catch (error) {
     console.error("Error fetching collection histories:", error);
     throw error;
   }
 }
+
+export const getCollectorData = async (collectorId?: string) => {
+  try {
+      const response = await apiClient.get(`/user-service/user/${collectorId}`);
+      return response.data;
+  } catch (error) {
+      console.error("Error fetching collector data:", error);
+      throw error;
+  }
+}
+
+export const getPaymentData = async (paymentId: string) => {
+  try {
+      const response = await apiClient.get(`/payment-service/collection-payment/${paymentId}`);
+      return response.data;
+  } catch (error) {
+      console.error("Error fetching payment data:", error);
+      throw error;
+  }
+}
+
+
 
 export const getPricingPlans = async () => {
   try {
@@ -211,3 +243,14 @@ export const deletePricingPlan = async (planId: string) => {
     throw new Error('Failed to delete pricing plan.');
   }
 }
+
+export const getChats = async () => {
+  try {
+    const response = await apiClient.get(`/chat-service/chats`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    throw new Error('Failed to fetch chat messages.');
+  }
+}
+

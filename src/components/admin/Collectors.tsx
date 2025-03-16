@@ -210,34 +210,36 @@ const Collectors: React.FC = () => {
                         </div>
 
                         {/* Search, Filters, and Export Controls */}
-                        <div className="flex justify-between items-center flex-wrap gap-4">
-                            <div className="flex items-center gap-6 xs:px-6 px-4 py-3 bg-gray-50 border-b">
-                                <div className="flex items-center gap-2">
-                                    <span className="xs:text-sm text-xs font-medium text-gray-600">Total Collectors:</span>
-                                    <span className="xs:text-sm text-xs font-semibold text-gray-900">{collectors.length}</span>
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                            {/* Stats Summary */}
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-md">
+                                    <span className="text-sm font-medium text-gray-600">Total:</span>
+                                    <span className="text-sm font-semibold text-gray-900">{collectors.length}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="xs:text-sm text-xs font-medium text-gray-600">Verified:</span>
-                                    <span className="xs:text-sm text-xs font-semibold text-green-600">
+                                <div className="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-md">
+                                    <span className="text-sm font-medium text-gray-600">Verified:</span>
+                                    <span className="text-sm font-semibold text-green-600">
                                         {collectors.filter(c => c.isVerified).length}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="xs:text-sm text-xs font-medium text-gray-600">Pending:</span>
-                                    <span className="xs:text-sm text-xs font-semibold text-yellow-600">
+                                <div className="flex items-center gap-2 px-3 py-1 bg-yellow-50 rounded-md">
+                                    <span className="text-sm font-medium text-gray-600">Pending:</span>
+                                    <span className="text-sm font-semibold text-yellow-600">
                                         {collectors.filter(c => !c.isVerified).length}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 items-center ml-auto">
+                            {/* Search, Filters, and Export Controls */}
+                            <div className="flex gap-4 items-center">
                                 <div className="relative">
                                     <input
                                         type="text"
                                         placeholder="Search collectors..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full md:w-64 bg-white shadow-sm"
+                                        className="w-[300px] text-sm pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white shadow-sm"
                                     />
                                     <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                                 </div>

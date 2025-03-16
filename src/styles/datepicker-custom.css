@@ -1,0 +1,54 @@
+/* Add this to your global CSS or create a new CSS file and import it */
+
+.custom-datepicker {
+  font-family: inherit;
+  border: none !important;
+}
+
+.custom-datepicker .react-datepicker__month-container {
+  width: 280px;
+}
+
+.custom-datepicker .react-datepicker__day-name, 
+.custom-datepicker .react-datepicker__day {
+  width: 2.5rem;
+  line-height: 2.5rem;
+  margin: 0.2rem;
+}
+
+.custom-datepicker .react-datepicker__day--selected {
+  background-color: #166534 !important; /* green-800 */
+  color: white !important;
+  border-radius: 50%;
+}
+
+.custom-datepicker .react-datepicker__day:hover {
+  background-color: #dcfce7 !important; /* green-100 */
+  color: #166534 !important; /* green-800 */
+  border-radius: 50%;
+}
+
+.custom-datepicker .react-datepicker__day--keyboard-selected {
+  background-color: #bbf7d0 !important; /* green-200 */
+  color: #166534 !important; /* green-800 */
+}
+
+.custom-datepicker .react-datepicker__header {
+  background-color: white;
+  border-bottom: none;
+}
+
+.custom-datepicker .react-datepicker__current-month {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #166534; /* green-800 */
+}
+
+.custom-datepicker .react-datepicker__day-name {
+  color: #65a30d; /* lime-600 */
+  font-weight: 500;
+}
+
+.custom-datepicker .react-datepicker__navigation {
+  top: 8px;
+} 

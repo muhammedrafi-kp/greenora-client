@@ -1,6 +1,6 @@
 import { IUserSignUpData, ICollectorSignUpData } from "../interfaces/interfaces";
-import {publicApiClient} from "../apis/api";
-import {apiClient} from "../apis/api";
+import { publicApiClient } from "../apis/api";
+import { apiClient } from "../apis/api";
 
 //admin auth apis
 export const loginAdmin = async (email: string, password: string) => {
@@ -130,7 +130,27 @@ export const googleCallbackCollector = async (credential: string) => {
 //common auth apis
 export const changePassword = async (role: string, currentPassword: string, newPassword: string) => {
     try {
-        const response = await apiClient.patch(`/user-service/${role}/change-password`, { currentPassword, newPassword });
+        const response = await apiClient.patch(`/user-service/${role}/password`, { currentPassword, newPassword });
+        return response.data;
+    } catch (error) {
+        console.error("Error changing password:", error);
+        throw error;
+    }
+}
+
+export const sendResetLink = async (role: string, email: string) => {
+    try {
+        const response = await publicApiClient.post(`/user-service/${role}/forget-password`, { email });
+        return response.data;
+    } catch (error) {
+        console.error("Error changing password:", error);
+        throw error;
+    }
+}
+
+export const resetPassword = async (role: string, token: string, password: string) => {
+    try {
+        const response = await publicApiClient.patch(`/user-service/${role}/reset-password`, { token, password });
         return response.data;
     } catch (error) {
         console.error("Error changing password:", error);

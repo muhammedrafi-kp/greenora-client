@@ -18,6 +18,8 @@ export interface ICategory {
 interface IFormData {
   items: {
     categoryId: string;
+    name: string;
+    rate: number;
     qty: number;
   }[];
   preferredDate: string;
@@ -32,9 +34,9 @@ const DetailsForm = () => {
   const pickupType = useSelector((state: any) => state.pickup.pickupRequest.type);
   const details = useSelector((state: any) => state.pickup.pickupRequest.details);
 
-  console.log("pickupType", pickupType);
+  // console.log("pickupType", pickupType);
   console.log("details", details);
-  console.log(typeof details);
+  // console.log(typeof details);
   // States
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +48,8 @@ const DetailsForm = () => {
   });
   const [newItem, setNewItem] = useState({
     categoryId: '',
+    name: '',
+    rate: 0,
     qty: 0,
   });
   const [errors, setErrors] = useState({
@@ -91,10 +95,12 @@ const DetailsForm = () => {
       ...prev,
       items: [...prev.items, {
         categoryId: newItem.categoryId,
+        name: newItem.name,
+        rate: newItem.rate,
         qty: newItem.qty
       }]
     }));
-    setNewItem({ categoryId: '', qty: 0 });
+    setNewItem({ categoryId: '', name: '', rate: 0, qty: 0 });
   }, [newItem]);
 
   const handleRemoveItem = useCallback((index: number) => {
@@ -247,11 +253,18 @@ const DetailsForm = () => {
               <select
                 value={newItem.categoryId}
                 onChange={(e) => {
-                  setNewItem(prev => ({ ...prev, categoryId: e.target.value }));
+                  const selectedCategory = categories.find(cat => cat._id === e.target.value);
+                  if (selectedCategory) {
+                    setNewItem(prev => ({
+                      ...prev,
+                      categoryId: selectedCategory._id,
+                      name: selectedCategory.name,
+                      rate: selectedCategory.rate
+                    }));
+                  }
                   setErrors(prev => ({ ...prev, category: '' }));
                 }}
-                className={`w-full p-2.5 border rounded-lg bg-white text-sm ${errors.category ? 'border-red-500' : 'border-gray-200'
-                  }`}
+                className={`w-full p-2.5 border rounded-lg bg-white text-sm ${errors.category ? 'border-red-500' : 'border-gray-200'}`}
               >
                 <option value="" className='text-gray-400' disabled>--Select category--</option>
                 {availableCategories.map((category) => (

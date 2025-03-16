@@ -51,6 +51,7 @@ const Payment: React.FC = () => {
             order_id: response.orderId, // Order ID from Backend
             handler: async (response: any) => {
               try {
+                console.log("resposne2 :",response)
                 const verifyResponse = await verifyPayment(response);
                 
                 if (verifyResponse.success) {
@@ -176,13 +177,13 @@ const Payment: React.FC = () => {
                   <p className="text-sm font-medium text-gray-800">Online Payment</p>
                   <p className="text-xs text-gray-500">UPI, Card, Net Banking</p>
                 </div>
-              </div>
+            </div>
               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'online' ? 'border-green-500' : 'border-gray-300'
                 }`}>
                 {selectedMethod === 'online' && (
                   <div className="w-2 h-2 rounded-full bg-green-500" />
                 )}
-              </div>
+            </div>
             </button>
           </div>
 
@@ -191,7 +192,7 @@ const Payment: React.FC = () => {
               Insufficient wallet balance. Please add money or choose online payment.
             </p>
           )}
-        </div>
+          </div>
 
         <div className="flex gap-4">
           {!loading && (
@@ -203,7 +204,7 @@ const Payment: React.FC = () => {
               Back
             </button>
           )}
-          <button
+            <button
             type="button"
             onClick={initializePayment}
             disabled={loading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance < collectionData.estimatedCost)}
@@ -212,11 +213,11 @@ const Payment: React.FC = () => {
                 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {loading ? 'Processing...' : `Pay with ${selectedMethod === 'wallet' ? 'Wallet' : 'Online'}`}
-          </button>
-        </div>
+            </button>
+          </div>
       </div>
     </div>
   );
 };
 
-export default Payment;    
+export default Payment; 

@@ -7,68 +7,68 @@ import { toast } from 'react-hot-toast';
 
 
 export interface ISubscriptionPlan {
-    _id: string;
-    name: string;
-    description?: string;
-    price: number;
-    duration: number;
-    features: string[];
+  _id: string;
+  name: string;
+  description?: string;
+  price: number;
+  duration: number;
+  features: string[];
 }
 
 interface ISubscriptionPlanForm {
-    name: string;
-    description: string;
-    price: number;
-    duration: number;
-    features: string[];
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  features: string[];
 }
 
 interface FormErrors {
-    name?: string;
-    price?: string;
-    duration?: string;
-    features?: string;
+  name?: string;
+  price?: string;
+  duration?: string;
+  features?: string;
     description?: string;
 }
 
 const Pricing: React.FC = () => {
-    const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showModal, setShowModal] = useState(false);
-    const [modalType, setModalType] = useState<'add' | 'edit' | 'delete'>('add');
-    const [selectedItem, setSelectedItem] = useState<ISubscriptionPlan | null>(null);
-    const [formInput, setFormInput] = useState<ISubscriptionPlanForm>({
-        name: '',
-        description: '',
-        price: 0,
-        duration: 1,
-        features: [''],
-    });
-    const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<'add' | 'edit' | 'delete'>('add');
+  const [selectedItem, setSelectedItem] = useState<ISubscriptionPlan | null>(null);
+  const [formInput, setFormInput] = useState<ISubscriptionPlanForm>({
+    name: '',
+    description: '',
+    price: 0,
+    duration: 1,
+    features: [''],
+  });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
-    const validateField = (name: string, value: any): string | undefined => {
-        switch (name) {
-            case 'name':
-                if (!value.trim()) return 'Name is required';
-                if (value.trim().length < 3) return 'Name must be at least 3 characters long';
-                if (value.trim().length > 50) return 'Name must be less than 50 characters';
-                return undefined;
+  const validateField = (name: string, value: any): string | undefined => {
+    switch (name) {
+      case 'name':
+        if (!value.trim()) return 'Name is required';
+        if (value.trim().length < 3) return 'Name must be at least 3 characters long';
+        if (value.trim().length > 50) return 'Name must be less than 50 characters';
+        return undefined;
 
-            case 'price':
-                if (value === '' || value === null) return 'Price is required';
-                if (isNaN(value) || value < 1) return 'Price must be a positive number';
-                if (value > 100000) return 'Price must be less than ₹100,000';
-                return undefined;
+      case 'price':
+        if (value === '' || value === null) return 'Price is required';
+        if (isNaN(value) || value < 1) return 'Price must be a positive number';
+        if (value > 100000) return 'Price must be less than ₹100,000';
+        return undefined;
 
-            case 'duration':
-                if (value === '' || value === null) return 'Duration is required';
-                if (isNaN(value) || value < 1) return 'Duration must be at least 1 month';
-                if (value > 60) return 'Duration must be less than 60 months';
-                return undefined;
+      case 'duration':
+        if (value === '' || value === null) return 'Duration is required';
+        if (isNaN(value) || value < 1) return 'Duration must be at least 1 month';
+        if (value > 60) return 'Duration must be less than 60 months';
+        return undefined;
 
-            case 'features':
+      case 'features':
                 if (!value || value.length === 0 || !value.some((f: string) => f.trim())) {
                     return 'At least one feature is required';
                 }
@@ -78,12 +78,12 @@ const Pricing: React.FC = () => {
                 if (!value.trim()) return 'Description is required';
                 if (value.trim().length < 10) return 'Description must be at least 10 characters long';
                 if (value.trim().length > 200) return 'Description must be less than 200 characters';
-                return undefined;
+        return undefined;
 
-            default:
-                return undefined;
-        }
-    };
+      default:
+        return undefined;
+    }
+  };
 
     const fetchPricingPlans = async () => {
         setLoading(true);
@@ -104,38 +104,38 @@ const Pricing: React.FC = () => {
         fetchPricingPlans();
     }, []);
 
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const { name, value } = e.target;
-        setFormInput((prev) => ({ ...prev, [name]: value }));
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormInput((prev) => ({ ...prev, [name]: value }));
+    
+    const error = validateField(name, value);
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
+  };
 
-        const error = validateField(name, value);
-        setFormErrors(prev => ({
-            ...prev,
-            [name]: error
-        }));
-    };
+  const handleFeatureChange = (index: number, value: string) => {
+    const newFeatures = [...formInput.features];
+    newFeatures[index] = value;
+    setFormInput(prev => ({ ...prev, features: newFeatures }));
+  };
 
-    const handleFeatureChange = (index: number, value: string) => {
-        const newFeatures = [...formInput.features];
-        newFeatures[index] = value;
-        setFormInput(prev => ({ ...prev, features: newFeatures }));
-    };
+  const addFeature = () => {
+    setFormInput(prev => ({
+      ...prev,
+      features: [...prev.features, '']
+    }));
+  };
 
-    const addFeature = () => {
-        setFormInput(prev => ({
-            ...prev,
-            features: [...prev.features, '']
-        }));
-    };
-
-    const removeFeature = (index: number) => {
-        setFormInput(prev => ({
-            ...prev,
-            features: prev.features.filter((_, i) => i !== index)
-        }));
-    };
+  const removeFeature = (index: number) => {
+    setFormInput(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }));
+  };
 
     const validateForm = (): boolean => {
         const errors: FormErrors = {};
@@ -172,7 +172,7 @@ const Pricing: React.FC = () => {
                 });
 
                 if (response.success) {
-                    toast.success('Plan added successfully');
+                    toast.success('New plan added');
                     await fetchPricingPlans();
                     setShowModal(false);
                     // Reset form
@@ -193,7 +193,7 @@ const Pricing: React.FC = () => {
                 });
 
                 if (response.success) {
-                    toast.success('Plan updated successfully');
+                    toast.success('Plan updated');
                     await fetchPricingPlans();
                     setShowModal(false);
                 } else {
@@ -203,7 +203,7 @@ const Pricing: React.FC = () => {
                 const response = await deletePricingPlan(selectedItem._id);
 
                 if (response.success) {
-                    toast.success('Plan deleted successfully');
+                    toast.success('Plan deleted');
                     await fetchPricingPlans();
                     setShowModal(false);
                     setSelectedItem(null);
@@ -226,34 +226,34 @@ const Pricing: React.FC = () => {
             features: [''],
         });
         setFormErrors({});
-    };
+  };
 
-    return (
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
-            <div className="max-w-7xl mx-auto bg-white border rounded-lg hover:shadow-md transition-all duration-300">
-                <div className="p-6 space-y-6">
-                    <div className="flex justify-end items-center gap-4">
-                        <div className="relative w-64">
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full bg-white shadow-sm"
-                            />
-                            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        </div>
-                        <button
+  return (
+    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
+      <div className="max-w-7xl mx-auto bg-white border rounded-lg hover:shadow-md transition-all duration-300">
+        <div className="p-6 space-y-6">
+          <div className="flex justify-end items-center gap-4">
+            <div className="relative w-64">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none w-full bg-white shadow-sm"
+              />
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            </div>
+            <button
                             onClick={() => {
                                 setShowModal(true);
                                 setModalType('add');
                             }}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
-                        >
-                            <Plus className="w-5 h-5" />
-                            <span>Add New Plan</span>
-                        </button>
-                    </div>
+              className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add New Plan</span>
+            </button>
+          </div>
 
                     {loading ? (
                         <div className="flex justify-center items-center min-h-[200px]">
@@ -337,109 +337,109 @@ const Pricing: React.FC = () => {
                             </table>
                         </div>
                     )}
-                </div>
-            </div>
+        </div>
+      </div>
 
-            <Modal
-                isOpen={showModal}
-                onClose={() => {
-                    setShowModal(false);
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
                     resetForm();
                     setSelectedItem(null);
-                }}
-                title={modalType === 'delete' ? 'Delete Plan' : modalType === 'edit' ? 'Edit Plan' : 'Add New Plan'}
+        }}
+        title={modalType === 'delete' ? 'Delete Plan' : modalType === 'edit' ? 'Edit Plan' : 'Add New Plan'}
                 description={modalType === 'delete' ? 'Are you sure you want to delete this plan?' : 'Enter plan details below'}
-                confirmLabel={modalType === 'delete' ? 'Delete' : 'Save'}
+        confirmLabel={modalType === 'delete' ? 'Delete' : 'Save'}
                 onConfirm={handleSubmit}
                 confirmButtonClass={`px-4 py-2 rounded-lg text-white ${modalType === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-950 hover:bg-blue-900'
-                    } transition-colors`}
-            >
-                {modalType !== 'delete' && (
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formInput.name}
-                                onChange={handleInputChange}
-                                className={`w-full p-2.5 border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
-                            />
-                            {formErrors.name && <p className="mt-1 text-xs text-red-500">{formErrors.name}</p>}
-                        </div>
+        } transition-colors`}
+      >
+        {modalType !== 'delete' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formInput.name}
+                onChange={handleInputChange}
+                className={`w-full p-2.5 border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
+              />
+              {formErrors.name && <p className="mt-1 text-xs text-red-500">{formErrors.name}</p>}
+            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                            <input
-                                type="number"
-                                name="price"
-                                value={formInput.price}
-                                onChange={handleInputChange}
-                                className={`w-full p-2.5 border ${formErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
-                            />
-                            {formErrors.price && <p className="mt-1 text-xs text-red-500">{formErrors.price}</p>}
-                        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+              <input
+                type="number"
+                name="price"
+                value={formInput.price}
+                onChange={handleInputChange}
+                className={`w-full p-2.5 border ${formErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
+              />
+              {formErrors.price && <p className="mt-1 text-xs text-red-500">{formErrors.price}</p>}
+            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Duration (months)</label>
-                            <input
-                                type="number"
-                                name="duration"
-                                value={formInput.duration}
-                                onChange={handleInputChange}
-                                className={`w-full p-2.5 border ${formErrors.duration ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
-                            />
-                            {formErrors.duration && <p className="mt-1 text-xs text-red-500">{formErrors.duration}</p>}
-                        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Duration (months)</label>
+              <input
+                type="number"
+                name="duration"
+                value={formInput.duration}
+                onChange={handleInputChange}
+                className={`w-full p-2.5 border ${formErrors.duration ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
+              />
+              {formErrors.duration && <p className="mt-1 text-xs text-red-500">{formErrors.duration}</p>}
+            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                            <textarea
-                                name="description"
-                                value={formInput.description}
-                                onChange={handleInputChange}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea
+                name="description"
+                value={formInput.description}
+                onChange={handleInputChange}
                                 className={`w-full p-2.5 border ${formErrors.description ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
-                                rows={3}
-                            />
+                rows={3}
+              />
                             {formErrors.description && <p className="mt-1 text-xs text-red-500">{formErrors.description}</p>}
-                        </div>
+            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Features</label>
-                            {formInput.features.map((feature, index) => (
-                                <div key={index} className="flex gap-2 mb-2">
-                                    <input
-                                        type="text"
-                                        value={feature}
-                                        onChange={(e) => handleFeatureChange(index, e.target.value)}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Features</label>
+              {formInput.features.map((feature, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={feature}
+                    onChange={(e) => handleFeatureChange(index, e.target.value)}
                                         className={`flex-1 p-2.5 border ${formErrors.features ? 'border-red-500' : 'border-gray-300'
                                             } rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none`}
-                                        placeholder="Enter feature"
-                                    />
-                                    <button
-                                        onClick={() => removeFeature(index)}
-                                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            ))}
+                    placeholder="Enter feature"
+                  />
+                  <button
+                    onClick={() => removeFeature(index)}
+                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
                             {formErrors.features && (
                                 <p className="mt-1 text-xs text-red-500">{formErrors.features}</p>
                             )}
-                            <button
-                                type="button"
-                                onClick={addFeature}
-                                className="mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
-                            >
-                                + Add Feature
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-        </main>
-    );
+              <button
+                type="button"
+                onClick={addFeature}
+                className="mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                + Add Feature
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </main>
+  );
 };
 
 export default Pricing;

@@ -6,7 +6,7 @@ import DashboardContent from '../../components/collector/DashboardContent';
 const CollectorDashboard: React.FC = () => {
   return (
     <Layout>
-      <Breadcrumbs />
+      <Breadcrumbs title='Dashboard' />
       <DashboardContent />
     </Layout>
   );

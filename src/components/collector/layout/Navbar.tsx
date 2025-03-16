@@ -56,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                     </button>
 
                     {/* Search Bar */}
-                    <div className="flex-1 flex justify-end md:mx-4 xs:mx-3 mx-2">
+                    {/* <div className="flex-1 flex justify-end md:mx-4 xs:mx-3 mx-2">
                         <div className="relative md:w-64 xs:w-48 w-40">
                             <input
                                 type="text"
@@ -67,14 +67,14 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                 <FaSearch className="text-gray-400 hover:text-green-500 md:w-4 md:h-4 w-3 h-3" />
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
-                    {/* Navbar Icons */}
-                    <div className="flex items-center md:space-x-6 xs:space-x-4 space-x-2">
+                    {/* Navbar Icons - Updated to ensure right alignment */}
+                    <div className="flex items-center ml-auto md:space-x-6 xs:space-x-4 space-x-2">
                         {/* Notifications */}
                         <div className="relative">
                             <button
-                                onClick={() => navigate('/agent/notifications')}
+                                onClick={() => navigate('/collector/notifications')}
                                 className='md:p-2 p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200'
                             >
                                 <IoMdNotificationsOutline className="md:w-6 md:h-6 xs:w-5 xs:h-5 w-4 h-4 text-gray-600 hover:text-green-600" />
@@ -86,7 +86,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
 
                         {/* Messages */}
                         <div className="relative">
-                            <button className='md:p-2 p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200'>
+                            <button 
+                                onClick={() => navigate('/collector/chat')}
+                                className='md:p-2 p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200'
+                            >
                                 <MdChatBubbleOutline className="md:w-6 md:h-6 xs:w-5 xs:h-5 w-4 h-4 text-gray-600 hover:text-green-600" />
                                 <span className="absolute -top-1 -right-1 bg-green-600 text-white rounded-full md:w-5 md:h-5 w-4 h-4 flex items-center justify-center md:text-xs text-xxs font-semibold">
                                     2

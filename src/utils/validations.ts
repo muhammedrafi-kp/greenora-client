@@ -1,8 +1,8 @@
 export interface IAddressFormErrors {
   name: string;
   mobile: string;
-  districtId: string;
-  serviceAreaId: string;
+  // districtId: string;
+  // serviceAreaId: string;
   pinCode: string;
   locality: string;
   addressLine: string;
@@ -11,8 +11,8 @@ export interface IAddressFormErrors {
 export interface IAddressFormData {
   name: string;
   mobile: string;
-  districtId: string;
-  serviceAreaId: string;
+  // districtId: string;
+  // serviceAreaId: string;
   pinCode: string;
   locality: string;
   addressLine: string;
@@ -23,8 +23,8 @@ export const validateAddressForm = (formData: IAddressFormData): { isValid: bool
   const errors: IAddressFormErrors = {
     name: '',
     mobile: '',
-    districtId: '',
-    serviceAreaId: '',
+    // districtId: '',
+    // serviceAreaId: '',
     pinCode: '',
     locality: '',
     addressLine: ''
@@ -45,17 +45,17 @@ export const validateAddressForm = (formData: IAddressFormData): { isValid: bool
     isValid = false;
   }
 
-  // District validation
-  if (!formData.districtId) {
-    errors.districtId = 'Please select a district';
-    isValid = false;
-  }
+  // // District validation
+  // if (!formData.districtId) {
+  //   errors.districtId = 'Please select a district';
+  //   isValid = false;
+  // }
 
-  // Service Area validation
-  if (!formData.serviceAreaId) {
-    errors.serviceAreaId = 'Please select a service area';
-    isValid = false;
-  }
+  // // Service Area validation
+  // if (!formData.serviceAreaId) {
+  //   errors.serviceAreaId = 'Please select a service area';
+  //   isValid = false;
+  // }
 
   // Pin Code validation
   if (!formData.pinCode) {
@@ -89,4 +89,54 @@ export const validatePinCodeInput = (pinCode: string): boolean => {
 // Add mobile number validation utility
 export const validateMobileInput = (mobile: string): boolean => {
   return /^\d{0,10}$/.test(mobile);
+};
+
+interface PasswordValidation {
+    isValid: boolean;
+    errors: {
+        password?: string;
+        confirmPassword?: string;
+    };
+}
+
+export const validatePassword = (
+    password: string,
+    confirmPassword?: string,
+    isConfirmRequired: boolean = true
+): PasswordValidation => {
+    const result: PasswordValidation = {
+        isValid: true,
+        errors: {}
+    };
+
+    // Password strength validation
+    if (!password) {
+        result.errors.password = 'Password is required';
+        result.isValid = false;
+    } else if (password.length < 8) {
+        result.errors.password = 'Password must be at least 8 characters long';
+        result.isValid = false;
+    } else if (!/[a-z]/.test(password)) {
+        result.errors.password = 'Password must contain at least one lowercase letter';
+        result.isValid = false;
+    } else if (!/\d/.test(password)) {
+        result.errors.password = 'Password must contain at least one number';
+        result.isValid = false;
+    } else if (!/[!@#$%^&*]/.test(password)) {
+        result.errors.password = 'Password must contain at least one special character (!@#$%^&*)';
+        result.isValid = false;
+    }
+
+    // Password match validation (only if confirmPassword is provided or required)
+    if (isConfirmRequired) {
+        if (!confirmPassword) {
+            result.errors.confirmPassword = 'Please confirm your password';
+            result.isValid = false;
+        } else if (password !== confirmPassword) {
+            result.errors.confirmPassword = "Passwords don't match";
+            result.isValid = false;
+        }
+    }
+
+    return result;
 }; 

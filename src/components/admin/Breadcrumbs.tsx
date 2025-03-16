@@ -22,7 +22,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({title}) => {
                     </ol>
                 </nav> */}
             <div className='flex items-center justify-between px-6 py-4'>
-            <p className='text-lg md:text-xl font-semibold'>{title}</p>
+            <p className='text-md md:text-xl font-semibold'>{title}</p>
                 <p className='text-md md:text-lg text-gray-700'></p>
             </div>
         </>

@@ -439,61 +439,61 @@ const Profile: React.FC<ProfileProps> = () => {
                   
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
-                          <span className="flex items-center gap-2">
-                            <User className="w-4 h-4" /> Full Name
-                          </span>
-                        </label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={collectorData?.name || ''}
-                          disabled={!isEditing}
-                          onChange={handleInputChange}
-                          onBlur={handleBlur}
-                          className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
-                        />
-                        {errors.name && (
-                          <p className="mt-1 text-xs text-red-700">{errors.name}</p>
-                        )}
-                      </div>
+                <div>
+                  <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <User className="w-4 h-4" /> Full Name
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={collectorData?.name || ''}
+                    disabled={!isEditing}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-red-700">{errors.name}</p>
+                  )}
+                </div>
 
-                      <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
-                          <span className="flex items-center gap-2">
-                            <Mail className="w-4 h-4" /> Email Address
-                          </span>
-                        </label>
-                        <input
-                          type="email"
-                          value={collectorData?.email}
-                          disabled={true}
-                          className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
-                        />
-                      </div>
-                    </div>
+                <div>
+                  <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" /> Email Address
+                    </span>
+                  </label>
+                  <input
+                    type="email"
+                    value={collectorData?.email}
+                    disabled={true}
+                    className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                  />
+                </div>
+              </div>
 
                     <div className="grid grid-cols-2 gap-6">
                       <div className="col-span-1">
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
-                          <span className="flex items-center gap-2">
-                            <Phone className="w-4 h-4" /> Phone Number
-                          </span>
-                        </label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={collectorData?.phone || ''}
-                          disabled={!isEditing}
-                          onChange={handleInputChange}
-                          onBlur={handleBlur}
-                          className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
-                        />
-                        {errors.phone && (
-                          <p className="mt-1 text-xs text-red-700">{errors.phone}</p>
-                        )}
-                      </div>
+                  <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" /> Phone Number
+                    </span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={collectorData?.phone || ''}
+                    disabled={!isEditing}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
+                  />
+                  {errors.phone && (
+                    <p className="mt-1 text-xs text-red-700">{errors.phone}</p>
+                  )}
+                </div>
 
                       <div className="col-span-1">
                         <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
@@ -534,168 +534,168 @@ const Profile: React.FC<ProfileProps> = () => {
                   
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
-                          <span className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> District
-                          </span>
-                        </label>
-                        {isEditing ? (
-                          <select
-                            name="district"
-                            value={collectorData?.district || ''}
-                            onChange={handleDistrictChange}
-                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
-                          >
+                <div>
+                  <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" /> District
+                    </span>
+                  </label>
+                  {isEditing ? (
+                    <select
+                      name="district"
+                      value={collectorData?.district || ''}
+                      onChange={handleDistrictChange}
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
+                    >
                             <option value="" disabled>--Select District--</option>
-                            {districts.map((district) => (
-                              <option key={district._id} value={district._id}>
-                                {district.name}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type="text"
-                            value={collectorData?.district || 'N/A'}
-                            disabled
-                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
-                          />
-                        )}
-                        {errors.district && (
-                          <p className="mt-1 text-xs text-red-700">{errors.district}</p>
-                        )}
-                      </div>
+                      {districts.map((district) => (
+                        <option key={district._id} value={district._id}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={collectorData?.district || 'N/A'}
+                      disabled
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
+                    />
+                  )}
+                  {errors.district && (
+                    <p className="mt-1 text-xs text-red-700">{errors.district}</p>
+                  )}
+              </div>
 
-                      <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
-                          <span className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> Service Area
-                          </span>
-                        </label>
-                        {isEditing ? (
-                          <select
-                            name="serviceArea"
-                            value={collectorData?.serviceArea || ''}
-                            onChange={handleServiceAreaChange}
-                            disabled={!selectedDistrict}
-                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
-                          >
+                <div>
+                  <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" /> Service Area
+                    </span>
+                  </label>
+                  {isEditing ? (
+                    <select
+                      name="serviceArea"
+                      value={collectorData?.serviceArea || ''}
+                      onChange={handleServiceAreaChange}
+                      disabled={!selectedDistrict}
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
+                    >
                             <option value="" disabled>--Select Service Area--</option>
-                            {serviceAreas.map((area) => (
-                              <option key={area._id} value={area._id}>
-                                {area.name}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type="text"
-                            value={collectorData?.serviceArea || 'N/A'}
-                            disabled
-                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
-                          />
-                        )}
-                        {errors.serviceArea && (
-                          <p className="mt-1 text-xs text-red-700">{errors.serviceArea}</p>
-                        )}
-                      </div>
-                    </div>
+                      {serviceAreas.map((area) => (
+                        <option key={area._id} value={area._id}>
+                          {area.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={collectorData?.serviceArea || 'N/A'}
+                      disabled
+                      className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
+                    />
+                  )}
+                  {errors.serviceArea && (
+                    <p className="mt-1 text-xs text-red-700">{errors.serviceArea}</p>
+                  )}
+                </div>
+              </div>
 
                     {/* ID Proof Section */}
-                    <div>
-                      <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
-                        <span className="flex items-center gap-2">
+                  <div>
+                    <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                      <span className="flex items-center gap-2">
                           <Shield className="w-4 h-4" /> ID Proof
-                        </span>
-                      </label>
+                      </span>
+                    </label>
                       
                       {isEditing ? (
                         <div className="space-y-4">
-                          <select
+                    <select
                             name="idProofType"
-                            value={collectorData?.idProofType || ''}
-                            onChange={handleIdProofChange}
+                      value={collectorData?.idProofType || ''}
+                      onChange={handleIdProofChange}
                             className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
-                          >
+                    >
                             <option value="" disabled>Select ID Proof Type</option>
-                            {idProofTypes.map((type) => (
+                      {idProofTypes.map((type) => (
                               <option key={type} value={type}>
                                 {type}
                               </option>
-                            ))}
-                          </select>
+                      ))}
+                    </select>
 
-                          {collectorData?.idProofType && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div>
-                                <div className="relative">
-                                  {idFrontImage || collectorData?.idProofFrontUrl ? (
-                                    <div className="relative">
-                                      <img
-                                        src={idFrontImage || collectorData?.idProofFrontUrl}
-                                        alt="ID Front"
-                                        className="w-full h-52 object-cover rounded-lg"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => clearIdImage('front')}
-                                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                      >
-                                        <X className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <label className="flex flex-col items-center justify-center w-full h-52 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400">
-                                      <Camera className="w-8 h-8 text-gray-400" />
-                                      <span className="mt-2 text-sm text-gray-500">Upload Front Side</span>
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleIdImageChange(e, 'front')}
-                                        className="hidden"
-                                      />
-                                    </label>
-                                  )}
-                                </div>
-                                <p className="mt-1 text-xs text-gray-500 text-center">Front Side</p>
-                              </div>
-
-                              <div>
-                                <div className="relative">
-                                  {idBackImage || collectorData?.idProofBackUrl ? (
-                                    <div className="relative">
-                                      <img
-                                        src={idBackImage || collectorData?.idProofBackUrl}
-                                        alt="ID Back"
-                                        className="w-full h-52 object-cover rounded-lg"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => clearIdImage('back')}
-                                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                      >
-                                        <X className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <label className="flex flex-col items-center justify-center w-full h-52 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400">
-                                      <Camera className="w-8 h-8 text-gray-400" />
-                                      <span className="mt-2 text-sm text-gray-500">Upload Back Side</span>
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleIdImageChange(e, 'back')}
-                                        className="hidden"
-                                      />
-                                    </label>
-                                  )}
-                                </div>
-                                <p className="mt-1 text-xs text-gray-500 text-center">Back Side</p>
-                              </div>
+                  {collectorData?.idProofType && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="relative">
+                          {idFrontImage || collectorData?.idProofFrontUrl ? (
+                            <div className="relative">
+                              <img
+                                src={idFrontImage || collectorData?.idProofFrontUrl}
+                                alt="ID Front"
+                                className="w-full h-52 object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => clearIdImage('front')}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
                             </div>
+                          ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-52 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400">
+                              <Camera className="w-8 h-8 text-gray-400" />
+                                      <span className="mt-2 text-sm text-gray-500">Upload Front Side</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleIdImageChange(e, 'front')}
+                                className="hidden"
+                              />
+                            </label>
                           )}
                         </div>
+                                <p className="mt-1 text-xs text-gray-500 text-center">Front Side</p>
+                      </div>
+
+                      <div>
+                        <div className="relative">
+                          {idBackImage || collectorData?.idProofBackUrl ? (
+                            <div className="relative">
+                              <img
+                                src={idBackImage || collectorData?.idProofBackUrl}
+                                alt="ID Back"
+                                className="w-full h-52 object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => clearIdImage('back')}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-52 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400">
+                              <Camera className="w-8 h-8 text-gray-400" />
+                                      <span className="mt-2 text-sm text-gray-500">Upload Back Side</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleIdImageChange(e, 'back')}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                        </div>
+                                <p className="mt-1 text-xs text-gray-500 text-center">Back Side</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
                       ) : (
                         collectorData?.idProofFrontUrl && collectorData?.idProofBackUrl ? (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

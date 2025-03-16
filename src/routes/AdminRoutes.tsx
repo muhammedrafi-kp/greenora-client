@@ -13,6 +13,8 @@ import AdminScrapCategories from '../pages/admin/AdminScrapCategories';
 import AdminServiceAreas from '../pages/admin/AdminServiceAreas';
 import AdminPricing from '../pages/admin/AdminPricing';
 import AdminCollectionHistories from '../pages/admin/AdminCollectionHistories';
+import AdminCollectionDetails from '../pages/admin/AdminCollectionDetails';
+import AdminChat from '../pages/admin/AdminChat';
 
 const AdminRoutes: React.FC = () => {
     return (
@@ -31,6 +33,9 @@ const AdminRoutes: React.FC = () => {
                 <Route path='/service-areas' element={<AdminServiceAreas />} />
                 <Route path='/pricing' element={<AdminPricing />} />
                 <Route path='/collection-histories' element={<AdminCollectionHistories />} />
+                <Route path='/collection-details' element={<AdminCollectionDetails />} />
+                <Route path='/chat' element={<AdminChat />} />
+
             </Route>
         </Routes>
     )
