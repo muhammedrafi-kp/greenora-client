@@ -198,7 +198,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                             </div>
                         </li>
 
-                        <li>
+                        {/* <li>
                             <div
                                 className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
@@ -213,7 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 </span>
                                 <span>Pricing</span>
                             </div>
-                        </li>
+                        </li> */}
                         <li>
                             <div
                                 className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
@@ -230,7 +230,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 <span>Collection Requests</span>
                             </div>
                         </li>
-                        <li>
+                        {/* <li>
                             <div
                                 className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
@@ -245,7 +245,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 </span>
                                 <span>Settings</span>
                             </div>
-                        </li>
+                        </li> */}
                     </ul>
                 </nav>
 

@@ -19,7 +19,12 @@ interface ICollection {
   serviceAreaId: string;
   districtId: string
   status: 'pending' | 'scheduled' | 'completed' | 'cancelled';
-  items: Array<{ category: string; qty: number }>;
+  items: {
+    categoryId: string;
+    name: string;
+    rate: number;
+    qty: number;
+  }[];
   instructions?: string;
   preferredDate: string;
   preferredTime: string;
@@ -30,10 +35,6 @@ interface ICollection {
     locality: string;
     addressLine: string;
   };
-  // customer: {
-  //   name: string;
-  //   phone: string;
-  // };
 }
 
 const AssignedCollections: React.FC = () => {
@@ -253,9 +254,12 @@ const AssignedCollections: React.FC = () => {
                   </div>
 
                   <div className="mt-4 flex justify-end gap-2">
-                    <button className="px-4 py-2 text-sm bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors">
-                      Start Collection
-                    </button>
+                    {collection.status === 'scheduled' && 
+                     new Date(collection.preferredDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && (
+                      <button className="px-4 py-2 text-sm bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors">
+                        Start Collection
+                      </button>
+                    )}
                     <button onClick={() => navigate(`/collector/collection-details`, { state: { collection } })} className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                       View Details
                     </button>

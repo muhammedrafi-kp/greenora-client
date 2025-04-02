@@ -50,12 +50,10 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <>
       <style>{scrollbarStyles}</style>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 overflow-y-auto max-h-[90vh] scrollbar-thin">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {title}
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -63,11 +61,11 @@ const Modal: React.FC<ModalProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-gray-600 mb-6 font-medium">
-            {description}
+          <p className="text-gray-600 mb-6 font-medium">{description}</p>
+          <div className="flex flex-col space-y-2">
             {children}
-          </p>
-          <div className="flex justify-end gap-4">
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
@@ -77,7 +75,7 @@ const Modal: React.FC<ModalProps> = ({
             <button
               onClick={onConfirm}
               disabled={isDisabled}
-              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors"}
+              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"}
             >
               {confirmLabel}
             </button>

@@ -6,7 +6,7 @@ import { FaTransgender } from "react-icons/fa";
 import { ChangePassword } from '../common/ChangePassword';
 import ProfileSkeleton from '../collector/skeltons/ProfileSkelton';
 import { ICollectorData } from '../../interfaces/interfaces';
-import { getCollectorData, updateCollectorData, getDistricts, getServiceAreas } from "../../services/collectorService";
+import { getCollectorData, updateCollectorData, getDistricts, getServiceAreas,getDistrictAndServiceArea } from "../../services/collectorService";
 import toast from 'react-hot-toast';
 
 interface ProfileProps {
@@ -56,6 +56,8 @@ const Profile: React.FC<ProfileProps> = () => {
   const [idFrontImage, setIdFrontImage] = useState<string | null>(null);
   const [idBackImage, setIdBackImage] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [district, setDistrict] = useState<string>('');
+  const [serviceArea, setServiceArea] = useState<string>('');
 
   const idProofTypes = ['Aadhar', 'Voter-ID', 'Driving-License'];
 
@@ -125,6 +127,7 @@ const Profile: React.FC<ProfileProps> = () => {
     }
   }, [selectedDistrict]);
 
+  
   const fetchCollectorData = async () => {
     setLoading(true);
     try {
@@ -176,6 +179,23 @@ const Profile: React.FC<ProfileProps> = () => {
       toast.error('Failed to load service areas');
     }
   };
+
+  useEffect(()=>{
+    const fetchDistrictAndServiceArea = async () => {
+      try{
+        const response = await getDistrictAndServiceArea(collectorData?.district || '', collectorData?.serviceArea || '');
+        console.log("district and service area response :", response);
+        if(response.success){
+          setDistrict(response.district.name);
+          setServiceArea(response.serviceArea.name);
+        }
+      }catch(error){
+        console.error("Error fetching district and service area:", error);
+      }
+    }
+    fetchDistrictAndServiceArea();
+  },[collectorData?.district, collectorData?.serviceArea])
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -543,7 +563,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   {isEditing ? (
                     <select
                       name="district"
-                      value={collectorData?.district || ''}
+                      value={selectedDistrict}
                       onChange={handleDistrictChange}
                       className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg focus:border-transparent"
                     >
@@ -557,7 +577,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   ) : (
                     <input
                       type="text"
-                      value={collectorData?.district || 'N/A'}
+                      value={district || 'N/A'}
                       disabled
                       className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
                     />
@@ -591,7 +611,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   ) : (
                     <input
                       type="text"
-                      value={collectorData?.serviceArea || 'N/A'}
+                      value={serviceArea || 'N/A'}
                       disabled
                       className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50"
                     />

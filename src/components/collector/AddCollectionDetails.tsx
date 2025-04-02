@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { X } from 'lucide-react';
 import { getCategories } from '../../services/adminService';
@@ -21,10 +20,7 @@ interface ICollection {
     paymentStatus: 'paid' | 'unpaid';
     createdAt: string;
     items: {
-        categoryId: {
-            _id: string;
-            name: string;
-        };
+        categoryId: string;
         name: string;
         rate: number;
         qty: number;
@@ -39,6 +35,8 @@ interface ICollection {
         locality: string;
         addressLine: string;
     };
+    proofs: string[];
+    notes?: string;
 }
 
 interface ICategory {
@@ -57,17 +55,18 @@ interface IFormData {
         qty: number;
     }[];
     proofs: File[];
-    notes: string;
+    notes?: string;
 }
 
 const AddCollectionDetails: React.FC = () => {
     const { collection } = useLocation().state as { collection: ICollection };
+    console.log("collection", collection);
+
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const [categories, setCategories] = useState<ICategory[]>([]);
     const [formData, setFormData] = useState<IFormData>({
         items: collection.items.map(item => ({
-            categoryId: item.categoryId._id,
+            categoryId: item.categoryId,
             name: item.name,
             rate: item.rate,
             qty: item.qty
@@ -110,8 +109,33 @@ const AddCollectionDetails: React.FC = () => {
         fetchCategories();
     }, [collection.type]);
 
+    const validateNewItem = () => {
+        let newErrors = { category: '', qty: '' };
+        let isValid = true;
+
+        if (!newItem.categoryId) {
+            newErrors.category = 'Please select a category';
+            isValid = false;
+        }
+
+        if (!newItem.qty) {
+            newErrors.qty = 'Please enter quantity';
+            isValid = false;
+        } else if (isNaN(Number(newItem.qty)) || Number(newItem.qty) < 1) {
+            newErrors.qty = 'Quantity must be at least 1';
+            isValid = false;
+        }
+
+        setErrors(prev => ({ ...prev, ...newErrors }));
+        return isValid;
+    };
+
     const handleAddItemClick = useCallback(() => {
-        if (!validateNewItem()) return;
+        // Call validateNewItem directly instead of using it in dependencies
+        const isValid = validateNewItem();
+        if (!isValid) return;
+
+        console.log("Adding new item:", newItem);
 
         setFormData(prev => ({
             ...prev,
@@ -123,7 +147,7 @@ const AddCollectionDetails: React.FC = () => {
             }]
         }));
         setNewItem({ categoryId: '', name: '', rate: 0, qty: 0 });
-    }, [newItem]);
+    }, [newItem]); // Remove validateNewItem from dependencies
 
     const handleRemoveItem = useCallback((index: number) => {
         setFormData(prev => ({
@@ -154,6 +178,7 @@ const AddCollectionDetails: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("submit formData", formData);
 
         if (!validateForm()) {
             return;
@@ -161,11 +186,11 @@ const AddCollectionDetails: React.FC = () => {
 
         try {
             // Instead of navigating back to collections, navigate to review page
-            navigate('/collector/review', { 
-                state: { 
+            navigate('/collector/review', {
+                state: {
                     formData: formData,
                     collection: collection
-                } 
+                }
             });
         } catch (error) {
             toast.error('Failed to process collection details');
@@ -190,33 +215,12 @@ const AddCollectionDetails: React.FC = () => {
         return isValid;
     };
 
-    const validateNewItem = () => {
-        let newErrors = { category: '', qty: '' };
-        let isValid = true;
-
-        if (!newItem.categoryId) {
-            newErrors.category = 'Please select a category';
-            isValid = false;
-        }
-
-        if (!newItem.qty) {
-            newErrors.qty = 'Please enter quantity';
-            isValid = false;
-        } else if (isNaN(Number(newItem.qty)) || Number(newItem.qty) < 1) {
-            newErrors.qty = 'Quantity must be at least 1';
-            isValid = false;
-        }
-
-        setErrors(prev => ({ ...prev, ...newErrors }));
-        return isValid;
-    };
-
     return (
         <main className="bg-gray-50 overflow-x-hidden overflow-y-auto">
             <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
                 <form onSubmit={handleSubmit} className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm space-y-6">
                     {/* <h2 className="text-xl font-semibold text-green-900 mb-4">Collection Details</h2> */}
-                    
+
                     {/* Add Category Section */}
                     <div>
                         <h3 className="text-lg font-medium mb-4">Add Categories</h3>
@@ -225,15 +229,20 @@ const AddCollectionDetails: React.FC = () => {
                                 <label className="text-sm font-medium text-gray-700 mb-1 block">Category</label>
                                 <select
                                     value={newItem.categoryId}
-                                    onChange={(e: any) => {
-                                        const selectedCategory = categories.find(cat => cat._id === e.target.value);
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                        const selectedCategoryId = e.target.value;
+                                        console.log("Selected category ID:", selectedCategoryId);
+
+                                        const selectedCategory = categories.find(cat => cat._id === selectedCategoryId);
                                         if (selectedCategory) {
+                                            console.log("Found category:", selectedCategory);
                                             setNewItem(prev => ({
                                                 ...prev,
                                                 categoryId: selectedCategory._id,
                                                 name: selectedCategory.name,
                                                 rate: selectedCategory.rate
                                             }));
+                                            console.log("New item:", newItem);
                                         }
                                         setErrors(prev => ({ ...prev, category: '' }));
                                     }}
@@ -241,7 +250,9 @@ const AddCollectionDetails: React.FC = () => {
                                 >
                                     <option value="" className='text-gray-400' disabled>--Select category--</option>
                                     {categories.filter(cat => !formData.items.some(item => item.categoryId === cat._id)).map((category) => (
-                                        <option key={category._id} value={category._id}>{category.name} (Rate: ₹{category.rate})</option>
+                                        <option key={category._id} value={category._id}>
+                                            {category.name} (Rate: ₹{category.rate})
+                                        </option>
                                     ))}
                                 </select>
                                 {errors.category && (
@@ -276,7 +287,7 @@ const AddCollectionDetails: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Added Categories Section */}
                     <div className="mt-6 border-t pt-6">
                         <h3 className="text-lg font-medium mb-4">Added Categories</h3>
@@ -302,7 +313,7 @@ const AddCollectionDetails: React.FC = () => {
                                 </p>
                             </div>
                         )}
-                        
+
                         {/* Total Amount Display */}
                         {formData.items.length > 0 && (
                             <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">

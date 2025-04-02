@@ -59,7 +59,7 @@ const Charges: React.FC = () => {
           </button>
           <button
             onClick={() => setShowWaste(false)}
-            className={`px-4 py-2 xs:text-sm text-xs transition-colors ${!showWaste
+            className={`md:px-3 px-2 md:py-2 py-1 xs:text-sm text-xs transition-colors ${!showWaste
               ? 'bg-green-800 text-white'
               : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}

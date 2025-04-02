@@ -6,6 +6,17 @@ import AdminRoutes from './routes/AdminRoutes';
 // import ResetPassword from './pages/ResetPassword';
 // import CollectorResetPassword from './pages/CollectorResetPassword';
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/firebase-messaging-sw.js')
+    .then((registration) => {
+      console.log('✅ Firebase service worker registered:', registration);
+    })
+    .catch((err) => {
+      console.error('❌ Firebase service worker registration failed:', err);
+    });
+}
+
 function App() {
 
   return (

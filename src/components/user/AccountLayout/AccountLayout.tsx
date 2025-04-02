@@ -53,12 +53,12 @@ const AccountLayout: React.FC = () => {
                             {!isLargeScreen && (
                                 <button
                                     onClick={handleBackClick}
-                                    className="flex items-center gap-2 p-4 text-sm text-gray-600 hover:text-gray-700"
+                                    className="flex items-center gap-2 p-4 md:text-sm text-xs text-gray-600 hover:text-gray-700"
                                 >
                                     <FaArrowCircleLeft /> Back
                                 </button>
                             )}
-                            <div className="p-6">
+                            <div className="md:p-6 p-4">
                                 {/* {children} */}
                                 <Outlet/>
                             </div>

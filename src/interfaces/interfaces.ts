@@ -34,8 +34,8 @@ export interface ICollectorData{
     email: string;
     phone: string;
     gender?: string;
-    district?: string;
-    serviceArea?: string;
+    district: string;
+    serviceArea: string;
     idProofType?: string;
     idProofFrontUrl?: string;
     idProofBackUrl?: string;

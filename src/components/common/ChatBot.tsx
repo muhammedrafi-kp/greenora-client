@@ -12,7 +12,9 @@ import { getUserData, getAdminData, initiateChat } from '../../services/userServ
 const socket = io("http://localhost:3007", {
     transports: ["websocket", "polling"],
     withCredentials: true,
-    autoConnect: false
+    query: {
+        role: 'user'
+    }
 });
 
 // Interface for database messages
@@ -89,6 +91,7 @@ const ChatBot: React.FC = () => {
     const [userId, setUserId] = useState<string>('');
     const [adminId, setAdminId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
+    const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -108,7 +111,11 @@ const ChatBot: React.FC = () => {
                 quickReplies: 'initial'
             };
             setMessages([botWelcomeMessage]);
+
+
         } else if (chatMode === 'admin') {
+            socket.connect();
+
             setIsLoading(true);
 
             const fetchUserData = async () => {
@@ -138,10 +145,6 @@ const ChatBot: React.FC = () => {
                     setIsLoading(false);
                     return;
                 }
-
-                // Connect to socket
-                socket.connect();
-
                 try {
                     // Try to get existing chat or create a new one
                     const chatResponse = await initiateChat({
@@ -154,21 +157,22 @@ const ChatBot: React.FC = () => {
 
 
                     if (chatResponse.success && chatResponse.data) {
+                        setIsLoading(false);
                         // Existing chat found
                         const chatId = chatResponse.data._id;
                         console.log("Existing chat found:", chatId);
-                        socket.emit('join-room', chatId);
-                        socket.emit('get-chat-history', { chatId: chatId });
+                        socket.emit("join-room", { chatId, userId });
+                        socket.emit("get-chat-history", { chatId: chatId });
                     } else {
                         // No existing chat, show welcome message
-                        setIsLoading(false);
-                        const welcomeMessage: IBotMessage = {
-                            message: "Welcome to Admin Support. How can we assist you today?",
-                            isBot: true,
-                            timestamp: new Date(),
-                            status: 'read'
-                        };
-                        setMessages([welcomeMessage]);
+                        // setIsLoading(false);
+                        // const welcomeMessage: IBotMessage = {
+                        //     message: "Welcome to Admin Support. How can we assist you today?",
+                        //     isBot: true,
+                        //     timestamp: new Date(),
+                        //     status: 'read'
+                        // };
+                        // setMessages([welcomeMessage]);
                     }
                 } catch (error) {
                     console.error("Error getting chat:", error);
@@ -185,14 +189,15 @@ const ChatBot: React.FC = () => {
                 }
             });
 
-
-            
-
-
+            // Listen for admin status changes
+            socket.on("admin-status-changed", (status: 'online' | 'offline') => {
+                console.log(`Admin is ${status}`);
+                setAdminStatus(status);
+            });
 
         } else {
-            socket.emit('leave-room', 'admin-room');
-            socket.emit('disconnect-admin');
+            socket.emit("leave-room", "admin-room");
+            socket.emit("disconnect-admin");
             socket.disconnect();
 
             // Reset to bot messages when switching back to bot mode
@@ -209,13 +214,21 @@ const ChatBot: React.FC = () => {
     }, [chatMode]);
 
     useEffect(() => {
+        // socket.on("admin-status-changed", ( status ) => {
+        //     console.log(`admin is ${status}`);
+        //     // Update admin status if the status update is for the admin
+        //     // if (userId === adminId) {
+        //     //     setAdminStatus(status);
+        //     // }
+        // });
+
         // Listen for incoming messages
         socket.on('receive-message', (message: IMessage) => {
             console.log("Received message:", message);
-            
+
             // Only process incoming messages when in admin chat mode
             if (chatMode === 'admin') {
-                const newMessage: IMessage = {  
+                const newMessage: IMessage = {
                     _id: message._id,
                     chatId: message.chatId,
                     message: message.message,
@@ -264,11 +277,13 @@ const ChatBot: React.FC = () => {
         return () => {
             socket.off('receive-message');
             socket.off('chat-history');
+            socket.off('user-status-updated');
+            socket.off('admin-status-changed');
             if (socket.connected && chatMode !== 'admin') {
                 socket.disconnect();
             }
         };
-    }, [userId, chatMode]);
+    }, [userId, adminId, chatMode]);
 
     const toggleChat = () => {
         setIsOpen(!isOpen);
@@ -333,7 +348,7 @@ const ChatBot: React.FC = () => {
         }
 
         if (chatMode === 'admin') {
-           
+
             setMessage('');
 
             // Send message to admin via socket
@@ -447,14 +462,22 @@ const ChatBot: React.FC = () => {
                                         <FaUser className="w-5 h-5 sm:w-6 sm:h-6 text-green-900" />
                                     )}
                                 </div>
-                                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 border-2 border-white rounded-full"></span>
+                                <span 
+                                    className={`absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 
+                                    ${chatMode === 'admin' 
+                                        ? adminStatus === 'online' ? 'bg-green-400' : 'bg-red-400'
+                                        : 'bg-green-400'
+                                    } 
+                                    border-2 border-white rounded-full`}>
+                                </span>
                             </div>
                             <div>
                                 <h3 className="text-white font-medium text-sm sm:text-base">
                                     {chatMode === 'bot' ? 'GreenoBot' : 'Admin Support'}
                                 </h3>
                                 <p className="text-green-100 text-xs sm:text-sm">
-                                    {isTyping ? 'Typing...' : 'Online'}
+                                    {isTyping ? 'Typing...' : 
+                                     chatMode === 'admin' ? adminStatus : 'Online'}
                                 </p>
                             </div>
                         </div>

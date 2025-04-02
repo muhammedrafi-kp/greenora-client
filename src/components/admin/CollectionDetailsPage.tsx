@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, Phone } from 'lucide-react';
-import { FaRegClipboard   } from 'react-icons/fa';
+import { FaRegClipboard } from 'react-icons/fa';
 import { getCollectorData, getPaymentData, getDistrictAndServiceArea } from '../../services/adminService';
 
 
@@ -17,7 +17,6 @@ interface ICollection {
   };
   type: string;
   status: 'pending' | 'scheduled' | 'completed' | 'cancelled';
-  paymentStatus: 'paid' | 'pending' | 'failed';
   paymentId: string;
   estimatedCost: string;
   createdAt: string;
@@ -55,7 +54,7 @@ interface Payment {
   paymentId: string;
   advanceAmount: number;
   advancePaymentStatus: string;
-  paymentStatus: string;
+  status: "pending" | "success" | "failed";
   paymentDate: string;
 }
 
@@ -171,7 +170,7 @@ const CollectionDetailsPage: React.FC = () => {
           {/* Collection Details Card */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
-                <FaRegClipboard   className="w-5 h-5" /> Collection Details
+              <FaRegClipboard className="w-5 h-5" /> Collection Details
             </h2>
             <div className="space-y-4">
               <div className="flex justify-between">
@@ -186,8 +185,11 @@ const CollectionDetailsPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Payment Status</span>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.paymentStatus)}`}>
+                {/* <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.paymentStatus)}`}>
                   {collection.paymentStatus.charAt(0).toUpperCase() + collection.paymentStatus.slice(1)}
+                </span> */}
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium`}>
+                  {payment.status}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -299,7 +301,7 @@ const CollectionDetailsPage: React.FC = () => {
           {/* Items Table - Adjust colspan based on status */}
           <div className={`bg-white rounded-lg shadow-sm border p-6 ${collection.status === 'scheduled' ? 'md:col-span-2' : 'md:col-span-3'}`}>
             <h2 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Collection Items</h2>
-            
+
             {collection.items.length === 0 ? (
               <p className="text-gray-500 text-center py-4">No items in this collection</p>
             ) : (

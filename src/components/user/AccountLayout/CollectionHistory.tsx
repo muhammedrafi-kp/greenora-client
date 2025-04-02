@@ -71,11 +71,11 @@ const CollectionHistory: React.FC = () => {
       case 'completed':
         return { icon: <FaCheckCircle />, color: 'bg-green-100 text-green-600' };
       case 'scheduled':
-        return { icon: <FaCheckCircle />, color: 'bg-green-100 text-green-600' };
+        return { icon: <FaCheckCircle />, color: 'bg-blue-100 text-blue-600' };
       case 'cancelled':
         return { icon: <FaTimesCircle />, color: 'bg-red-100 text-red-600' };
       case 'pending':
-        return { icon: <FaClock />, color: 'bg-blue-100 text-blue-600' };
+        return { icon: <FaClock />, color: 'bg-yellow-100 text-yellow-600' };
     }
   };
 
@@ -140,7 +140,9 @@ const CollectionHistory: React.FC = () => {
                         <p className="text-sm font-medium text-gray-800">{collection.createdAt.split('T')[0]}</p>
                       </div>
                       <div>
-                        <span className="text-xs text-gray-600">Preferred Date:</span>
+                        <span className="text-xs text-gray-600">
+                          {collection.status === 'pending' ? 'Preferred Date:' : 'Scheduled Date:'}
+                        </span>
                         <p className="text-sm font-medium text-gray-800">{collection.preferredDate.split('T')[0]}</p>
                       </div>
                     </div>

@@ -46,11 +46,41 @@ export const getServiceAreas = async (districtId: string) => {
     }
 }
 
+export const getDistrictAndServiceArea = async (districtId: string, serviceAreaId: string) => {
+    try {
+        const response = await apiClient.get(`/location-service/service-area/user/district/${districtId}/service-area/${serviceAreaId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching district and service area:', error);
+        throw error;
+    }
+};
+
+export const getPaymentData = async (paymentId: string) => {
+    try {
+        const response = await apiClient.get(`/payment-service/collection-payment/${paymentId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching payment data:", error);
+        throw error;
+    }
+}
+
 export const getAssignedCollections = async () => {
     try {
         const response = await apiClient.get('/request-service/collection/collector/assigned-collections');
         return response.data;
     } catch (error) {
+        throw error;
+    }
+}
+
+export const completeCollection = async (collectionId: string, paymentData: any, collectionData: any) => {
+    try {
+        const response = await apiClient.post(`/request-service/collection/${collectionId}`, { paymentData, collectionData });
+        return response.data;
+    } catch (error) {
+        console.error("Error processing payment:", error);
         throw error;
     }
 }

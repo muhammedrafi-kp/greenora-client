@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaCheck, FaArrowLeft } from 'react-icons/fa';
@@ -37,10 +37,70 @@ interface CollectionDetails {
 const Review: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { formData, collection } = location.state as { 
-    formData: ReviewData, 
-    collection: CollectionDetails 
+  
+  // Get data from location state or session storage
+  const getStateData = () => {
+    if (location.state) {
+      // If we have location state, save it to session storage for back navigation
+      const { formData, collection } = location.state as { 
+        formData: ReviewData, 
+        collection: CollectionDetails 
+      };
+
+      console.log("formData", formData);
+      console.log("collection", collection);
+      
+      // Store in session storage (stringify objects including File objects)
+      sessionStorage.setItem('reviewFormData', JSON.stringify(formData));
+      sessionStorage.setItem('reviewCollection', JSON.stringify(collection));
+      
+      // Store proof URLs separately
+      if (formData.proofs && formData.proofs.length > 0) {
+        const proofUrls = formData.proofs.map(file => URL.createObjectURL(file));
+        sessionStorage.setItem('reviewProofUrls', JSON.stringify(proofUrls));
+      }
+      
+      return { formData, collection };
+    } else {
+      // Try to get from session storage
+      const storedFormData = sessionStorage.getItem('reviewFormData');
+      const storedCollection = sessionStorage.getItem('reviewCollection');
+      const storedProofUrls = sessionStorage.getItem('reviewProofUrls');
+      
+      if (!storedFormData || !storedCollection) {
+        navigate('/collector/tasks');
+        return null;
+      }
+      
+      // Parse the stored data
+      const formData = JSON.parse(storedFormData) as ReviewData;
+      const collection = JSON.parse(storedCollection) as CollectionDetails;
+      
+      // Handle proof URLs (we can't restore actual File objects)
+      if (storedProofUrls) {
+        const proofUrls = JSON.parse(storedProofUrls) as string[];
+        // Create dummy File objects with the URLs for display purposes
+        formData.proofs = proofUrls.map((url, index) => {
+          // This is a workaround - we're creating a dummy File object
+          // that has enough properties to display in the UI
+          return {
+            name: `Proof ${index + 1}`,
+            type: 'image/jpeg',
+            url: url
+          } as any;
+        });
+      }
+      
+      return { formData, collection };
+    }
   };
+  
+  const stateData = getStateData();
+  
+  // If no data and redirect happened, return null
+  if (!stateData) return null;
+  
+  const { formData, collection } = stateData;
 
   // Calculate total amount
   const totalAmount = formData.items.reduce((total, item) => {
@@ -49,7 +109,7 @@ const Review: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      // Navigate to the payment page instead of completing the collection
+      // Navigate to the payment page with the state data
       navigate('/collector/receive-payment', { 
         state: { 
           formData,
@@ -70,6 +130,16 @@ const Review: React.FC = () => {
       day: 'numeric'
     });
   };
+
+  useEffect(() => {
+    if (formData && formData.items) {
+      console.log("Review items:", formData.items);
+      formData.items.forEach((item, index) => {
+        console.log(`Item ${index}:`, item);
+        console.log(`  categoryId: ${item.categoryId}`);
+      });
+    }
+  }, [formData]);
 
   return (
     <div className="bg-gray-50 flex-1 overflow-x-hidden overflow-y-auto p-6">
@@ -158,7 +228,7 @@ const Review: React.FC = () => {
                 {formData.proofs.map((proof, index) => (
                   <div key={index} className="relative">
                     <img 
-                      src={URL.createObjectURL(proof)} 
+                      src={(proof as any).url || URL.createObjectURL(proof)} 
                       alt={`Proof ${index + 1}`} 
                       className="w-full h-24 object-cover rounded-lg"
                     />
@@ -186,16 +256,23 @@ const Review: React.FC = () => {
                 onClick={() => navigate(-1)}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-400 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors"
               >
-                {/* <FaArrowLeft className="text-sm" /> */}
                 Back to Edit
               </button>
-              <button
-                onClick={handleSubmit}
-                className="flex items-center gap-2 px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg transition-colors"
-              >
-                {/* <FaCheck className="text-sm" /> */}
-                Recieve Payment
-              </button>
+              {collection.type === 'waste' ? (
+                <button
+                  onClick={handleSubmit}
+                  className="flex items-center gap-2 px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg transition-colors"
+                >
+                  Receive Payment
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  className="flex items-center gap-2 px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg transition-colors"
+                >
+                  Pay
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -2,20 +2,104 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaPaperPlane, FaPaperclip } from 'react-icons/fa';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
+import io from 'socket.io-client';
+import { getUserData, getAdminData, initiateChat } from '../../services/userService';
+
+const socket = io("http://localhost:3007", {
+    transports: ["websocket", "polling"],
+    withCredentials: true,
+});
+
+interface IMessage {
+    _id: string;
+    chatId: string;
+    message: string;
+    timestamp: Date;
+    senderId: string;
+    receiverId: string;
+    isRead?: boolean;
+}
 
 const Chat: React.FC = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'admin',
-      text: 'Hello! How can I help you today?',
-      timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-      read: true
-    }
-  ]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [userId, setUserId] = useState<string>('');
+  const [adminId, setAdminId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
+
+  useEffect(() => {
+    socket.connect();
+    
+    const initializeChat = async () => {
+      try {
+        // Get user data
+        const userResponse = await getUserData();
+        if (userResponse.success) {
+          setUserId(userResponse.data.id);
+          
+          // Get admin data
+          const adminResponse = await getAdminData();
+          if (adminResponse.success) {
+            setAdminId(adminResponse.data._id);
+            
+            // Initialize chat
+            const chatResponse = await initiateChat({
+              participant1: userResponse.data.id,
+              participant2: adminResponse.data._id,
+              participant1Role: 'user',
+              participant2Role: 'admin'
+            });
+
+            if (chatResponse.success && chatResponse.data) {
+              const chatId = chatResponse.data._id;
+              socket.emit("join-room", { chatId, userId: userResponse.data.id });
+              socket.emit("get-chat-history", { chatId });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing chat:", error);
+      }
+    };
+
+    initializeChat();
+
+    // Socket event listeners
+    socket.on("status-updated", ({ userId, status }) => {
+      console.log(`${userId} is ${status}`);
+      if (userId === adminId) {
+        setAdminStatus(status);
+      }
+    });
+
+    socket.on('receive-message', (message: IMessage) => {
+      setMessages(prev => [...prev, {
+        ...message,
+        timestamp: new Date(message.timestamp)
+      }]);
+    });
+
+    socket.on('chat-history', (data: { messages: IMessage[] }) => {
+      setIsLoading(false);
+      if (data.messages) {
+        const formattedMessages = data.messages.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setMessages(formattedMessages);
+      }
+    });
+
+    return () => {
+      socket.off('receive-message');
+      socket.off('chat-history');
+      socket.off('status-updated');
+      socket.disconnect();
+    };
+  }, [adminId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -30,34 +114,21 @@ const Chat: React.FC = () => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
 
-    // Add user message
-    const userMessage = {
-      id: messages.length + 1,
-      sender: 'user',
-      text: newMessage,
-      timestamp: new Date().toISOString(),
-      read: true
-    };
+    // Send message via socket
+    socket.emit('send-message', {
+      message: newMessage,
+      participant1: userId,
+      participant2: adminId,
+      participant1Role: 'user',
+      participant2Role: 'admin',
+      timestamp: new Date()
+    });
 
-    setMessages([...messages, userMessage]);
     setNewMessage('');
-
-    // Simulate admin response after a short delay
-    setTimeout(() => {
-      const adminResponse = {
-        id: messages.length + 2,
-        sender: 'admin',
-        text: 'Thanks for your message. Our team will review your request and get back to you shortly.',
-        timestamp: new Date().toISOString(),
-        read: false
-      };
-      setMessages(prevMessages => [...prevMessages, adminResponse]);
-    }, 1000);
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (timestamp: Date) => {
+    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -76,7 +147,9 @@ const Chat: React.FC = () => {
           </div>
           <div className="ml-3">
             <h2 className="font-semibold text-gray-800">Admin Support</h2>
-            <p className="text-xs text-green-600">Online</p>
+            <p className={`text-xs ${adminStatus === 'online' ? 'text-green-600' : 'text-red-600'}`}>
+              {adminStatus === 'online' ? 'Online' : 'Offline'}
+            </p>
           </div>
         </div>
       </div>
@@ -85,18 +158,18 @@ const Chat: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div 
-            key={message.id} 
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            key={message._id} 
+            className={`flex ${message.senderId === userId ? 'justify-end' : 'justify-start'}`}
           >
             <div 
               className={`max-w-[75%] rounded-lg p-3 ${
-                message.sender === 'user' 
+                message.senderId === userId 
                   ? 'bg-green-600 text-white rounded-br-none' 
                   : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'
               }`}
             >
-              <p className="text-sm">{message.text}</p>
-              <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-green-100' : 'text-gray-500'}`}>
+              <p className="text-sm">{message.message}</p>
+              <p className={`text-xs mt-1 ${message.senderId === userId ? 'text-green-100' : 'text-gray-500'}`}>
                 {formatTime(message.timestamp)}
               </p>
             </div>

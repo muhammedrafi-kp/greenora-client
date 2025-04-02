@@ -22,7 +22,7 @@ export const getAdminData = async () => {
 
 export const initiateChat = async (chatData: object) => {
     try {
-        const response = await apiClient.post('/chat-service/chat',chatData);
+        const response = await apiClient.post('/chat-service/chat', chatData);
         return response.data;
     } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -159,9 +159,9 @@ export const calculatePickupCost = async (items: Array<object>) => {
     }
 }
 
-export const initiatePayment = async (collectionData: any) => {
+export const initiatePayment = async (collectionData: any, paymentMethod: string) => {
     try {
-        const response = await apiClient.post('/payment-service/collection-payment/initiate-payment', collectionData);
+        const response = await apiClient.post('/payment-service/collection-payment/initiate-payment', { collectionData, paymentMethod });
         return response.data;
     } catch (error) {
         console.error("Error creating payment order:", error);
@@ -209,6 +209,16 @@ export const getCollectorData = async (collectorId?: string) => {
     }
 }
 
+export const cancelCollection = async (collectionId: string, reason: string) => {
+    try {
+        const response = await apiClient.patch('/request-service/collection/cancel', { collectionId, reason });
+        return response.data
+    } catch (error) {
+        console.error("Error while cancelling collection:", error);
+        throw error;
+    }
+}
+
 export const getPaymentData = async (paymentId: string) => {
     try {
         const response = await apiClient.get(`/payment-service/collection-payment/${paymentId}`);
@@ -239,4 +249,93 @@ export const getDistrictAndServiceArea = async (districtId: string, serviceAreaI
     }
 };
 
+export const getWalletData = async () => {
+    try {
+        const response = await apiClient.get('/payment-service/wallet');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching wallet data:", error);
+        throw error;
+    }
+}
 
+export const initiateAddMoney = async (amount: number) => {
+    try {
+        const response = await apiClient.post('/payment-service/wallet/deposits/initiate', { amount });
+        return response.data;
+    } catch (error) {
+        console.error("Error adding money to wallet:", error);
+        throw error;
+    }
+}
+
+export const verifyAddMoney = async (razorpayVerificationData: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; }) => {
+    try {
+        const response = await apiClient.post('/payment-service/wallet/deposits/verify', razorpayVerificationData);
+        return response.data;
+    } catch (error) {
+        console.error("Error verifying deposit:", error);
+        throw error;
+    }
+}
+
+export const withdrawMoney = async (amount: number) => {
+    try {
+        const response = await apiClient.post('/payment-service/wallet/withdrawals', { amount });
+        return response.data;
+    } catch (error) {
+        console.error("Error withdrawing money:", error);
+        throw error;
+    }
+}
+
+export const getNotifications = async (pageNumber: number = 1) => {
+    try {
+        const response = await apiClient.get(`/notification-service/notification/notifications?page=${pageNumber}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching notifications:", error);
+        throw error;
+    }
+}
+
+export const getUnreadNotificationCount = async () => {
+    try {
+        const response = await apiClient.get('/notification-service/notification/unread-count');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching unread notification count:", error);
+        throw error;
+    }
+}
+
+export const markNotificationAsRead = async (notificationId: string) => {
+    try {
+        const response = await apiClient.patch(`/notification-service/notification/read/${notificationId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching unread notification count:", error);
+        throw error;
+    }
+}
+
+export const markAllNotificationsAsRead = async () => {
+    try {
+        const response = await apiClient.patch('/notification-service/notification/read-all');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching unread notification count:", error);
+        throw error;
+    }
+}
+
+
+export const askChatBot = async () => {
+    try {
+        const response = await apiClient.post('/chat-service/ask-chatbot');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching unread notification count:", error);
+        throw error;
+    }
+}

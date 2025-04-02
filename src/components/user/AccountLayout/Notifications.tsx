@@ -1,733 +1,190 @@
-// import React, { useState, useEffect } from 'react';
-// import { FaBell, FaCheckCircle, FaExclamationCircle, FaClock } from 'react-icons/fa';
-
-// // Define notification types
-// interface Notification {
-//   id: string;
-//   title: string;
-//   message: string;
-//   type: 'success' | 'warning' | 'pending';
-//   timestamp: string;
-//   read: boolean;
-// }
-
-// const Notifications: React.FC = () => {
-//   const [notifications, setNotifications] = useState<Notification[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     // Simulated fetch notifications - replace with actual API call
-//     const fetchNotifications = async () => {
-//       // Simulate API call with mock data
-//       const mockNotifications: Notification[] = [
-//         {
-//           id: '1',
-//           title: 'Pickup Scheduled',
-//           message: 'Your waste pickup for 15 kg of electronic waste is scheduled for tomorrow.',
-//           type: 'success',
-//           timestamp: '2 hours ago',
-//           read: false
-//         },
-//         {
-//           id: '2',
-//           title: 'Pending Verification',
-//           message: 'Your recent waste collection needs admin verification.',
-//           type: 'pending',
-//           timestamp: '1 day ago',
-//           read: false
-//         },
-//         {
-//           id: '3',
-//           title: 'Collection Complete',
-//           message: 'Your waste collection of 25 kg has been processed.',
-//           type: 'success',
-//           timestamp: '3 days ago',
-//           read: true
-//         }
-//       ];
-
-//       setNotifications(mockNotifications);
-//       setLoading(false);
-//     };
-
-//     fetchNotifications();
-//   }, []);
-
-//   const getIconAndColor = (type: 'success' | 'warning' | 'pending') => {
-//     switch (type) {
-//       case 'success': 
-//         return { icon: <FaCheckCircle />, color: 'text-green-600' };
-//       case 'warning': 
-//         return { icon: <FaExclamationCircle />, color: 'text-yellow-600' };
-//       case 'pending': 
-//         return { icon: <FaClock />, color: 'text-blue-600' };
-//     }
-//   };
-
-//   const markAllAsRead = () => {
-//     setNotifications(notifications.map(n => ({ ...n, read: true })));
-//   };
-
-//   if (loading) {
-//     return <div className="text-center text-gray-500 py-8">Loading notifications...</div>;
-//   }
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-6">
-//         <h2 className="lg:text-lg xs:text-base text-sm font-semibold flex  items-center gap-2">
-//           {/* <FaBell />  */}
-//           Notifications
-//         </h2>
-//         {notifications.some(n => !n.read) && (
-//           <button 
-//             onClick={markAllAsRead}
-//             className="text-xs text-green-700 hover:underline"
-//           >
-//             Mark All as Read
-//           </button>
-//         )}
-//       </div>
-
-//       {notifications.length === 0 ? (
-//         <div className="text-center text-gray-500 py-8">
-//           No notifications yet
-//         </div>
-//       ) : (
-//         <div className="space-y-4">
-//           {notifications.map((notification) => {
-//             const { icon, color } = getIconAndColor(notification.type);
-//             return (
-//               <div 
-//                 key={notification.id} 
-//                 className={`
-//                   p-4 rounded-lg border 
-//                   ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-white border-green-100'}
-//                   flex items-start gap-4
-//                 `}
-//               >
-//                 <div className={`mt-1 ${color} text-xl`}>
-//                   {icon}
-//                 </div>
-//                 <div className="flex-1">
-//                   <h3 className="font-semibold text-sm mb-1">{notification.title}</h3>
-//                   <p className="text-xs text-gray-600 mb-2">{notification.message}</p>
-//                   <span className="text-xs text-gray-500">{notification.timestamp}</span>
-//                 </div>
-//                 {!notification.read && (
-//                   <div className="w-2 h-2 bg-green-500 rounded-full self-start"></div>
-//                 )}
-//               </div>
-//             );
-//           })}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Notifications;
-
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import { FaBell, FaCheckCircle, FaExclamationCircle, FaClock, FaTimes } from 'react-icons/fa';
-
-// // Define notification types
-// interface Notification {
-//   id: string;
-//   title: string;
-//   message: string;
-//   type: 'success' | 'warning' | 'pending';
-//   timestamp: string;
-//   read: boolean;
-// }
-
-// const Notifications: React.FC = () => {
-//   const [notifications, setNotifications] = useState<Notification[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     // Simulated fetch notifications - replace with actual API call
-//     const fetchNotifications = async () => {
-//       // Simulate API call with mock data
-//       const mockNotifications: Notification[] = [
-//         {
-//           id: '1',
-//           title: 'Pickup Scheduled',
-//           message: 'Your waste pickup for 15 kg of electronic waste is scheduled for tomorrow.',
-//           type: 'success',
-//           timestamp: '2 hours ago',
-//           read: false
-//         },
-//         {
-//           id: '2',
-//           title: 'Pending Verification',
-//           message: 'Your recent waste collection needs admin verification.',
-//           type: 'pending',
-//           timestamp: '1 day ago',
-//           read: false
-//         },
-//         {
-//           id: '3',
-//           title: 'Collection Complete',
-//           message: 'Your waste collection of 25 kg has been processed.',
-//           type: 'success',
-//           timestamp: '3 days ago',
-//           read: true
-//         },
-//         {
-//           id: '4',
-//           title: 'Payment Failed',
-//           message: 'Your recent payment for waste collection failed. Please retry.',
-//           type: 'warning',
-//           timestamp: '5 days ago',
-//           read: true
-//         }
-//       ];
-
-//       setNotifications(mockNotifications);
-//       setLoading(false);
-//     };
-
-//     fetchNotifications();
-//   }, []);
-
-//   const getIconAndColor = (type: 'success' | 'warning' | 'pending') => {
-//     switch (type) {
-//       case 'success':
-//         return { icon: <FaCheckCircle />, color: 'bg-green-100 text-green-600' };
-//       case 'warning':
-//         return { icon: <FaExclamationCircle />, color: 'bg-yellow-100 text-yellow-600' };
-//       case 'pending':
-//         return { icon: <FaClock />, color: 'bg-blue-100 text-blue-600' };
-//     }
-//   };
-
-//   const markAllAsRead = () => {
-//     setNotifications(notifications.map(n => ({ ...n, read: true })));
-//   };
-
-//   const markAsRead = (id: string) => {
-//     setNotifications(notifications.map(n => (n.id === id ? { ...n, read: true } : n)));
-//   };
-
-//   const deleteNotification = (id: string) => {
-//     setNotifications(notifications.filter(n => n.id !== id));
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="text-center text-gray-500 py-8">
-//         Loading notifications...
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-6">
-//         <h2 className="lg:text-xl xs:text-lg text-base font-semibold flex items-center gap-2">
-//           <FaBell className="text-green-600" /> Notifications
-//         </h2>
-//         {notifications.some(n => !n.read) && (
-//           <button
-//             onClick={markAllAsRead}
-//             className="text-sm text-green-700 hover:text-green-800 hover:underline"
-//           >
-//             Mark All as Read
-//           </button>
-//         )}
-//       </div>
-
-//       {notifications.length === 0 ? (
-//         <div className="text-center text-gray-500 py-8">
-//           No notifications yet
-//         </div>
-//       ) : (
-//         <div className="space-y-4">
-//           {notifications.map((notification) => {
-//             const { icon, color } = getIconAndColor(notification.type);
-//             return (
-//               <div
-//                 key={notification.id}
-//                 className={`
-//                   p-4 rounded-lg border 
-//                   ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-white border-green-100'}
-//                   flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow
-//                 `}
-//               >
-//                 {/* Notification Icon */}
-//                 <div className={`p-3 rounded-full ${color}`}>
-//                   {icon}
-//                 </div>
-
-//                 {/* Notification Content */}
-//                 <div className="flex-1">
-//                   <h3 className="font-semibold text-sm mb-1">{notification.title}</h3>
-//                   <p className="text-xs text-gray-600 mb-2">{notification.message}</p>
-//                   <span className="text-xs text-gray-500">{notification.timestamp}</span>
-//                 </div>
-
-//                 {/* Actions */}
-//                 <div className="flex items-center gap-2">
-//                   {!notification.read && (
-//                     <button
-//                       onClick={() => markAsRead(notification.id)}
-//                       className="text-xs text-green-700 hover:text-green-800 hover:underline"
-//                     >
-//                       Mark as Read
-//                     </button>
-//                   )}
-//                   <button
-//                     onClick={() => deleteNotification(notification.id)}
-//                     className="text-xs text-gray-500 hover:text-red-600"
-//                   >
-//                     <FaTimes />
-//                   </button>
-//                 </div>
-//               </div>
-//             );
-//           })}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Notifications;
-
-
-
-// import React, { useState, useEffect } from 'react';
-
-// // Define notification types
-// interface Notification {
-//   id: string;
-//   title: string;
-//   message: string;
-//   type: 'success' | 'warning' | 'pending';
-//   timestamp: string;
-//   read: boolean;
-// }
-
-// const Notifications: React.FC = () => {
-//   const [notifications, setNotifications] = useState<Notification[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     // Simulated fetch notifications - replace with actual API call
-//     const fetchNotifications = async () => {
-//       // Simulate API call with mock data
-//       const mockNotifications: Notification[] = [
-//         {
-//           id: '1',
-//           title: 'Pickup Scheduled',
-//           message: 'Your waste pickup for 15 kg of electronic waste is scheduled for tomorrow.',
-//           type: 'success',
-//           timestamp: '2 hours ago',
-//           read: false
-//         },
-//         {
-//           id: '2',
-//           title: 'Pending Verification',
-//           message: 'Your recent waste collection needs admin verification.',
-//           type: 'pending',
-//           timestamp: '1 day ago',
-//           read: false
-//         },
-//         {
-//           id: '3',
-//           title: 'Collection Complete',
-//           message: 'Your waste collection of 25 kg has been processed.',
-//           type: 'success',
-//           timestamp: '3 days ago',
-//           read: true
-//         }
-//       ];
-
-//       setNotifications(mockNotifications);
-//       setLoading(false);
-//     };
-
-//     fetchNotifications();
-//   }, []);
-
-//   const markAllAsRead = () => {
-//     setNotifications(notifications.map(n => ({ ...n, read: true })));
-//   };
-
-//   const markAsRead = (id: string) => {
-//     setNotifications(notifications.map(n => (n.id === id ? { ...n, read: true } : n)));
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="text-center text-gray-500 py-8">
-//         Loading notifications...
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-6">
-//         <h2 className="text-xl font-semibold text-gray-800">Notifications</h2>
-//         {notifications.some(n => !n.read) && (
-//           <button
-//             onClick={markAllAsRead}
-//             className="text-sm text-green-600 hover:text-green-700 hover:underline"
-//           >
-//             Mark All as Read
-//           </button>
-//         )}
-//       </div>
-
-//       {notifications.length === 0 ? (
-//         <div className="text-center text-gray-500 py-8">
-//           No notifications yet
-//         </div>
-//       ) : (
-//         <div className="space-y-4">
-//           {notifications.map((notification) => (
-//             <div
-//               key={notification.id}
-//               className={`
-//                 p-4 rounded-lg border 
-//                 ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-white border-green-100'}
-//                 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow
-//               `}
-//             >
-//               {/* Notification Content */}
-//               <div className="flex-1">
-//                 <h3 className="font-semibold text-sm text-gray-800 mb-1">{notification.title}</h3>
-//                 <p className="text-xs text-gray-600 mb-2">{notification.message}</p>
-//                 <span className="text-xs text-gray-500">{notification.timestamp}</span>
-//               </div>
-
-//               {/* Mark as Read Button */}
-//               {!notification.read && (
-//                 <button
-//                   onClick={() => markAsRead(notification.id)}
-//                   className="text-xs text-green-600 hover:text-green-700 hover:underline"
-//                 >
-//                   Mark as Read
-//                 </button>
-//               )}
-//             </div>
-//           ))}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Notifications;
-
-
-
-// import React, { useState, useEffect } from 'react';
-
-// // Define notification types
-// interface Notification {
-//   id: string;
-//   title: string;
-//   message: string;
-//   type: 'success' | 'warning' | 'pending';
-//   timestamp: string;
-//   read: boolean;
-// }
-
-// const Notifications: React.FC = () => {
-//   const [notifications, setNotifications] = useState<Notification[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     // Simulated fetch notifications - replace with actual API call
-//     const fetchNotifications = async () => {
-//       // Simulate API call with mock data
-//       const mockNotifications: Notification[] = [
-//         {
-//           id: '1',
-//           title: 'Pickup Scheduled',
-//           message: 'Your waste pickup for 15 kg of electronic waste is scheduled for tomorrow.',
-//           type: 'success',
-//           timestamp: '2 hours ago',
-//           read: false
-//         },
-//         {
-//           id: '2',
-//           title: 'Pending Verification',
-//           message: 'Your recent waste collection needs admin verification.',
-//           type: 'pending',
-//           timestamp: '1 day ago',
-//           read: false
-//         },
-//         {
-//           id: '3',
-//           title: 'Collection Complete',
-//           message: 'Your waste collection of 25 kg has been processed.',
-//           type: 'success',
-//           timestamp: '3 days ago',
-//           read: true
-//         }
-//       ];
-
-//       setNotifications(mockNotifications);
-//       setLoading(false);
-//     };
-
-//     fetchNotifications();
-//   }, []);
-
-//   const markAllAsRead = () => {
-//     setNotifications(notifications.map(n => ({ ...n, read: true })));
-//   };
-
-//   const markAsRead = (id: string) => {
-//     setNotifications(notifications.map(n => (n.id === id ? { ...n, read: true } : n)));
-//   };
-
-//   const deleteAllNotifications = () => {
-//     setNotifications([]); // Clear all notifications
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="text-center text-gray-500 py-8">
-//         Loading notifications...
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-6">
-//         <h2 className="text-xl font-semibold text-gray-800">Notifications</h2>
-//         <div className="flex items-center gap-4">
-//           {notifications.some(n => !n.read) && (
-//             <button
-//               onClick={markAllAsRead}
-//               className="text-sm text-green-600 hover:text-green-700 hover:underline"
-//             >
-//               Mark All as Read
-//             </button>
-//           )}
-//           {notifications.length > 0 && (
-//             <button
-//               onClick={deleteAllNotifications}
-//               className="text-sm text-red-600 hover:text-red-700 hover:underline"
-//             >
-//               Delete All
-//             </button>
-//           )}
-//         </div>
-//       </div>
-
-//       {notifications.length === 0 ? (
-//         <div className="text-center text-gray-500 py-8">
-//           No notifications yet
-//         </div>
-//       ) : (
-//         <div className="space-y-4">
-//           {notifications.map((notification) => (
-//             <div
-//               key={notification.id}
-//               className={`
-//                 p-4 rounded-lg border 
-//                 ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-white border-green-100'}
-//                 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow
-//               `}
-//             >
-//               {/* Notification Content */}
-//               <div className="flex-1">
-//                 <h3 className="font-semibold text-sm text-gray-800 mb-1">{notification.title}</h3>
-//                 <p className="text-xs text-gray-600 mb-2">{notification.message}</p>
-//                 <span className="text-xs text-gray-500">{notification.timestamp}</span>
-//               </div>
-
-//               {/* Mark as Read Button */}
-//               {!notification.read && (
-//                 <button
-//                   onClick={() => markAsRead(notification.id)}
-//                   className="text-xs text-green-600 hover:text-green-700 hover:underline"
-//                 >
-//                   Mark as Read
-//                 </button>
-//               )}
-//             </div>
-//           ))}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Notifications;
-
-
-
-
 import React, { useState, useEffect } from 'react';
-import { FaBell, FaCheckCircle, FaExclamationCircle, FaClock, FaTrash, FaCheck } from 'react-icons/fa';
+import { getNotifications,markNotificationAsRead,markAllNotificationsAsRead } from '../../../services/userService';
+import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUnreadCount } from '../../../redux/notificationSlice';
 
-// Define notification types
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'success' | 'warning' | 'pending';
-  timestamp: string;
-  read: boolean;
+// Match the interface from Navbar.tsx
+interface INotification {
+    _id: string;
+    title: string;
+    message: string;
+    url: string;
+    createdAt: string;
+    isRead: boolean;
 }
 
+const socket = io('http://localhost:3006', {
+    withCredentials: true,
+    transports: ['websocket'],
+});
+
 const Notifications: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+    const [notifications, setNotifications] = useState<INotification[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [page, setPage] = useState<number>(1);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    
+    const unreadCount = useSelector((state: any) => state.notification.unreadCount);
 
-  useEffect(() => {
-    // Simulated fetch notifications - replace with actual API call
-    const fetchNotifications = async () => {
-      // Simulate API call with mock data
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          title: 'Pickup Scheduled',
-          message: 'Your waste pickup for 15 kg of electronic waste is scheduled for tomorrow.',
-          type: 'success',
-          timestamp: '2 hours ago',
-          read: false
-        },
-        {
-          id: '2',
-          title: 'Pending Verification',
-          message: 'Your recent waste collection needs admin verification.',
-          type: 'pending',
-          timestamp: '1 day ago',
-          read: false
-        },
-        {
-          id: '3',
-          title: 'Collection Complete',
-          message: 'Your waste collection of 25 kg has been processed.',
-          type: 'success',
-          timestamp: '3 days ago',
-          read: true
+    const fetchNotifications = async (pageNum: number = 1) => {
+        try {
+            setIsLoading(true);
+            const response = await getNotifications(pageNum);
+            
+            if(response.success){
+                const existingIds = new Set(notifications.map(n => n._id));
+                const newNotifications = response.data.filter(
+                    (notification: INotification) => !existingIds.has(notification._id)
+                );
+
+                if (pageNum === 1) {
+                    setNotifications(response.data);
+                } else {
+                    setNotifications(prev => [...prev, ...newNotifications]);
+                }
+                
+                setHasMore(newNotifications.length > 0);
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+            setHasMore(false);
+        } finally {
+            setIsLoading(false);
         }
-      ];
-
-      setNotifications(mockNotifications);
-      setLoading(false);
     };
 
-    fetchNotifications();
-  }, []);
+    useEffect(() => {
+        fetchNotifications(page);
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-  };
+        socket.connect();
+        socket.emit("join-room", "67bddc928b682fd63bb7bdb2");
 
-  const markAsRead = (id: string) => {
-    setNotifications(notifications.map(n => (n.id === id ? { ...n, read: true } : n)));
-  };
+        // Listen for new notifications
+        socket.on("receive-notification", (notification: INotification) => {
+            console.log("notification:", notification);
+            setNotifications(prev => [notification, ...prev]);
+        });
 
-  const deleteAllNotifications = () => {
-    setNotifications([]); // Clear all notifications
-  };
+        return () => {
+            socket.off("receive-notification");
+            socket.disconnect();
+        };
+    }, [page]);
 
-  const getNotificationIcon = (type: 'success' | 'warning' | 'pending') => {
-    switch (type) {
-      case 'success':
-        return <FaCheckCircle className="text-green-600" />;
-      case 'warning':
-        return <FaExclamationCircle className="text-yellow-600" />;
-      case 'pending':
-        return <FaClock className="text-blue-600" />;
-    }
-  };
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isLoading && hasMore) {
+            setPage(prev => prev + 1);
+        }
+    };
 
-  if (loading) {
+    const handleNotificationClick = async (notificationId: string, url: string) => {
+        try {
+            const response = await markNotificationAsRead(notificationId);
+            if (response.success) {
+                setNotifications(prev => 
+                    prev.map(notif => 
+                        notif._id === notificationId 
+                            ? { ...notif, isRead: true }
+                            : notif
+                    )
+                );
+                dispatch(setUnreadCount(Math.max(0, unreadCount - 1)));
+                
+                // Navigate to the notification URL
+                if (url) {
+                    navigate(url);
+                }
+            }
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            const response = await markAllNotificationsAsRead();
+            if (response.success) {
+                setNotifications(prev => 
+                    prev.map(notif => ({ ...notif, isRead: true }))
+                );
+                // Set unread count to 0 in Redux store
+                dispatch(setUnreadCount(0));
+            }
+        } catch (error) {
+            console.error("Error marking all notifications as read:", error);
+        }
+    };
+
     return (
-      <div className="text-center text-gray-500 py-8">
-        Loading notifications...
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          {/* <FaBell className="text-green-600" /> */}
-           Notifications
-        </h2>
-        <div className="flex items-center gap-4">
-          {notifications.some(n => !n.read) && (
-            <button
-              onClick={markAllAsRead}
-              className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1 "
-            >
-              {/* <FaCheck />  */}
-              Mark All as Read
-            </button>
-          )}
-          {notifications.length > 0 && (
-            <button
-              onClick={deleteAllNotifications}
-              className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1 "
-            >
-              {/* <FaTrash /> */}
-               Delete All
-            </button>
-          )}
-        </div>
-      </div>
-
-      {notifications.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
-          No notifications yet.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className={`
-                p-4 rounded-lg border 
-                ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-white border-green-100'}
-                flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow
-              `}
-            >
-              {/* Notification Icon */}
-              <div className="mt-1">
-                {getNotificationIcon(notification.type)}
-              </div>
-
-              {/* Notification Content */}
-              <div className="flex-1">
-                <h3 className="font-semibold text-sm text-gray-800 mb-1">{notification.title}</h3>
-                <p className="text-xs text-gray-600 mb-2">{notification.message}</p>
-                <span className="text-xs text-gray-500">{notification.timestamp}</span>
-              </div>
-
-              {/* Mark as Read Button */}
-              {!notification.read && (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-800 lg:text-lg xs:text-base text-sm font-semibold">
+                    Notifications
+                </h2>
                 <button
-                  onClick={() => markAsRead(notification.id)}
-                  className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                    onClick={handleMarkAllAsRead}
+                    className="text-sm text-green-700 hover:text-green-800 font-medium px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
                 >
-                  {/* <FaCheck />  */}
-                  Mark as Read
+                    Mark all as read
                 </button>
-              )}
             </div>
-          ))}
+
+            <div 
+                onScroll={handleScroll}
+                className="space-y-3 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
+            >
+                {notifications && notifications.length > 0 ? (
+                    <>
+                        {notifications.map((notification) => (
+                            <div
+                                key={notification._id}
+                                onClick={() => handleNotificationClick(notification._id, notification.url)}
+                                className={`p-3 rounded-lg ${notification.isRead ? 'bg-gray-50' : 'bg-white'} border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative`}
+                            >
+                                {!notification.isRead && (
+                                    <div className="absolute right-2 top-2">
+                                        <div className="bg-red-500 h-1 rounded-full w-1"></div>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center mt-2"> 
+                                    <h4 className={'text-gray-800 text-sm font-semibold'}>
+                                        {notification.title}
+                                    </h4>
+                                    <span className="text-gray-500 text-xs">
+                                        {new Date(notification.createdAt).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                            hour12: true
+                                        }).replace(' at ', ' ')}
+                                    </span>
+                                </div>
+                                <p className={`text-gray-600 text-xs mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
+                                    {notification.message}
+                                </p>
+                            </div>
+                        ))}
+                        {isLoading && (
+                            <div className="text-center py-4">
+                                <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="text-center text-gray-500 py-4">
+                        No notifications
+                    </div>
+                )}
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default Notifications;

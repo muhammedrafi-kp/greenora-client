@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+// import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { FaUser, FaClipboardList, FaWallet, FaAddressCard, FaBell, FaSignOutAlt, FaComments } from 'react-icons/fa';
 import { TbCoinRupeeFilled } from "react-icons/tb";
-import { VscGraph } from "react-icons/vsc";
+// import { VscGraph } from "react-icons/vsc";
 import { Camera } from 'lucide-react';
 import { getUserData, uploadProfileImage } from "../../../services/userService";
 import { IUserData } from '../../../interfaces/interfaces';
@@ -12,11 +12,11 @@ import { Logout } from "../../../redux/authSlice";
 import { NavLink } from 'react-router-dom';
 
 const navLinks = [
-  { icon: <VscGraph />, label: 'Activity', path: '/account/', end: true },
-  { icon: <FaUser />, label: 'Profile', path: '/account/profile' },
+  // { icon: <VscGraph />, label: 'Activity', path: '/account/', end: true },
+  // { icon: <FaUser />, label: 'Profile', path: '/account/profile',end: true },
+  { icon: <FaUser />, label: 'Profile', path: '/account/',end: true },
   { icon: <FaClipboardList />, label: 'Waste Collection History', path: '/account/waste-collection-history' },
   { icon: <FaWallet />, label: 'Wallet', path: '/account/wallet' },
-  { icon: <FaComments />, label: 'Chats', path: '/account/chats' },
   { icon: <TbCoinRupeeFilled />, label: 'Charges', path: '/account/charges' },
   { icon: <FaBell />, label: 'Notifications', path: '/account/notifications' },
   // { icon: <FaLock />, label: 'Security', path: '/account/security' },
@@ -29,10 +29,10 @@ const Sidebar: React.FC = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
+  // const navigate = useNavigate();
+  // const location = useLocation();
 
-  const activeTab = location.pathname;
+  // const activeTab = location.pathname;
 
   useEffect(() => {
     const handleResize = () => {
@@ -161,7 +161,7 @@ const Sidebar: React.FC = () => {
               to={item.path}
               end={item.end}
               className={({ isActive }) => `
-                                flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm rounded-lg transition-colors
+                                flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm text-gray-800 rounded-lg transition-colors
                                 ${isLargeScreen && isActive ? 'bg-green-100 text-green-800' : 'hover:bg-gray-100'}
                             `}
             >
@@ -170,7 +170,7 @@ const Sidebar: React.FC = () => {
           ))}
           <button
             onClick={() => dispatch(Logout())}
-            className="flex items-center gap-3 w-full p-3 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+            className="flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm rounded-lg text-red-600 hover:bg-red-100 transition-colors"
           >
             <FaSignOutAlt /> Logout
           </button>

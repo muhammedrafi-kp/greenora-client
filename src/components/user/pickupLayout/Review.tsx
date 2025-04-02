@@ -13,6 +13,8 @@ interface ICollectionData {
   address: object;
   items: {
     categoryId: string;
+    name: string;
+    rate: number;
     qty: number;
   }[];
   estimatedCost: number;

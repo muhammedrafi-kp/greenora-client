@@ -183,6 +183,7 @@ import ecoFriendly from '../../assets/eco-friendly.png';
 import subscription from '../../assets/subsciption.png';
 import wasteManagmnetIndia from '../../assets/waste-managment-india.jpg';
 import AuthModal from './AuthModal';
+import NotificationPermission from '../common/NotificationPermission';
 
 const Landing = () => {
     const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
@@ -376,6 +377,9 @@ const Landing = () => {
             </div>
 
             {showAuthModal && <AuthModal closeModal={closeModal} />}
+
+            <NotificationPermission />
+
         </>
     );
 };

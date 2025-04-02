@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, Package, Clock, Phone, User, ArrowLeft, Truck, Plus, Minus, CreditCard } from 'lucide-react';
+import { getPaymentData, getDistrictAndServiceArea } from '../../services/collectorService';
 
 interface ICollection {
     _id: string;
@@ -15,13 +16,10 @@ interface ICollection {
     serviceAreaId: string;
     districtId: string;
     status: 'pending' | 'scheduled' | 'completed' | 'cancelled';
-    paymentStatus: 'paid' | 'unpaid';
+    paymentId: string;
     createdAt: string;
     items: {
-        categoryId: {
-            _id: string;
-            name: string;
-        };
+        categoryId: string;
         name: string;
         rate: number;
         qty: number;
@@ -38,12 +36,61 @@ interface ICollection {
     };
 }
 
-
+interface IPayment {
+    paymentId: string;
+    advanceAmount: number;
+    advancePaymentStatus: string;
+    status: "pending" | "success" | "failed";
+    paymentDate: string;
+}
 
 const CollectionDetails: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const collection: ICollection = location.state?.collection;
+    const [payment, setPayment] = useState<IPayment>({} as IPayment);
+    const [district, setDistrict] = useState<string>('');
+    const [serviceArea, setServiceArea] = useState<string>('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [districtResponse, paymentResponse] = await Promise.all([
+                    getDistrictAndServiceArea(collection.districtId, collection.serviceAreaId),
+                    getPaymentData(collection.paymentId)
+                ]);
+                
+                console.log("district and service area response:", districtResponse);
+                if (districtResponse.success) {
+                    setDistrict(districtResponse.district.name);
+                    setServiceArea(districtResponse.serviceArea.name);
+                }
+
+                console.log("payment response:", paymentResponse);
+                if (paymentResponse.success) {
+                    setPayment(paymentResponse.data);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [collection.districtId, collection.serviceAreaId, collection.paymentId]);
+
+    console.log("collection", collection);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-gray-500">Loading...</p>
+            </div>
+        );
+    }
 
     if (!collection) {
         return (
@@ -52,28 +99,6 @@ const CollectionDetails: React.FC = () => {
             </div>
         );
     }
-
-    // const initializeCollection = () => {
-    //     setIsCollecting(true);
-    //     // Initialize collected items with requested items
-    //     setCollectedItems(
-    //         collection.items.map(item => ({
-    //             category: item.categoryId.name,
-    //             actualQty: item.qty,
-    //             note: ''
-    //         }))
-    //     );
-    // };
-
-    // const updateCollectedQty = (index: number, increment: boolean) => {
-    //     setCollectedItems(prev =>
-    //         prev.map((item, i) =>
-    //             i === index
-    //                 ? { ...item, actualQty: increment ? item.actualQty + 1 : Math.max(0, item.actualQty - 1) }
-    //                 : item
-    //         )
-    //     );
-    // };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -84,7 +109,6 @@ const CollectionDetails: React.FC = () => {
             default: return 'bg-gray-100 text-gray-800';
         }
     };
-
 
     return (
         <main className="bg-gray-50  overflow-x-hidden overflow-y-auto">
@@ -137,7 +161,7 @@ const CollectionDetails: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-600">
                                     <Truck className="w-5 h-5 flex-shrink-0" />
-                                    <span className="break-words">{collection.serviceAreaId}</span>
+                                    <span className="break-words">{serviceArea}, {district}</span>
                                 </div>
                             </div>
                         </div>
@@ -183,10 +207,15 @@ const CollectionDetails: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <CreditCard className="w-5 h-5 flex-shrink-0" />
-                                        <span>
+                                        {/* <span>
                                             <div className="font-medium">Payment Status</div>
                                             <div>{collection.paymentStatus.charAt(0).toUpperCase() + collection.paymentStatus.slice(1)}</div>
-                                        </span>
+                                        </span> */}
+
+                                          <span>
+                                            <div className="font-medium">Payment Status</div>
+                                            <div>{payment.status}</div>
+                                        </span> 
                                     </div>
                                 </div>
                             </div>
@@ -233,11 +262,13 @@ const CollectionDetails: React.FC = () => {
                             <button onClick={() => navigate(-1)} className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg">
                                 Back
                             </button>
-                            <Link to="/collector/add-collection-details" state={{ collection }}>
-                                <button className="bg-green-800 hover:bg-green-900 text-white px-4 py-2 rounded-lg">
-                                    Add Details
-                                </button>
-                            </Link>
+                            {collection.status === 'scheduled' && (
+                                <Link to="/collector/add-collection-details" state={{ collection }}>
+                                    <button className="bg-green-800 hover:bg-green-900 text-white px-4 py-2 rounded-lg">
+                                        Add Details
+                                    </button>
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>

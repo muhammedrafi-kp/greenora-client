@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, Download, X, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import Modal from '../common/Modal';
-import { getCollectors, updateCollectorStatus } from "../../services/adminService";
+import { getCollectors, updateCollectorStatus ,getDistrictAndServiceArea} from "../../services/adminService";
 import toast from 'react-hot-toast';
 
 interface ICollector {
