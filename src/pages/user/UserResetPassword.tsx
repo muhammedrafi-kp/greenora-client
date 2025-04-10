@@ -5,7 +5,7 @@ import NavBar from '../../components/user/Navbar'
 const UserResetPassword: React.FC = () => {
     return (
         <div>
-            <NavBar />
+            {/* <NavBar /> */}
             <ResetPassword />
         </div>
     )

@@ -41,7 +41,7 @@ const AssignedCollections: React.FC = () => {
   const [collections, setCollections] = useState<ICollection[]>([]);
   const [filteredCollections, setFilteredCollections] = useState<ICollection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('scheduled');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const navigate = useNavigate();

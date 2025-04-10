@@ -5,7 +5,7 @@ import Failure from '../../components/user/pickupLayout/Failure';
 const UserPickupFailure:React.FC = () => {
   return (
     <div>
-      <Navbar/>
+      {/* <Navbar/> */}
       <Failure/>
     </div>
   )

@@ -9,9 +9,6 @@ import { getChats } from '../../services/adminService';
 const socket = io("http://localhost:3007", {
     transports: ["websocket", "polling"],
     withCredentials: true,
-    query: {
-        role: 'admin'  // Specify the role as 'admin'
-    }
 });
 
 interface ParticipantDetails {

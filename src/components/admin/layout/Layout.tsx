@@ -15,6 +15,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
+    console.log("layout is rendered");
+
     return (
         <div className="flex h-screen bg-gray-50">
             <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />

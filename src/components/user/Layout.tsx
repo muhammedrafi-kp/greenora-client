@@ -1,21 +1,26 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import Navbar from './Navbar';
 // import Footer from './Footer';
-import ChatBot from '../common/ChatBot';
+import ChatBot from './ChatBot';
+import { Outlet } from 'react-router-dom'
 
-interface LayoutProps {
-    children: React.ReactNode;
-}
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+
+const Layout: React.FC = () => {
+
+    const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
+    // console.log("isLoggedIn :", isLoggedIn, "role :", role, "token :", token);
+
+
+    // console.log("layout is rendered");
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-grow">
-                {children}
+                <Outlet />
             </main>
-            {/* <Footer /> */}
-            <ChatBot />
+            {isLoggedIn && <ChatBot />}
         </div>
     );
 };

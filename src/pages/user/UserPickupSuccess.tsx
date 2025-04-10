@@ -5,7 +5,7 @@ import Success from '../../components/user/pickupLayout/Success';
 const UserPickupSuccess:React.FC = () => {
   return (
     <div>
-      <Navbar/>
+      {/* <Navbar/> */}
       <Success/>
     </div>
   )

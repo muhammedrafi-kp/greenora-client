@@ -1,14 +1,14 @@
 import React from 'react';
 import NavBar from '../../components/user/Navbar';
 import Landing from '../../components/user/Landing';
-import ChatBot from '../../components/common/ChatBot';
+import ChatBot from '../../components/user/ChatBot';
 
 const UserHome: React.FC = () => {
     return (
         <div className='row-auto'>
-            <NavBar />
+            {/* <NavBar /> */}
             <Landing />
-            <ChatBot />
+            {/* <ChatBot /> */}
         </div>
     )
 }

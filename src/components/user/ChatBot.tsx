@@ -12,9 +12,6 @@ import { getUserData, getAdminData, initiateChat } from '../../services/userServ
 const socket = io("http://localhost:3007", {
     transports: ["websocket", "polling"],
     withCredentials: true,
-    query: {
-        role: 'user'
-    }
 });
 
 // Interface for database messages
@@ -99,7 +96,9 @@ const ChatBot: React.FC = () => {
         }
     }, [messages]);
 
+
     useEffect(() => {
+        socket.connect();
         if (chatMode === 'bot') {
             // Initialize with bot welcome message
             const botWelcomeMessage: IBotMessage = {
@@ -114,7 +113,6 @@ const ChatBot: React.FC = () => {
 
 
         } else if (chatMode === 'admin') {
-            socket.connect();
 
             setIsLoading(true);
 
@@ -214,13 +212,13 @@ const ChatBot: React.FC = () => {
     }, [chatMode]);
 
     useEffect(() => {
-        // socket.on("admin-status-changed", ( status ) => {
-        //     console.log(`admin is ${status}`);
-        //     // Update admin status if the status update is for the admin
-        //     // if (userId === adminId) {
-        //     //     setAdminStatus(status);
-        //     // }
-        // });
+        socket.on("admin-status-changed", ( status ) => {
+            console.log(`admin is ${status}`);
+            // Update admin status if the status update is for the admin
+            // if (userId === adminId) {
+            //     setAdminStatus(status);
+            // }
+        });
 
         // Listen for incoming messages
         socket.on('receive-message', (message: IMessage) => {

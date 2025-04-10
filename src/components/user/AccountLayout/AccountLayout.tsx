@@ -37,6 +37,7 @@ const AccountLayout: React.FC = () => {
     };
 
     return (
+        <>
         <div className="container mx-auto px-4 lg:px-12 py-20 mt-9">
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Sidebar */}
@@ -67,6 +68,7 @@ const AccountLayout: React.FC = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 
