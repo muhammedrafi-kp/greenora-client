@@ -143,6 +143,9 @@ const ChatBot: React.FC = () => {
                     setIsLoading(false);
                     return;
                 }
+
+                socket.emit('user-online', userId);
+
                 try {
                     // Try to get existing chat or create a new one
                     const chatResponse = await initiateChat({
@@ -161,17 +164,7 @@ const ChatBot: React.FC = () => {
                         console.log("Existing chat found:", chatId);
                         socket.emit("join-room", { chatId, userId });
                         socket.emit("get-chat-history", { chatId: chatId });
-                    } else {
-                        // No existing chat, show welcome message
-                        // setIsLoading(false);
-                        // const welcomeMessage: IBotMessage = {
-                        //     message: "Welcome to Admin Support. How can we assist you today?",
-                        //     isBot: true,
-                        //     timestamp: new Date(),
-                        //     status: 'read'
-                        // };
-                        // setMessages([welcomeMessage]);
-                    }
+                    } 
                 } catch (error) {
                     console.error("Error getting chat:", error);
                     setIsLoading(false);
@@ -209,7 +202,12 @@ const ChatBot: React.FC = () => {
             };
             setMessages([botWelcomeMessage]);
         }
-    }, [chatMode]);
+
+        
+
+        
+    }, 
+    [chatMode]);
 
     useEffect(() => {
         socket.on("admin-status-changed", ( status ) => {

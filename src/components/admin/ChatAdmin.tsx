@@ -4,6 +4,7 @@ import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import io from 'socket.io-client';
 import { getChats } from '../../services/adminService';
+import { getAdminData } from '../../services/userService';
 
 // Initialize socket connection for admin
 const socket = io("http://localhost:3007", {
@@ -330,8 +331,8 @@ const AdminChat: React.FC = () => {
                         <div className="flex mt-4 border-b border-gray-200">
                             <button
                                 className={`flex-1 py-2 text-sm font-medium ${userFilter === 'all'
-                                        ? 'text-[#0E2A39] border-b-2 border-[#0E2A39]'
-                                        : 'text-gray-500 hover:text-[#0E2A39]'
+                                    ? 'text-[#0E2A39] border-b-2 border-[#0E2A39]'
+                                    : 'text-gray-500 hover:text-[#0E2A39]'
                                     }`}
                                 onClick={() => setUserFilter('all')}
                             >
@@ -339,8 +340,8 @@ const AdminChat: React.FC = () => {
                             </button>
                             <button
                                 className={`flex-1 py-2 text-sm font-medium ${userFilter === 'user'
-                                        ? 'text-[#0E2A39] border-b-2 border-[#0E2A39]'
-                                        : 'text-gray-500 hover:text-[#0E2A39]'
+                                    ? 'text-[#0E2A39] border-b-2 border-[#0E2A39]'
+                                    : 'text-gray-500 hover:text-[#0E2A39]'
                                     }`}
                                 onClick={() => setUserFilter('user')}
                             >
@@ -348,8 +349,8 @@ const AdminChat: React.FC = () => {
                             </button>
                             <button
                                 className={`flex-1 py-2 text-sm font-medium ${userFilter === 'collector'
-                                        ? 'text-[#0E2A39] border-b-2 border-[#0E2A39]'
-                                        : 'text-gray-500 hover:text-[#0E2A39]'
+                                    ? 'text-[#0E2A39] border-b-2 border-[#0E2A39]'
+                                    : 'text-gray-500 hover:text-[#0E2A39]'
                                     }`}
                                 onClick={() => setUserFilter('collector')}
                             >
@@ -391,8 +392,8 @@ const AdminChat: React.FC = () => {
                                                         <div className="flex items-center">
                                                             <h3 className="font-medium text-[#0E2A39]">{chat.participant1Details.name}</h3>
                                                             <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${chat.participant1Role === 'collector'
-                                                                    ? 'bg-blue-100 text-blue-800'
-                                                                    : 'bg-green-100 text-green-800'
+                                                                ? 'bg-blue-100 text-blue-800'
+                                                                : 'bg-green-100 text-green-800'
                                                                 }`}>
                                                                 {chat.participant1Role === 'collector' ? 'Collector' : 'User'}
                                                             </span>
@@ -453,8 +454,8 @@ const AdminChat: React.FC = () => {
                                     <div className="flex items-center">
                                         <h3 className="font-medium text-[#0E2A39]">{currentChat.participant1Details.name}</h3>
                                         <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${currentChat.participant1Role === 'collector'
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : 'bg-green-100 text-green-800'
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : 'bg-green-100 text-green-800'
                                             }`}>
                                             {currentChat.participant1Role === 'collector' ? 'Collector' : 'User'}
                                         </span>
@@ -501,8 +502,8 @@ const AdminChat: React.FC = () => {
                                                 )}
                                                 <div
                                                     className={`max-w-[75%] p-3 rounded-lg ${msg.senderId === currentChat.participant2
-                                                            ? 'bg-[#0E2A39] text-white rounded-br-none'
-                                                            : 'bg-white text-gray-800 shadow-sm rounded-bl-none'
+                                                        ? 'bg-[#0E2A39] text-white rounded-br-none'
+                                                        : 'bg-white text-gray-800 shadow-sm rounded-bl-none'
                                                         }`}
                                                 >
                                                     <p className="text-sm">{msg.message}</p>

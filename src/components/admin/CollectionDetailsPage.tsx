@@ -3,7 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, Phone } from 'lucide-react';
 import { FaRegClipboard } from 'react-icons/fa';
 import { getCollectorData, getPaymentData, getDistrictAndServiceArea } from '../../services/adminService';
-
+import { toast } from 'react-hot-toast';
+import ScheduleCollectionModal from './ScheduleCollectionModal';
+import CancelCollectionModal from './CancelCollectionModal';
 
 interface ICollection {
   _id: string;
@@ -43,11 +45,14 @@ interface ICollection {
 
 interface ICollector {
   _id: string;
-  collectorId: string;
   name: string;
-  email: string;
-  phone: string;
-  profileUrl: string;
+  currentTasks: number;
+  maxTasks: number;
+}
+
+interface ICancellationReason {
+  id: string;
+  reason: string;
 }
 
 interface Payment {
@@ -66,9 +71,37 @@ const CollectionDetailsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { collection } = location.state as { collection: ICollection };
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [availableCollectors, setAvailableCollectors] = useState<ICollector[]>([]);
+  const [selectedCollector, setSelectedCollector] = useState<string>('');
+  const [selectedReason, setSelectedReason] = useState<string>('');
 
-  console.log(collection);
+  const { collection } = location.state as { collection: ICollection } || {};
+
+  const cancellationReasons: ICancellationReason[] = [
+    { id: '1', reason: 'Customer requested cancellation' },
+    { id: '2', reason: 'No collector available' },
+    { id: '3', reason: 'Invalid address' },
+    { id: '4', reason: 'Customer not reachable' },
+    { id: '5', reason: 'Other' }
+  ];
+
+  useEffect(() => {
+    if (!collection) {
+      toast.error('Collection details not found. Redirecting to collection history...');
+      navigate('/admin/collections');
+    }
+  }, [collection, navigate]);
+
+  // Early return if no collection data
+  if (!collection) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const fetchCollectorData = async () => {
@@ -145,6 +178,44 @@ const CollectionDetailsPage: React.FC = () => {
     });
   };
 
+  const handleSchedule = async () => {
+    if (!selectedCollector) {
+      toast.error('Please select a collector');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // TODO: Implement schedule API call
+      toast.success('Collection scheduled successfully');
+      setShowScheduleModal(false);
+      // Refresh collection data
+    } catch (error) {
+      toast.error('Failed to schedule collection');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!selectedReason) {
+      toast.error('Please select a cancellation reason');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // TODO: Implement cancel API call
+      toast.success('Collection cancelled');
+      setShowCancelModal(false);
+      // Refresh collection data
+    } catch (error) {
+      toast.error('Failed to cancel collection');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
       <div className="max-w-7xl mx-auto">
@@ -158,12 +229,40 @@ const CollectionDetailsPage: React.FC = () => {
 
         {/* Request ID Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-lg font-semibold bg-blue-950 text-white px-3 py-1 rounded-md">
-            Collection ID : #{collection.collectionId.toLocaleUpperCase()}
-          </h1>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(collection.status)}`}>
-            {collection.status.charAt(0).toUpperCase() + collection.status.slice(1)}
-          </span>
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-semibold bg-blue-950 text-white px-3 py-1 rounded-md">
+              Collection ID : #{collection.collectionId.toLocaleUpperCase()}
+            </h1>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(collection.status)}`}>
+              {collection.status.charAt(0).toUpperCase() + collection.status.slice(1)}
+            </span>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            {collection.status === 'pending' && (
+              <button
+                onClick={() => setShowScheduleModal(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                Schedule Collection
+              </button>
+            )}
+            {(collection.status === 'pending' || collection.status === 'scheduled') && (
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                Cancel Collection
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -275,26 +374,7 @@ const CollectionDetailsPage: React.FC = () => {
                   <span className="text-sm text-gray-600">Phone</span>
                   <span className="text-sm font-medium">{collector?.phone || 'N/A'}</span>
                 </div>
-                {/* <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Service Area</span>
-                  <span className="text-sm font-medium">{request.collector?.serviceArea || 'N/A'}</span>
-                </div> */}
-                {/* <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">District</span>
-                  <span className="text-sm font-medium">{request.collector?.district || 'N/A'}</span>
-                </div>
-                {request.collector?.vehicleNumber && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Vehicle Number</span>
-                    <span className="text-sm font-medium">{request.collector.vehicleNumber}</span>
-                  </div>
-                )} */}
               </div>
-              {/* <div className="mt-4">
-                <button className="w-full py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors flex items-center justify-center gap-2">
-                  <Phone className="w-4 h-4" /> Call Collector
-                </button>
-              </div> */}
             </div>
           )}
 
@@ -339,6 +419,27 @@ const CollectionDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ScheduleCollectionModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        district={district}
+        serviceArea={serviceArea}
+        availableCollectors={availableCollectors}
+        selectedCollector={selectedCollector}
+        onCollectorSelect={setSelectedCollector}
+        onSchedule={handleSchedule}
+        loading={loading}
+      />
+
+      <CancelCollectionModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        selectedReason={selectedReason}
+        onReasonSelect={setSelectedReason}
+        onCancel={handleCancel}
+        loading={loading}
+      />
     </main>
   );
 };

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Search, X, SlidersHorizontal, Download, Calendar } from 'lucide-react';
+import { Search, X, SlidersHorizontal,  Calendar, ChevronLeft, ChevronRight, Table, File } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getCollectionHistories } from '../../services/adminService';
+import { getDistricts, getServiceAreas } from '../../services/userService';
 import { useNavigate } from 'react-router-dom';
+import { exportTableData } from '../../utils/exportUtils';
 
 interface ICollection {
   _id: string;
@@ -34,92 +36,140 @@ interface ICollection {
   };
 }
 
+interface IDistrict {
+  _id: string;
+  name: string;
+}
+
+interface IServiceArea {
+  _id: string;
+  name: string;
+}
+
 const Requests: React.FC = () => {
   const [collections, setCollections] = useState<ICollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<ICollection | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [showExportMessage, setShowExportMessage] = useState(false);
-  const [sortField, setSortField] = useState('createdAt');
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [exportType, setExportType] = useState<'csv' | 'pdf' | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [selectedServiceArea, setSelectedServiceArea] = useState('all');
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sortAscending, setSortAscending] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCollections, setTotalCollections] = useState(0);
+  const collectionsPerPage = 10;
+  
   const navigate = useNavigate();
 
-  const serviceAreas = [
-    'Kochi',
-    'Thrissur',
-    'Kozhikode',
-    'Malappuram',
-    'Kannur',
-    // Add more service areas as needed
-  ];
+  useEffect(() => {
+    fetchDistricts();
+    fetchCollections();
+  }, []);
+
+  useEffect(() => {
+    if (selectedDistrict !== 'all') {
+      fetchServiceAreas(selectedDistrict);
+    } else {
+      setServiceAreas([]);
+      setSelectedServiceArea('all');
+    }
+  }, [selectedDistrict]);
 
   useEffect(() => {
     fetchCollections();
-  }, []);
+  }, [selectedStatus, selectedDistrict, selectedServiceArea, startDate, endDate, sortAscending, currentPage]);
+
+  const fetchDistricts = async () => {
+    try {
+      const response = await getDistricts();
+      if (response.success) {
+        setDistricts(response.data);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch districts');
+    }
+  };
+
+  const fetchServiceAreas = async (district: string) => {
+    try {
+      const response = await getServiceAreas(district);
+      if (response.success) {
+        setServiceAreas(response.data);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch service areas');
+    }
+  };
 
   const fetchCollections = async () => {
     try {
       setLoading(true);
-      const response = await getCollectionHistories();
+      const params = {
+        status: selectedStatus !== 'all' ? selectedStatus : undefined,
+        districtId: selectedDistrict !== 'all' ? selectedDistrict : undefined,
+        serviceAreaId: selectedServiceArea !== 'all' ? selectedServiceArea : undefined,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        sortBy: 'createdAt',
+        sortOrder: sortAscending ? 'asc' : 'desc',
+        search: searchTerm || undefined,
+        page: currentPage,
+        limit: collectionsPerPage
+      };
+
+      const response = await getCollectionHistories(params);
       console.log(response);
       if (response.success) {
-        setCollections(response.data);
+        setCollections(response.collections || []);
+        setTotalCollections(response.totalItems || 0);
       }
     } catch (error) {
+      console.log(error);
       toast.error('Failed to fetch collections');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExport = () => {
+  const handleExport = (type: 'csv' | 'pdf') => {
+    setExportType(type);
+    
     const headers = ['Collection ID', 'User', 'Type', 'Status', 'Created At'];
-    const csvData = collections.map(collection =>
-      [
-        collection.collectionId,
-        collection.user.name,
-        collection.type,
-        collection.status,
-        new Date(collection.createdAt).toLocaleDateString()
-      ].join(',')
-    );
-    const csvContent = [headers.join(','), ...csvData].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'collection_requests.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
+    const exportData = {
+      headers,
+      data: collections.map((collection) => ({
+        'Collection ID': collection.collectionId,
+        'User': collection.user.name,
+        'Type': collection.type,
+        'Status': collection.status,
+        'Created At': new Date(collection.createdAt).toLocaleDateString()
+      })),
+      fileName: 'collection_requests'
+    };
+
+    exportTableData(type, exportData);
+    
     setShowExportMessage(true);
-    setTimeout(() => setShowExportMessage(false), 3000);
+    setTimeout(() => {
+      setShowExportMessage(false);
+      setExportType(null);
+    }, 3000);
   };
 
-  const filteredCollections = collections.filter((collection) => {
-    const matchesSearch = (
-      collection.collectionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      collection.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      collection.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      collection.status.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const matchesStatus = selectedStatus === 'all' || collection.status === selectedStatus;
-    const matchesServiceArea = selectedServiceArea === 'all' || 
-      (collection.collector?.serviceArea?.toLowerCase() === selectedServiceArea.toLowerCase());
-    
-    // Date filtering
-    const collectionDate = new Date(collection.createdAt);
-    const matchesDateRange = (!startDate || collectionDate >= new Date(startDate)) && 
-      (!endDate || collectionDate <= new Date(endDate));
-    
-    return matchesSearch && matchesStatus && matchesServiceArea && matchesDateRange;
-  });
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // Debounce the search
+    const timeoutId = setTimeout(() => {
+      fetchCollections();
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -133,18 +183,23 @@ const Requests: React.FC = () => {
   };
 
   const handleViewDetails = (collection: ICollection) => {
-    navigate('/admin/collection-details', { state: { collection } });
+    navigate('/admin/collection', { state: { collection } });
   };
 
+  // Pagination calculations
+  const totalPages = Math.ceil(totalCollections / collectionsPerPage);
+  const indexOfLastCollection = currentPage * collectionsPerPage;
+  const indexOfFirstCollection = indexOfLastCollection - collectionsPerPage;
+
   return (
-    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
+    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4 ">
       <div className="max-w-7xl mx-auto bg-white border rounded-lg hover:shadow-md transition-all duration-300">
         <div className="p-6 space-y-6">
           <div className="flex flex-col gap-4">
             {showExportMessage && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between text-green-700">
-                  Collection requests data exported successfully!
+                  Collection requests exported successfully as {exportType?.toUpperCase()}!
                   <button onClick={() => setShowExportMessage(false)}>
                     <X className="w-4 h-4" />
                   </button>
@@ -158,7 +213,7 @@ const Requests: React.FC = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-md">
                   <span className="text-sm font-medium text-gray-600">Total:</span>
-                  <span className="text-sm font-semibold text-gray-900">{collections.length}</span>
+                  <span className="text-sm font-semibold text-gray-900">{totalCollections}</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-md">
                   <span className="text-sm font-medium text-gray-600">Completed:</span>
@@ -180,9 +235,9 @@ const Requests: React.FC = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
-                    placeholder="Search by request ID, name, email or status..."
+                    placeholder="Search by request ID"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearch}
                     className="w-[300px] text-sm pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white shadow-sm"
                   />
                 </div>
@@ -195,29 +250,38 @@ const Requests: React.FC = () => {
                   <span className="hidden sm:inline">Filters</span>
                 </button>
 
-                <button
-                  onClick={handleExport}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors shadow-sm"
-                >
-                  <Download className="w-5 h-5" />
-                  <span className="hidden sm:inline">Export</span>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                    title="Export as CSV"
+                  >
+                    <Table className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                    title="Export as PDF"
+                  >
+                    <File className="w-5 h-5 text-red-600" />
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Filters Panel */}
             {showFilters && (
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Status Filter */}
                   <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value)}
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                     >
-                      <option value="all">All Status</option>
+                      <option value="all">All</option>
                       <option value="pending">Pending</option>
                       <option value="scheduled">Scheduled</option>
                       <option value="completed">Completed</option>
@@ -225,18 +289,36 @@ const Requests: React.FC = () => {
                     </select>
                   </div>
 
+                  {/* District Filter */}
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                    <select
+                      value={selectedDistrict}
+                      onChange={(e) => setSelectedDistrict(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
+                    >
+                      <option value="all">All Districts</option>
+                      {districts.map((district) => (
+                        <option key={district._id} value={district._id}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Service Area Filter */}
                   <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Service Area</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
                     <select
                       value={selectedServiceArea}
                       onChange={(e) => setSelectedServiceArea(e.target.value)}
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
+                      disabled={selectedDistrict === 'all'}
                     >
                       <option value="all">All Areas</option>
                       {serviceAreas.map((area) => (
-                        <option key={area} value={area.toLowerCase()}>
-                          {area}
+                        <option key={area._id} value={area._id}>
+                          {area.name}
                         </option>
                       ))}
                     </select>
@@ -244,7 +326,7 @@ const Requests: React.FC = () => {
 
                   {/* Date Range Filter */}
                   <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                       <Calendar className="w-4 h-4" /> Date Range
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -252,14 +334,14 @@ const Requests: React.FC = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                         placeholder="Start Date"
                       />
                       <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                         placeholder="End Date"
                         min={startDate}
                       />
@@ -268,14 +350,14 @@ const Requests: React.FC = () => {
 
                   {/* Sort By Filter */}
                   <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sort By Date</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sort By Date</label>
                     <select
                       value={sortAscending ? 'asc' : 'desc'}
                       onChange={(e) => setSortAscending(e.target.value === 'asc')}
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                     >
-                      <option value="desc">Newest First</option>
-                      <option value="asc">Oldest First</option>
+                      <option value="desc">Newest </option>
+                      <option value="asc">Oldest </option>
                     </select>
                   </div>
                 </div>
@@ -285,23 +367,15 @@ const Requests: React.FC = () => {
                   <button
                     onClick={() => {
                       setSelectedStatus('all');
+                      setSelectedDistrict('all');
                       setSelectedServiceArea('all');
                       setStartDate('');
                       setEndDate('');
                       setSortAscending(false);
                     }}
-                    className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-center gap-2"
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-center gap-2"
                   >
                     <X className="w-4 h-4" /> Clear Filters
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Add your apply filter logic here
-                      fetchCollections();
-                    }}
-                    className="px-4 py-2.5 bg-blue-950 text-white rounded-lg hover:bg-blue-900 transition-colors text-sm font-medium flex items-center justify-center gap-2"
-                  >
-                    Apply Filters
                   </button>
                 </div>
               </div>
@@ -331,13 +405,19 @@ const Requests: React.FC = () => {
                         </div>
                       </td>
                     </tr>
-                  ) : filteredCollections.length === 0 ? (
+                  ) : collections.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">No requests found</td>
+                      <td colSpan={6} className="px-4 py-8 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <Calendar className="w-12 h-12 mb-2 text-gray-400" />
+                          <p className="text-sm font-medium">No collections found</p>
+                          <p className="text-xs text-gray-400">Try adjusting your search or filters</p>
+                        </div>
+                      </td>
                     </tr>
                   ) : (
                     collections.map((collection) => (
-                      <tr key={collection._id} className="border-b  border-gray-200 hover:bg-gray-50 transition-colors">
+                      <tr key={collection._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-3 text-sm font-medium text-gray-900">
                           #{collection.collectionId.toLocaleUpperCase()}
                         </td>
@@ -367,6 +447,37 @@ const Requests: React.FC = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100">
+              <div className="text-sm text-gray-700">
+                Showing {indexOfFirstCollection + 1} to {Math.min(indexOfLastCollection, totalCollections)} of {totalCollections} collections
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`p-2 rounded-lg border ${
+                    currentPage === 1
+                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`p-2 rounded-lg border ${
+                    currentPage === totalPages
+                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

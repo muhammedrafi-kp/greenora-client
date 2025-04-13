@@ -74,7 +74,24 @@ const LoadingSpinner = () => (
 const CollectionDetails: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { collectionDetails } = location.state as { collectionDetails: CollectionDetails };
+    const { collectionDetails } = location.state as { collectionDetails: CollectionDetails } || {};
+
+    // Add check for missing collection data
+    useEffect(() => {
+        if (!collectionDetails) {
+            toast.error('Collection details not found. Redirecting to collection history...');
+            navigate('/account/waste-collection-history');
+        }
+    }, [collectionDetails, navigate]);
+
+    // Early return if no collection details
+    if (!collectionDetails) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
+            </div>
+        );
+    }
 
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [selectedReason, setSelectedReason] = useState<string>('');
@@ -129,7 +146,7 @@ const CollectionDetails: React.FC = () => {
 
     console.log("payment:", payment);
 
-    const getStatusIconAndColor = (status: 'completed' | 'scheduled' | 'cancelled' | 'in progress' | 'pending') => {
+    const getStatusIconAndColor = (status: 'completed' | 'scheduled' | 'cancelled' | 'in progress' | 'pending'): { icon: JSX.Element; color: string } => {
         switch (status) {
             case 'completed':
                 return { icon: <FaCheckCircle />, color: 'bg-green-100 text-green-600' };
@@ -138,6 +155,8 @@ const CollectionDetails: React.FC = () => {
             case 'cancelled':
                 return { icon: <FaTimesCircle />, color: 'bg-red-100 text-red-600' };
             case 'pending':
+                return { icon: <FaClock />, color: 'bg-yellow-100 text-yellow-600' };
+            default:
                 return { icon: <FaClock />, color: 'bg-yellow-100 text-yellow-600' };
         }
     };

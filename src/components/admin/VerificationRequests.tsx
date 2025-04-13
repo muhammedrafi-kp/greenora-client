@@ -119,7 +119,11 @@ const VerificationRequests: React.FC = () => {
 
                 {collectors.length === 0 ? (
                     <div className="bg-white rounded-lg shadow p-6 text-center">
-                        <p className="text-gray-500">No pending verification requests</p>
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                            <User className="w-12 h-12 mb-2 text-gray-400" />
+                            <p className="text-sm font-medium">No pending verification requests</p>
+                            <p className="text-xs text-gray-400">There are currently no verification requests to review</p>
+                        </div>
                     </div>
                 ) : (
                     <div className="bg-white rounded-lg shadow overflow-hidden">

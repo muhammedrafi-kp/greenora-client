@@ -179,7 +179,7 @@ const NavBar: React.FC = () => {
         if (isNotificationOpen) {
             setPage(1);
             setHasMore(true);
-            setNotifications([]); // Clear existing notifications
+            // setNotifications([]); 
         }
         setIsNotificationOpen(!isNotificationOpen);
     };
@@ -353,7 +353,10 @@ const NavBar: React.FC = () => {
                                             </div>
                                             <div className="bg-gray-50 border-t bottom-0 mt-4 pb-4 pt-2 px-4 sticky">
                                                 <button
-                                                    onClick={() => navigate('/account/notifications')}
+                                                    onClick={() => {
+                                                        navigate('/account/notifications');
+                                                        toggleNotification();
+                                                    }}
                                                     className="text-center text-green-700 text-sm w-full hover:text-green-800"
                                                 >
                                                     View All Notifications

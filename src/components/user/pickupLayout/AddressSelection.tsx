@@ -7,7 +7,7 @@ import { MapPin, Pencil, Trash2, LocateFixed } from "lucide-react"
 import axios from 'axios';
 import Modal from '../../common/Modal';
 import { useDispatch } from 'react-redux';
-import { setStep,setDistrict,setServiceArea, setAddress } from '../../../redux/pickupSlice';
+import { setStep, setDistrict, setServiceArea, setAddress } from '../../../redux/pickupSlice';
 
 interface IDistrict {
   _id: string;
@@ -42,7 +42,7 @@ const AddressSelection = () => {
   const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
   const [addresses, setAddresses] = useState<IAddresses[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState ('');
+  const [selectedAddress, setSelectedAddress] = useState('');
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [newAddress, setNewAddress] = useState<IAddressFormData>({
     name: '',
@@ -127,9 +127,9 @@ const AddressSelection = () => {
   const handleAddressSelect = (address: IAddresses) => {
     setSelectedAddress(address._id);
     dispatch(setAddress({ address }));
-    dispatch(setDistrict({district:selectedDistrict}));
-    dispatch(setServiceArea({serviceArea : selectedServiceArea}));
-    console.log("selectedAddress :", selectedAddress,address);
+    dispatch(setDistrict({ district: selectedDistrict }));
+    dispatch(setServiceArea({ serviceArea: selectedServiceArea }));
+    console.log("selectedAddress :", selectedAddress, address);
   };
 
   // handle district change
@@ -141,7 +141,7 @@ const AddressSelection = () => {
     if (districtId) {
       fetchServiceAreas(districtId);
     } else {
-      setServiceAreas([]); 
+      setServiceAreas([]);
     }
   };
 
@@ -186,7 +186,7 @@ const AddressSelection = () => {
 
     // check pin code availability
     try {
-      console.log(selectedServiceArea,newAddress.pinCode);
+      console.log(selectedServiceArea, newAddress.pinCode);
       const pinCodeResponse = await checkPinCode(selectedServiceArea, newAddress.pinCode);
       if (!pinCodeResponse.success) {
         setErrors({ ...errors, pinCode: "Service is not available in this area." });
@@ -405,11 +405,10 @@ const AddressSelection = () => {
                 <div
                   key={addr._id}
                   onClick={() => !isLoading && handleAddressSelect(addr)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedAddress === addr._id
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedAddress === addr._id
                       ? "border-green-500 bg-green-50"
                       : "border-gray-200 hover:border-green-200"
-                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div className="flex justify-between">
                     <div className="flex gap-3">

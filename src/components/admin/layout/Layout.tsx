@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
-import Breadcrumbs from '../Breadcrumbs';
 import { Outlet } from 'react-router-dom';
 
-interface LayoutProps {
-    children: React.ReactNode;
-}
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -23,10 +18,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {isSidebarOpen && (
                 <div className="fixed inset-0 z-20 bg-black opacity-50 md:hidden" onClick={toggleSidebar}></div>
             )}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col h-full min-w-0">
                 <Navbar toggleSidebar={toggleSidebar} />
-                {/* <Breadcrumbs/> */}
-                {children}
+                <main className="flex-1 overflow-y-auto overflow-x-auto">
+                    <div className="min-w-full">
+                        <Outlet />
+                    </div>
+                </main>
             </div>
         </div>
     );
