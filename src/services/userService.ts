@@ -159,25 +159,9 @@ export const calculatePickupCost = async (items: Array<object>) => {
     }
 }
 
-export const initiatePayment = async (collectionData: any, paymentMethod: string) => {
-    try {
-        const response = await apiClient.post('/payment-service/collection-payment/initiate-payment', { collectionData, paymentMethod });
-        return response.data;
-    } catch (error) {
-        console.error("Error creating payment order:", error);
-        throw error;
-    }
-}
 
-export const verifyPayment = async (paymentData: any) => {
-    try {
-        const response = await apiClient.post('/payment-service/collection-payment/verify-payment', paymentData);
-        return response.data;
-    } catch (error) {
-        console.error("Error verifying payment:", error);
-        throw error;
-    }
-}
+
+
 
 // export const createPickupRequest = async (collectionData: object) => {
 //     try {
@@ -302,8 +286,10 @@ export const getNotifications = async (pageNumber: number = 1) => {
 export const getUnreadNotificationCount = async () => {
     try {
         const response = await apiClient.get('/notification-service/notification/unread-count');
+        console.log("response:", response);
         return response.data;
     } catch (error) {
+
         console.error("Error fetching unread notification count:", error);
         throw error;
     }

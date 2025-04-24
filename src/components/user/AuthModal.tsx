@@ -29,6 +29,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
     const [isLoading, setIsLoading] = useState(false);
 
     const dispatch = useDispatch();
+    
 
     const [formData, setFormData] = useState<IUserSignUpData>({
         name: '',
@@ -63,8 +64,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                         // Dispatch user login action with user data
                         dispatch(loginSuccess({ token: response.token, role: response.role }));
                         closeModal();
+                        toast.success("Login successful!");
                     }
-                    toast.success("Login successful!");
                 } else {
                     const response = await signUpUser(formData);
                     if (response.success) {

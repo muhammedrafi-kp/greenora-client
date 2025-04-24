@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, Phone } from 'lucide-react';
 import { FaRegClipboard } from 'react-icons/fa';
-import { getCollectorData, getPaymentData, getDistrictAndServiceArea } from '../../services/adminService';
+import { getCollectorData, getPaymentData, getDistrictAndServiceArea ,getAvailableCollectors,scheduleCollection} from '../../services/adminService';
+import { cancelCollection } from '../../services/userService';
 import { toast } from 'react-hot-toast';
 import ScheduleCollectionModal from './ScheduleCollectionModal';
 import CancelCollectionModal from './CancelCollectionModal';
@@ -46,8 +47,7 @@ interface ICollection {
 interface ICollector {
   _id: string;
   name: string;
-  currentTasks: number;
-  maxTasks: number;
+  taskCount: number;
 }
 
 interface ICancellationReason {
@@ -76,6 +76,7 @@ const CollectionDetailsPage: React.FC = () => {
   const [availableCollectors, setAvailableCollectors] = useState<ICollector[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>('');
   const [selectedReason, setSelectedReason] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const { collection } = location.state as { collection: ICollection } || {};
 
@@ -178,19 +179,56 @@ const CollectionDetailsPage: React.FC = () => {
     });
   };
 
-  const handleSchedule = async () => {
-    if (!selectedCollector) {
-      toast.error('Please select a collector');
-      return;
+  const handleDateSelect = async (date: Date | null) => {
+    setSelectedDate(date);
+    if (date) {
+      try {
+        setLoading(true);
+        // Format the date as YYYY-MM-DD to avoid timezone issues
+        const formattedDate = date.toISOString().split('T')[0];
+        const response = await getAvailableCollectors(collection.serviceAreaId, formattedDate);
+        console.log("available collectors response:", response);
+        if (response.success) {
+          setAvailableCollectors(response.collectors);
+        }
+      } catch (error) {
+        console.error("Error fetching available collectors:", error);
+        toast.error('Failed to fetch available collectors');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setAvailableCollectors([]);
     }
+  };
 
+  const handleSchedule = async () => { 
     try {
       setLoading(true);
-      // TODO: Implement schedule API call
-      toast.success('Collection scheduled successfully');
-      setShowScheduleModal(false);
-      // Refresh collection data
+      if (!selectedCollector || !selectedDate) {
+        toast.error('Please select a collector and date');
+        return;
+      }
+
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const response = await scheduleCollection(
+        collection.collectionId,
+        selectedCollector,
+        collection.user.userId,
+        formattedDate
+      );
+      console.log("schedule collection response:", response);
+      if (response.success) {
+        toast.success('Collection scheduled successfully');
+        setShowScheduleModal(false);
+        // Refresh the page to show updated status
+        navigate('/admin/collections');
+
+      } else {
+        toast.error(response.message || 'Failed to schedule collection');
+      }
     } catch (error) {
+      console.error('Error scheduling collection:', error);
       toast.error('Failed to schedule collection');
     } finally {
       setLoading(false);
@@ -205,11 +243,21 @@ const CollectionDetailsPage: React.FC = () => {
 
     try {
       setLoading(true);
-      // TODO: Implement cancel API call
-      toast.success('Collection cancelled');
-      setShowCancelModal(false);
-      // Refresh collection data
+      const response = await cancelCollection(
+        collection.collectionId,
+        selectedReason
+      );
+
+      console.log("cancel collection response:", response);
+      if (response.success) {
+        toast.success('Collection cancelled successfully');
+        setShowCancelModal(false);
+        navigate('/admin/collections');
+      } else {
+        toast.error(response.message || 'Failed to cancel collection');
+      }
     } catch (error) {
+      console.error('Error cancelling collection:', error);
       toast.error('Failed to cancel collection');
     } finally {
       setLoading(false);
@@ -367,12 +415,8 @@ const CollectionDetailsPage: React.FC = () => {
                   <span className="text-sm font-medium">{collector?.name || 'Not assigned'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Email</span>
-                  <span className="text-sm font-medium">{collector?.email || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Phone</span>
-                  <span className="text-sm font-medium">{collector?.phone || 'N/A'}</span>
+                  <span className="text-sm text-gray-600">Current Tasks</span>
+                  <span className="text-sm font-medium">{collector?.taskCount || '0'}</span>
                 </div>
               </div>
             </div>
@@ -430,6 +474,9 @@ const CollectionDetailsPage: React.FC = () => {
         onCollectorSelect={setSelectedCollector}
         onSchedule={handleSchedule}
         loading={loading}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        originalPreferredDate={collection.preferredDate}
       />
 
       <CancelCollectionModal

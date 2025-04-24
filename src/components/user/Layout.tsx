@@ -9,9 +9,8 @@ import { Outlet } from 'react-router-dom'
 
 const Layout: React.FC = () => {
 
-    const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
+    const { isLoggedIn } = useSelector((state: any) => state.auth);
     // console.log("isLoggedIn :", isLoggedIn, "role :", role, "token :", token);
-
 
     // console.log("layout is rendered");
     return (

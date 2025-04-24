@@ -141,7 +141,6 @@ const Profile: React.FC<ProfileProps> = () => {
       }
     } catch (error) {
       console.error("Failed to fetch collector data", error);
-      toast.error('Failed to load profile data');
     } finally {
       setLoading(false);
     }

@@ -45,7 +45,7 @@ const UserRoutes: React.FC = () => {
                             <Route index element={<UserProfile />} />
 
                             {/* <Route  path='profile' element={<UserProfile />} /> */}
-                            <Route path='waste-collection-history' element={<UserWasteCollectionHistory />} />
+                            <Route path='collections' element={<UserWasteCollectionHistory />} />
                             <Route path='address' element={<UserAddressess />} />
                             <Route path='charges' element={<UserCharges />} />
                             <Route path='wallet' element={<UserWallet />} />

@@ -50,7 +50,7 @@ export const getVerificationRequests = async () => {
 
 export const updateVerificationStatus = async (id: string, status: string) => {
   try {
-    const response = await apiClient.patch(`/user-service/admin/update-verification-status/${id}`, { status });
+    const response = await apiClient.patch(`/user-service/admin/verification-status/${id}`, { status });
     return response.data;
   } catch (error) {
     console.error('Error updating verification status:', error);
@@ -60,7 +60,7 @@ export const updateVerificationStatus = async (id: string, status: string) => {
 
 export const updateUserStatus = async (id: string) => {
   try {
-    const response = await apiClient.patch(`/user-service/admin/update-user-status/${id}`);
+    const response = await apiClient.patch(`/user-service/admin/user-status/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error updating user status:', error);
@@ -70,7 +70,7 @@ export const updateUserStatus = async (id: string) => {
 
 export const updateCollectorStatus = async (id: string) => {
   try {
-    const response = await apiClient.patch(`/user-service/admin/update-collector-status/${id}`);
+    const response = await apiClient.patch(`/user-service/admin/collector-status/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error updating collector status:', error);
@@ -219,6 +219,35 @@ export const getPaymentData = async (paymentId: string) => {
     throw error;
   }
 }
+
+export const getAvailableCollectors = async (serviceAreaId: string, preferredDate: string) => {
+  try {
+    // const encodedDate = encodeURIComponent(preferredDate);
+    console.log("preferredDate :", preferredDate);
+    const response = await apiClient.get("/user-service/admin/available-collectors", {
+      params: { serviceArea:serviceAreaId, preferredDate }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching available collectors:", error);
+    throw error;
+  }
+}
+
+export const scheduleCollection = async (collectionId: string, collectorId: string, userId: string, preferredDate: string) => {
+  try {
+    const response = await apiClient.post(`/request-service/collection/schedule/${collectionId}`, {
+      collectorId,
+      userId,
+      preferredDate
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error scheduling collection:", error);
+    throw error;
+  }
+}
+
 
 export const getPricingPlans = async () => {
   try {

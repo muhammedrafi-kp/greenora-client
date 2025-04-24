@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { FaUser, FaClipboardList, FaWallet, FaAddressCard, FaBell, FaSignOutAlt, FaComments } from 'react-icons/fa';
 import { TbCoinRupeeFilled } from "react-icons/tb";
 // import { VscGraph } from "react-icons/vsc";
-import { Camera } from 'lucide-react';
+import { Camera, CircleUserRound } from 'lucide-react';
 import { getUserData, uploadProfileImage } from "../../../services/userService";
 import { IUserData } from '../../../interfaces/interfaces';
 import SidebarSkeleton from '../skeltons/SidebarSkeleton';
@@ -15,7 +15,7 @@ const navLinks = [
   // { icon: <VscGraph />, label: 'Activity', path: '/account/', end: true },
   // { icon: <FaUser />, label: 'Profile', path: '/account/profile',end: true },
   { icon: <FaUser />, label: 'Profile', path: '/account/',end: true },
-  { icon: <FaClipboardList />, label: 'Waste Collection History', path: '/account/waste-collection-history' },
+  { icon: <FaClipboardList />, label: 'Collection History', path: '/account/collections' },
   { icon: <FaWallet />, label: 'Wallet', path: '/account/wallet' },
   { icon: <TbCoinRupeeFilled />, label: 'Charges', path: '/account/charges' },
   { icon: <FaBell />, label: 'Notifications', path: '/account/notifications' },
@@ -105,11 +105,15 @@ const Sidebar: React.FC = () => {
           <div className="flex flex-col items-center p-4 border-b">
             <div className="relative group">
               <div className="w-20 h-20  rounded-full flex items-center justify-center relative">
-                <img
-                  src={uploadedImage || userData?.profileUrl}
+                {userData?.profileUrl ? (
+                  <img
+                    src={userData?.profileUrl}
                     alt="Profile"
                     className="sm:w-24 sm:h-24 xs:w-20 xs:h-20 w-16 h-16 rounded-full sm:border-4 border-2 border-white shadow-lg object-cover"
-                />
+                  />
+                ) : (
+                  <CircleUserRound className="w-12 h-12 text-green-950" />
+                )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                   <label htmlFor="profileImageInSidebar" className="cursor-pointer">
                     <Camera className="xs:w-6 xs:h-6 w-4 h-4 text-white" />

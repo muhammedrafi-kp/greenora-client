@@ -75,9 +75,9 @@ export const getAssignedCollections = async () => {
     }
 }
 
-export const completeCollection = async (collectionId: string, paymentData: any, collectionData: any) => {
+export const completeCollection = async (collectionId: string, formData: FormData) => {
     try {
-        const response = await apiClient.post(`/request-service/collection/${collectionId}`, { paymentData, collectionData });
+        const response = await apiClient.patch(`/request-service/collection/${collectionId}`, formData);
         return response.data;
     } catch (error) {
         console.error("Error processing payment:", error);

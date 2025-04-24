@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, SlidersHorizontal, Download, X, ChevronLeft, ChevronRight, User, Table, File } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, User, Table, File } from 'lucide-react';
 import Modal from '../common/Modal';
 import { getUsers, updateUserStatus } from "../../services/adminService";
 import toast from 'react-hot-toast';

@@ -41,7 +41,7 @@ const AssignedCollections: React.FC = () => {
   const [collections, setCollections] = useState<ICollection[]>([]);
   const [filteredCollections, setFilteredCollections] = useState<ICollection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('scheduled');
+  const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ const AssignedCollections: React.FC = () => {
         setFilteredCollections(response.collections);
       }
     } catch (error) {
-      toast.error('Failed to fetch assigned collections');
       console.error('Error fetching collections:', error);
     } finally {
       setLoading(false);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Lock, Wallet, CreditCard } from 'lucide-react';
-import { initiatePayment, verifyPayment, getWalletData } from '../../../services/userService';
+import { initiateAdvancePayment, verifyAdvancePayment, getWalletData } from '../../../services/paymentService';
 import { useDispatch } from 'react-redux';
 import { setStep, resetPickup } from '../../../redux/pickupSlice';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
@@ -61,7 +61,7 @@ const Payment: React.FC = () => {
     if (selectedMethod === 'wallet') {
       setLoading(true);
       try {
-        const response = await initiatePayment(collectionData, "wallet");
+        const response = await initiateAdvancePayment(collectionData, "wallet");
         console.log("wallet payment response:",response);
         
         if (response.success) {
@@ -92,7 +92,7 @@ const Payment: React.FC = () => {
 
       setLoading(true);
       try {
-        const response = await initiatePayment(collectionData,"razorpay");
+        const response = await initiateAdvancePayment(collectionData,"razorpay");
 
         console.log("response:", response);
         if (response.success) {
@@ -101,13 +101,13 @@ const Payment: React.FC = () => {
             key: "rzp_test_b0szQvJZ7F009R", // Razorpay Key ID from .env
             amount: response.amount,
             currency: "INR",
-            name: "Your Company Name",
+            name: "Greenora",
             description: "Test Transaction",
             order_id: response.orderId, // Order ID from Backend
             handler: async (response: any) => {
               try {
                 console.log("resposne2 :", response)
-                const verifyResponse = await verifyPayment(response);
+                const verifyResponse = await verifyAdvancePayment(response);
 
                 if (verifyResponse.success) {
                   dispatch(setStep({ step: 1 }));

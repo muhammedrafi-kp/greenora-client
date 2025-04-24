@@ -3,20 +3,20 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaCheck, FaArrowLeft } from 'react-icons/fa';
 
-interface ReviewItem {
+interface Item {
   categoryId: string;
   name: string;
   rate: number;
   qty: number;
 }
 
-interface ReviewData {
-  items: ReviewItem[];
+interface IFormData {
+  items: Item[];
   proofs: File[];
   notes: string;
 }
 
-interface CollectionAddress {
+interface IAddress {
   name: string;
   mobile: string;
   pinCode: string;
@@ -24,74 +24,30 @@ interface CollectionAddress {
   addressLine: string;
 }
 
-interface CollectionDetails {
+interface ICollection {
   _id: string;
   collectionId: string;
   type: 'waste' | 'scrap';
   status: string;
   preferredDate: string;
   preferredTime: string;
-  address: CollectionAddress;
+  address: IAddress;
 }
 
 const Review: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Get data from location state or session storage
   const getStateData = () => {
     if (location.state) {
-      // If we have location state, save it to session storage for back navigation
       const { formData, collection } = location.state as { 
-        formData: ReviewData, 
-        collection: CollectionDetails 
+        formData: IFormData, 
+        collection: ICollection 
       };
-
-      console.log("formData", formData);
-      console.log("collection", collection);
-      
-      // Store in session storage (stringify objects including File objects)
-      sessionStorage.setItem('reviewFormData', JSON.stringify(formData));
-      sessionStorage.setItem('reviewCollection', JSON.stringify(collection));
-      
-      // Store proof URLs separately
-      if (formData.proofs && formData.proofs.length > 0) {
-        const proofUrls = formData.proofs.map(file => URL.createObjectURL(file));
-        sessionStorage.setItem('reviewProofUrls', JSON.stringify(proofUrls));
-      }
-      
       return { formData, collection };
     } else {
-      // Try to get from session storage
-      const storedFormData = sessionStorage.getItem('reviewFormData');
-      const storedCollection = sessionStorage.getItem('reviewCollection');
-      const storedProofUrls = sessionStorage.getItem('reviewProofUrls');
-      
-      if (!storedFormData || !storedCollection) {
-        navigate('/collector/tasks');
-        return null;
-      }
-      
-      // Parse the stored data
-      const formData = JSON.parse(storedFormData) as ReviewData;
-      const collection = JSON.parse(storedCollection) as CollectionDetails;
-      
-      // Handle proof URLs (we can't restore actual File objects)
-      if (storedProofUrls) {
-        const proofUrls = JSON.parse(storedProofUrls) as string[];
-        // Create dummy File objects with the URLs for display purposes
-        formData.proofs = proofUrls.map((url, index) => {
-          // This is a workaround - we're creating a dummy File object
-          // that has enough properties to display in the UI
-          return {
-            name: `Proof ${index + 1}`,
-            type: 'image/jpeg',
-            url: url
-          } as any;
-        });
-      }
-      
-      return { formData, collection };
+      navigate('/collector/tasks');
+      return null;
     }
   };
   
@@ -101,6 +57,9 @@ const Review: React.FC = () => {
   if (!stateData) return null;
   
   const { formData, collection } = stateData;
+
+  console.log("formData", formData);
+  console.log("collection", collection);
 
   // Calculate total amount
   const totalAmount = formData.items.reduce((total, item) => {
@@ -131,15 +90,6 @@ const Review: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    if (formData && formData.items) {
-      console.log("Review items:", formData.items);
-      formData.items.forEach((item, index) => {
-        console.log(`Item ${index}:`, item);
-        console.log(`  categoryId: ${item.categoryId}`);
-      });
-    }
-  }, [formData]);
 
   return (
     <div className="bg-gray-50 flex-1 overflow-x-hidden overflow-y-auto p-6">

@@ -1,6 +1,7 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosRequestConfig } from "axios";
 import store from "../redux/store";
 import { loginSuccess, Logout } from "../redux/authSlice";
+import { toast } from "react-hot-toast";
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
@@ -56,6 +57,16 @@ apiClient.interceptors.response.use(
             }
         }
 
+        if (error.response?.status === 403 && 
+            typeof error.response.data === 'object' && 
+            error.response.data !== null && 
+            'message' in error.response.data && 
+            error.response.data.message === "User is blocked.") {
+            toast.error("Your account is blocked.");
+            store.dispatch(Logout());
+            return Promise.reject(error);
+        }
+
         return Promise.reject(error);
     }
 );
@@ -65,5 +76,21 @@ const publicApiClient = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
     withCredentials: true, 
 });
+
+publicApiClient.interceptors.response.use(
+    (response: AxiosResponse) => response,
+    (error: AxiosError) => {
+        if(error.response?.status === 403 &&
+            typeof error.response.data === 'object' && 
+            error.response.data !== null && 
+            'message' in error.response.data && 
+            error.response.data.message === "User is blocked.") {
+            toast.error("Your account is blocked.");
+            store.dispatch(Logout());
+            return Promise.reject(error);
+        }
+        return Promise.reject(error);
+    }
+);
 
 export { apiClient, publicApiClient };

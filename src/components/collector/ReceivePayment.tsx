@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaWallet, FaMoneyBillWave, FaCreditCard, FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { completeCollection } from '../../services/collectorService';
+import { sendPaymentRequest } from '../../services/paymentService';
 
 interface Item {
     categoryId: string;
@@ -67,31 +68,10 @@ const ReceivePayment: React.FC = () => {
             console.log("formData", formData);
             console.log("collection", collection);
 
-            // Store in session storage for back navigation
-            sessionStorage.setItem('paymentFormData', JSON.stringify({
-                ...formData,
-                proofs: [] // We can't store File objects
-            }));
-            sessionStorage.setItem('paymentCollection', JSON.stringify(collection));
 
             return { formData, collection };
         } else {
-            // Try to get from session storage
-            const storedFormData = sessionStorage.getItem('reviewFormData'); // Use the review data
-            const storedCollection = sessionStorage.getItem('reviewCollection');
-
-            if (!storedFormData || !storedCollection) {
-                // If no data in session storage, redirect back
-                toast.error('Payment information not found');
-                navigate('/collector/tasks');
-                return null;
-            }
-
-            // Parse the stored data
-            const formData = JSON.parse(storedFormData) as IFormData;
-            const collection = JSON.parse(storedCollection) as ICollection;
-
-            return { formData, collection };
+            navigate('/collector/tasks');
         }
     };
 
@@ -101,6 +81,8 @@ const ReceivePayment: React.FC = () => {
     if (!stateData) return null;
 
     const { formData, collection } = stateData;
+
+    
 
     const [selectedPayment, setSelectedPayment] = useState<'digital' | 'cash'>('digital');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -123,8 +105,25 @@ const ReceivePayment: React.FC = () => {
     const handleSendPaymentRequest = async () => {
         setIsSendingRequest(true);
         try {
-            // Add your API call here to send payment request
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+
+            const collectionData = {
+                collectionId: collection.collectionId,
+                items: formData.items,
+                notes: formData.notes,
+                paymentId: collection.paymentId,
+            } as Partial<ICollection>;
+
+            const formDataToSend = new FormData();
+
+            formDataToSend.append('collectionData', JSON.stringify(collectionData));
+
+            formData.proofs.forEach((proof, index) => {
+                formDataToSend.append('collectionProofs', proof);
+            });
+            
+            const response = await sendPaymentRequest(formDataToSend);
+            console.log("response", response);
+
             toast.success('Payment request sent');
         } catch (error) {
             console.error("Error sending payment request:", error);
@@ -149,18 +148,39 @@ const ReceivePayment: React.FC = () => {
                 items: formData.items,
                 notes: formData.notes,
                 status: "completed",
+                proofs: formData.proofs,
             } as Partial<ICollection>;
+
+            const formDataToSend = new FormData();
+
+            // Add payment data
+            formDataToSend.append('paymentData', JSON.stringify(finalPaymentData));
+
+            // Add collection data  
+            formDataToSend.append('collectionData', JSON.stringify(finalCollectionData));
+            formData.proofs.forEach((proof, index) => {
+                formDataToSend.append('collectionProofs', proof);
+            });
+            console.log("formDataToSend", formDataToSend);
+
+            console.log("finalPaymentData", finalPaymentData);
+            console.log("finalCollectionData", finalCollectionData);
+
+            // const response = await completeCollection(
+            //     collection._id,
+            //     finalPaymentData,
+            //     finalCollectionData
+            // );
 
             const response = await completeCollection(
                 collection._id,
-                finalPaymentData,
-                finalCollectionData
+                formDataToSend
             );
 
-            if (response.success) {
-                toast.success('Collection completed');
-                navigate('/collector/tasks')
-            }
+            // if (response.success) {
+            //     toast.success('Collection completed');
+            //     navigate('/collector/tasks')
+            // }
         } catch (error: any) {
             console.error("Error completing collection:", error);
             if (error.response?.status === 404) {
@@ -174,6 +194,12 @@ const ReceivePayment: React.FC = () => {
             setIsProcessing(false);
         }
     };
+
+    const handlePayNow = () => {
+        const paymentUrl = "https://pay.google.com/gp/p/1234567890";
+        window.open(paymentUrl, '_blank');
+        console.log("pay now");
+    }
 
     return (
         <div className="bg-gray-50 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
@@ -286,7 +312,7 @@ const ReceivePayment: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="mt-2 text-xs text-gray-500">
-                                                Collect ₹{totalAmount.toFixed(2)} in cash from the customer.
+                                                Collect ₹{remainingAmount.toFixed(2)} in cash from the customer.
                                             </div>
                                         </div>
                                     </div>
@@ -298,7 +324,7 @@ const ReceivePayment: React.FC = () => {
                                         <div className="bg-gray-50 p-4 rounded-lg">
                                             <h3 className="font-medium mb-2">Digital Payment</h3>
                                             <p className="text-sm text-gray-600 mb-4">
-                                                Customer will pay ₹{totalAmount.toFixed(2)} using wallet or online payment.
+                                                Customer will pay ₹{remainingAmount.toFixed(2)} using wallet or online payment.
                                             </p>
                                             <button
                                                 onClick={handleSendPaymentRequest}
@@ -325,7 +351,7 @@ const ReceivePayment: React.FC = () => {
                                         <div className="bg-gray-50 p-4 rounded-lg">
                                             <h3 className="font-medium mb-2">Cash Payment</h3>
                                             <p className="text-sm text-gray-600">
-                                                Collect ₹{totalAmount.toFixed(2)} in cash from the customer.
+                                                Collect ₹{remainingAmount.toFixed(2)} in cash from the customer.
                                             </p>
                                         </div>
                                     )}
@@ -334,7 +360,7 @@ const ReceivePayment: React.FC = () => {
                                 {/* Action Buttons */}
                                 <div className="flex justify-end items-center pt-4 space-x-4">
                                     <button
-                                        onClick={() => navigate(-1)}
+                                        onClick={() => navigate(-2)}
                                         className="flex items-center gap-2 px-4 py-2 bg-gray-400 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors"
                                     >
                                         Back
@@ -357,6 +383,15 @@ const ReceivePayment: React.FC = () => {
                                         ) : (
                                             'Complete Collection'
                                         )}
+                                    </button>
+
+
+                                    {/* pay now button */}
+                                    <button
+                                        onClick={handlePayNow}
+                                        className="px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg transition-colors"
+                                    >
+                                        Pay Now
                                     </button>
                                 </div>
                             </div>

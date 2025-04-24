@@ -95,6 +95,7 @@ const ChatBot: React.FC = () => {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages]);
+    
 
 
     useEffect(() => {
@@ -182,8 +183,8 @@ const ChatBot: React.FC = () => {
 
             // Listen for admin status changes
             socket.on("admin-status-changed", (status: 'online' | 'offline') => {
-                console.log(`Admin is ${status}`);
-                setAdminStatus(status);
+                // console.log(`Admin is ${status}`);
+                // setAdminStatus(status);
             });
 
         } else {
@@ -211,7 +212,7 @@ const ChatBot: React.FC = () => {
 
     useEffect(() => {
         socket.on("admin-status-changed", ( status ) => {
-            console.log(`admin is ${status}`);
+            // console.log(`admin is ${status}`);
             // Update admin status if the status update is for the admin
             // if (userId === adminId) {
             //     setAdminStatus(status);
@@ -224,10 +225,13 @@ const ChatBot: React.FC = () => {
 
             // Only process incoming messages when in admin chat mode
             if (chatMode === 'admin') {
+                // Ensure message is a string
+                const messageText = typeof message.message === 'string' ? message.message : JSON.stringify(message.message);
+                
                 const newMessage: IMessage = {
                     _id: message._id,
                     chatId: message.chatId,
-                    message: message.message,
+                    message: messageText,
                     senderId: message.senderId,
                     receiverId: message.receiverId,
                     timestamp: new Date(message.timestamp)
@@ -244,11 +248,11 @@ const ChatBot: React.FC = () => {
 
             if (chatMode === 'admin') {
                 if (data && data.messages && data.messages.length > 0) {
-                    // Format the messages with proper timestamps
+                    // Format the messages with proper timestamps and ensure message is a string
                     const formattedMessages: IMessage[] = data.messages.map((msg: IMessage) => ({
                         _id: msg._id,
                         chatId: msg.chatId,
-                        message: msg.message,
+                        message: typeof msg.message === 'string' ? msg.message : JSON.stringify(msg.message),
                         timestamp: new Date(msg.timestamp),
                         senderId: msg.senderId,
                         receiverId: msg.receiverId,
@@ -509,7 +513,7 @@ const ChatBot: React.FC = () => {
                                         } relative group`}
                                 >
                                     <p className="text-xs sm:text-sm">
-                                        {isDatabaseMessage(msg) ? msg.message : msg.message}
+                                        {isDatabaseMessage(msg) ? msg.message : (typeof msg.message === 'string' ? msg.message : JSON.stringify(msg.message))}
                                     </p>
                                     <div className="flex items-center justify-end gap-1.5 sm:gap-2 mt-1">
                                         <p className="text-[10px] sm:text-xs opacity-70">

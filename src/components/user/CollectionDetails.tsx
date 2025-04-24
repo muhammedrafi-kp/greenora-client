@@ -21,11 +21,15 @@ interface ICollector {
 interface Payment {
     _id: string;
     paymentId: string;
+    amount:number;
     advanceAmount: number;
     advancePaymentStatus: string;
-    status: 'pending' | 'paid' | 'failed';
-    paymentDate: string;
-}
+    status: "pending" | "success" | "failed";
+    method: "online" | "wallet" | "cash";
+    orderId?: string;
+    paidAt?: Date;
+};
+
 
 interface CollectionItem {
     categoryId: Category;
@@ -79,8 +83,8 @@ const CollectionDetails: React.FC = () => {
     // Add check for missing collection data
     useEffect(() => {
         if (!collectionDetails) {
-            toast.error('Collection details not found. Redirecting to collection history...');
-            navigate('/account/waste-collection-history');
+            toast.error('Collection details not found.');
+            navigate('/account/collections');
         }
     }, [collectionDetails, navigate]);
 
@@ -201,7 +205,7 @@ const CollectionDetails: React.FC = () => {
 
             if (response.success) {
                 toast.success("collection cancelled");
-                navigate("/account/waste-collection-history")
+                navigate("/account/collections")
             }
         } catch (error) {
             console.error("error while cancelling the collection", error);

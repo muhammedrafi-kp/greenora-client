@@ -5,6 +5,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import io from 'socket.io-client';
 import { getChats } from '../../services/adminService';
 import { getAdminData } from '../../services/userService';
+import { IoPersonCircleOutline } from 'react-icons/io5';
 
 // Initialize socket connection for admin
 const socket = io("http://localhost:3007", {
@@ -378,11 +379,17 @@ const AdminChat: React.FC = () => {
                                         >
                                             <div className="flex items-center">
                                                 <div className="relative">
-                                                    <img
-                                                        src={chat.participant1Details.profileUrl || 'https://via.placeholder.com/150'}
-                                                        alt={chat.participant1Details.name}
-                                                        className="w-12 h-12 rounded-full object-cover"
-                                                    />
+                                                    {chat.participant1Details.profileUrl ? (
+                                                        <img
+                                                            src={chat.participant1Details.profileUrl}
+                                                            alt={chat.participant1Details.name}
+                                                            className="w-12 h-12 rounded-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                                                            <IoPersonCircleOutline className="text-gray-400 text-2xl" />
+                                                        </div>
+                                                    )}
                                                     {chat.participant1Details.isOnline && (
                                                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                                                     )}
@@ -441,11 +448,17 @@ const AdminChat: React.FC = () => {
                                     </button>
                                 )}
                                 <div className="relative">
-                                    <img
-                                        src={currentChat.participant1Details.profileUrl || 'https://via.placeholder.com/150'}
-                                        alt={currentChat.participant1Details.name}
-                                        className="w-10 h-10 rounded-full object-cover"
-                                    />
+                                    {currentChat.participant1Details.profileUrl ? (
+                                        <img
+                                            src={currentChat.participant1Details.profileUrl}
+                                            alt={currentChat.participant1Details.name}
+                                            className="w-10 h-10 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <IoPersonCircleOutline className="text-gray-400 text-2xl" />
+                                        </div>
+                                    )}
                                     {currentChat.participant1Details.isOnline && (
                                         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                                     )}
@@ -493,12 +506,16 @@ const AdminChat: React.FC = () => {
                                                 key={msg._id}
                                                 className={`flex ${msg.senderId === currentChat.participant2 ? 'justify-end' : 'justify-start'}`}
                                             >
-                                                {msg.senderId === currentChat.participant1 && (
+                                                {currentChat.participant1Details.profileUrl ? (
                                                     <img
-                                                        src={currentChat.participant1Details.profileUrl || 'https://via.placeholder.com/150'}
+                                                        src={currentChat.participant1Details.profileUrl}
                                                         alt={currentChat.participant1Details.name}
                                                         className="w-8 h-8 rounded-full object-cover mr-2 self-end"
                                                     />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                                        <IoPersonCircleOutline className="text-gray-400 text-2xl" />
+                                                    </div>
                                                 )}
                                                 <div
                                                     className={`max-w-[75%] p-3 rounded-lg ${msg.senderId === currentChat.participant2

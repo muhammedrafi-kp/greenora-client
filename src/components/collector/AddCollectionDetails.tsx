@@ -60,6 +60,7 @@ interface IFormData {
 
 const AddCollectionDetails: React.FC = () => {
     const { collection } = useLocation().state as { collection: ICollection };
+    
     console.log("collection", collection);
 
     const navigate = useNavigate();
@@ -169,6 +170,10 @@ const AddCollectionDetails: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        console.log("proofs", formData.proofs);
+    }, [formData.proofs]);
+
     const handleRemoveProof = (index: number) => {
         setFormData(prev => ({
             ...prev,
@@ -180,11 +185,15 @@ const AddCollectionDetails: React.FC = () => {
         e.preventDefault();
         console.log("submit formData", formData);
 
+        localStorage.setItem('addCollectionDetailsFormData', JSON.stringify(formData));
+
         if (!validateForm()) {
             return;
         }
 
         try {
+
+            
             // Instead of navigating back to collections, navigate to review page
             navigate('/collector/review', {
                 state: {

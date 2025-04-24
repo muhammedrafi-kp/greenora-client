@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg';
 import { IoIosNotifications, IoIosPricetags } from "react-icons/io";
-import { FaUserCircle, FaUserPlus, FaList, FaClipboardCheck, FaHome, FaInfoCircle } from 'react-icons/fa';
+import { FaUserCircle, FaUserPlus, FaList, FaClipboardCheck, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
 import { BiChevronDown } from 'react-icons/bi';
 import { MdLogin, MdLogout } from "react-icons/md";
 import { GrServices, GrContact } from "react-icons/gr";
@@ -15,6 +15,7 @@ import { jwtDecode } from 'jwt-decode';
 import { io } from 'socket.io-client';
 import { JwtPayload } from 'jwt-decode';
 import { setUnreadCount, incrementUnreadCount } from '../../redux/notificationSlice';
+import { TbCoinRupeeFilled } from 'react-icons/tb';
 
 const socket = io('http://localhost:3006', {
     withCredentials: true,
@@ -383,24 +384,33 @@ const NavBar: React.FC = () => {
                                     {isDropdownOpen && (
                                         <div className="bg-white border border-gray-100 p-2 rounded-2xl shadow-xl text-slate-950 w-56 absolute duration-300 mt-64 right-0 transform transition-all" ref={dropdownRef}>
                                             <ul className="font-normal py-1">
-                                                <li className="rounded-xl duration-200 hover:bg-green-100 px-3 py-2 transition-colors" onClick={() => navigate('/account/')}>
+                                                <li className="rounded-xl duration-200 hover:bg-green-100 px-3 py-2 transition-colors" onClick={() =>{
+                                                    navigate('/account/');
+                                                    toggleDropdown();
+                                                }}>
                                                     <span className="flex text-gray-700 hover:text-green-900 items-center space-x-3">
                                                         <FaUserCircle className="h-5 w-5" />
                                                         <span className="font-base">Account</span>
                                                     </span>
                                                 </li>
-                                                <li onClick={() => navigate('/account/waste-collection-history')} className="rounded-xl duration-200 hover:bg-green-100 px-3 py-2 transition-colors">
+                                                <li onClick={() => {
+                                                    navigate('/account/collections');
+                                                    toggleDropdown();
+                                                }} className="rounded-xl duration-200 hover:bg-green-100 px-3 py-2 transition-colors">
                                                     <span className="flex text-gray-700 hover:text-green-900 items-center space-x-3">
-                                                        <FaList className="h-5 w-5" />
-                                                        <span className="font-base">Requests</span>
+                                                        <FaClipboardList className="h-5 w-5" />
+                                                        <span className="font-base">Collections</span>
                                                     </span>
                                                 </li>
-                                                {/* <li className="rounded-xl duration-200 hover:bg-green-100 px-3 py-2 transition-colors">
+                                                <li onClick={() => {
+                                                    navigate('/account/charges');
+                                                    toggleDropdown();
+                                                }} className="rounded-xl duration-200 hover:bg-green-100 px-3 py-2 transition-colors">
                                                     <span className="flex text-gray-700 hover:text-green-900 items-center space-x-3">
-                                                        <FaClipboardCheck className="h-5 w-5" />
-                                                        <span className="font-base">Plans</span>
+                                                        <TbCoinRupeeFilled className="h-5 w-5" />
+                                                        <span className="font-base">Charges</span>
                                                     </span>
-                                                </li> */}
+                                                </li>
                                                 <div className="border-gray-100 border-t my-2"></div>
                                                 <li className="rounded-xl duration-200 hover:bg-red-100 px-3 py-2 transition-colors" onClick={handleLogout}>
                                                     <span className="flex text-red-600 hover:text-red-700 items-center space-x-3">
