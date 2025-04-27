@@ -21,7 +21,7 @@ interface ICollector {
 interface Payment {
     _id: string;
     paymentId: string;
-    amount:number;
+    amount: number;
     advanceAmount: number;
     advancePaymentStatus: string;
     status: "pending" | "success" | "failed";
@@ -104,6 +104,13 @@ const CollectionDetails: React.FC = () => {
     const [collector, setCollector] = useState<ICollector | null>(null);
     const [payment, setPayment] = useState<Payment | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [serviceRating, setServiceRating] = useState<number>(0);
+    const [collectorRating, setCollectorRating] = useState<number>(0);
+    const [serviceFeedback, setServiceFeedback] = useState<string>('');
+    const [collectorFeedback, setCollectorFeedback] = useState<string>('');
+    const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+    const [activeTab, setActiveTab] = useState<'service' | 'collector'>('service');
+    const [hoverRating, setHoverRating] = useState<number>(0);
     const predefinedReasons: CancellationReason[] = [
         { id: '1', reason: 'Changed my mind' },
         { id: '2', reason: 'Found better rates elsewhere' },
@@ -234,6 +241,31 @@ const CollectionDetails: React.FC = () => {
                 return "border-gray-300 bg-white text-gray-500";
             default:
                 return "border-gray-300 bg-white text-gray-500";
+        }
+    };
+
+    const handleSubmitFeedback = async () => {
+        setIsSubmittingFeedback(true);
+        try {
+            // TODO: Implement API call to submit feedback
+            // const response = await submitFeedback({
+            //     collectionId: collectionDetails.collectionId,
+            //     serviceRating,
+            //     serviceFeedback,
+            //     collectorRating,
+            //     collectorFeedback
+            // });
+
+            toast.success('Thank you for your feedback!');
+            setServiceRating(0);
+            setCollectorRating(0);
+            setServiceFeedback('');
+            setCollectorFeedback('');
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            toast.error('Failed to submit feedback. Please try again.');
+        } finally {
+            setIsSubmittingFeedback(false);
         }
     };
 
@@ -479,7 +511,9 @@ const CollectionDetails: React.FC = () => {
                                                 ))}
                                                 <tr className="bg-gray-50">
                                                     <td colSpan={3} className="px-4 py-3 text-sm font-medium text-gray-800 text-right">Total Estimated Cost</td>
-                                                    <td className="px-4 py-3 text-sm font-bold text-gray-800 text-right">₹{collectionDetails.estimatedCost.toFixed(2)}</td>
+                                                    <td className="px-4 py-3 text-sm font-bold text-gray-800 text-right">
+                                                        ₹{collectionDetails.items.reduce((total, item) => total + (item.rate * item.qty), 0).toFixed(2)}
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -504,68 +538,157 @@ const CollectionDetails: React.FC = () => {
                             </div>
 
 
+
+
+
                         </div>
                     </div>
 
+                    {/* Feedback Section - Show only when collection is completed */}
+                    {collectionDetails.status === 'completed' && (
+                        <div className="mt-8 bg-white rounded-lg shadow-md p-6 border">
+                            <h3 className="text-lg font-semibold mb-6 border-b pb-2">Rate Your Experience</h3>
 
-
-
-
-
-                    {/* Cancel Collection Modal */}
-                    <Modal
-                        isOpen={showCancelModal}
-                        onClose={() => setShowCancelModal(false)}
-                        title="Cancel Collection"
-                        description="Please select a reason for cancellation:"
-                        confirmLabel="Confirm Cancellation"
-                        confirmButtonClass="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors"
-                        onConfirm={handleConfirmCancel}
-                        isDisabled={!selectedReason && !customReason}
-                    >
-                        <div className="space-y-2">
-                            {predefinedReasons.map((reason) => (
-                                <div
-                                    key={reason.id}
-                                    onClick={() => {
-                                        setSelectedReason(reason.reason);
-                                        setIsCustomReason(reason.reason === 'Other');
-                                        if (reason.reason !== 'Other') {
-                                            setCustomReason('');
-                                        }
-                                    }}
-                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                            {/* Toggle between Service and Collector Rating */}
+                            <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+                                <button
+                                    onClick={() => setActiveTab('service')}
+                                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'service'
+                                            ? 'bg-white text-green-800 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-800'
+                                        }`}
                                 >
-                                    <div className="text-xl text-red-800">
-                                        {selectedReason === reason.reason && !isCustomReason ?
-                                            <FaCheckCircle className="animate-scale-check" /> :
-                                            <FaRegCircle />
-                                        }
-                                    </div>
-                                    <span className={`text-sm font-medium ${selectedReason === reason.reason && !isCustomReason ?
-                                        'text-red-800' :
-                                        'text-gray-700'
-                                        }`}>
-                                        {reason.reason}
-                                    </span>
-                                </div>
-                            ))}
+                                    Rate Service
+                                </button>
+                                {collector && (
+                                    <button
+                                        onClick={() => setActiveTab('collector')}
+                                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'collector'
+                                                ? 'bg-white text-green-800 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-800'
+                                            }`}
+                                    >
+                                        Rate Collector
+                                    </button>
+                                )}
+                            </div>
 
-                            {isCustomReason && (
-                                <div className="mt-3 pl-8">
-                                    <textarea
-                                        value={customReason}
-                                        onChange={(e) => setCustomReason(e.target.value)}
-                                        placeholder="Please specify your reason..."
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-800 focus:border-red-800"
-                                        rows={3}
-                                    />
+                            {/* Rating Display */}
+                            <div className="mb-6">
+                                <div className="flex items-center justify-center gap-1 mb-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            onClick={() => activeTab === 'service' ? setServiceRating(star) : setCollectorRating(star)}
+                                            onMouseEnter={() => setHoverRating(star)}
+                                            onMouseLeave={() => setHoverRating(0)}
+                                            className={`text-3xl transition-transform hover:scale-110 ${star <= (activeTab === 'service' ? serviceRating : collectorRating) ||
+                                                    star <= hoverRating
+                                                    ? 'text-yellow-400'
+                                                    : 'text-gray-300'
+                                                }`}
+                                        >
+                                            ★
+                                        </button>
+                                    ))}
                                 </div>
-                            )}
+                                {/* <p className="text-center text-sm text-gray-600">
+                                    {activeTab === 'service' 
+                                        ? serviceRating 
+                                            ? `You rated our service ${serviceRating} star${serviceRating > 1 ? 's' : ''}`
+                                            : 'Click to rate our service'
+                                        : collectorRating
+                                            ? `You rated our collector ${collectorRating} star${collectorRating > 1 ? 's' : ''}`
+                                            : 'Click to rate our collector'
+                                    }
+                                </p> */}
+                            </div>
+
+                            {/* Feedback Textarea */}
+                            <div className="mb-6">
+                                <textarea
+                                    value={activeTab === 'service' ? serviceFeedback : collectorFeedback}
+                                    onChange={(e) => activeTab === 'service'
+                                        ? setServiceFeedback(e.target.value)
+                                        : setCollectorFeedback(e.target.value)
+                                    }
+                                    placeholder={activeTab === 'service'
+                                        ? "Share your feedback about our service..."
+                                        : "Share your feedback about our collector..."
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-800 focus:border-green-800"
+                                    rows={3}
+                                />
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                onClick={handleSubmitFeedback}
+                                disabled={isSubmittingFeedback || (!serviceRating && !collectorRating)}
+                                className={`w-full py-2 px-4 rounded-lg text-white font-medium ${isSubmittingFeedback || (!serviceRating && !collectorRating)
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-green-800 hover:bg-green-900'
+                                    }`}
+                            >
+                                {isSubmittingFeedback ? 'Submitting...' : 'Submit'}
+                            </button>
                         </div>
-                    </Modal>
+                    )}
                 </>
             )}
+
+            {/* Cancel Collection Modal */}
+            <Modal
+                isOpen={showCancelModal}
+                onClose={() => setShowCancelModal(false)}
+                title="Cancel Collection"
+                description="Please select a reason for cancellation:"
+                confirmLabel="Confirm Cancellation"
+                confirmButtonClass="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors"
+                onConfirm={handleConfirmCancel}
+                isDisabled={!selectedReason && !customReason}
+            >
+                <div className="space-y-2">
+                    {predefinedReasons.map((reason) => (
+                        <div
+                            key={reason.id}
+                            onClick={() => {
+                                setSelectedReason(reason.reason);
+                                setIsCustomReason(reason.reason === 'Other');
+                                if (reason.reason !== 'Other') {
+                                    setCustomReason('');
+                                }
+                            }}
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                            <div className="text-xl text-red-800">
+                                {selectedReason === reason.reason && !isCustomReason ?
+                                    <FaCheckCircle className="animate-scale-check" /> :
+                                    <FaRegCircle />
+                                }
+                            </div>
+                            <span className={`text-sm font-medium ${selectedReason === reason.reason && !isCustomReason ?
+                                'text-red-800' :
+                                'text-gray-700'
+                                }`}>
+                                {reason.reason}
+                            </span>
+                        </div>
+                    ))}
+
+                    {isCustomReason && (
+                        <div className="mt-3 pl-8">
+                            <textarea
+                                value={customReason}
+                                onChange={(e) => setCustomReason(e.target.value)}
+                                placeholder="Please specify your reason..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-800 focus:border-red-800"
+                                rows={3}
+                            />
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -5,7 +5,7 @@ import CollectionHistories from '../../components/admin/CollectionHistories';
 const AdminCollectionHistories: React.FC = () => {
     return (
         <div>
-            <Breadcrumbs title="Collection History Management" />
+            <Breadcrumbs title="Collection Management" />
             <CollectionHistories />
         </div>
     )

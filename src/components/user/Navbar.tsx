@@ -301,11 +301,34 @@ const NavBar: React.FC = () => {
                                         <div
                                             ref={notificationContainerRef}
                                             onScroll={handleScroll}
-                                            className="bg-white border border-gray-200 rounded-lg shadow-xl w-[32rem] [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 absolute duration-300 max-h-[28rem] mt-2 overflow-y-auto right-0 transform transition-all"
+                                            className={`bg-white border border-gray-200 rounded-lg shadow-2xl w-[32rem] [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 absolute duration-300 ${notifications.length === 0 ? 'h-[10rem]' : 'max-h-[28rem]'} mt-2 overflow-y-auto right-0 transform transition-all`}
                                         >
-                                            <h3 className="bg-gray-50 border-b text-gray-800 text-lg font-semibold mb-4 pb-2 pt-4 px-4 sticky top-0 z-10">
-                                                Notifications
-                                            </h3>
+                                            <div className="bg-gray-50 border-b mb-4 sticky top-0 z-10">
+                                                <div className="flex items-center justify-between px-4 py-2">
+                                                    <h3 className="text-gray-800 text-lg font-semibold">
+                                                        Notifications
+                                                    </h3>
+                                                    <button
+                                                        onClick={toggleNotification}
+                                                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                                                    >
+                                                        <svg
+                                                            className="h-5 w-5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
                                             <div className="px-4 space-y-3">
                                                 {notifications && notifications.length > 0 ? (
                                                     <>
@@ -352,17 +375,19 @@ const NavBar: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="bg-gray-50 border-t bottom-0 mt-4 pb-4 pt-2 px-4 sticky">
-                                                <button
-                                                    onClick={() => {
-                                                        navigate('/account/notifications');
-                                                        toggleNotification();
-                                                    }}
-                                                    className="text-center text-green-700 text-sm w-full hover:text-green-800"
-                                                >
-                                                    View All Notifications
-                                                </button>
-                                            </div>
+                                            {notifications.length > 0 && (
+                                                <div className="bg-gray-50 border-t bottom-0 mt-4 pb-4 pt-2 px-4 sticky">
+                                                    <button
+                                                        onClick={() => {
+                                                            navigate('/account/notifications');
+                                                            toggleNotification();
+                                                        }}
+                                                        className="text-center text-green-700 text-sm w-full hover:text-green-800"
+                                                    >
+                                                        View All Notifications
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

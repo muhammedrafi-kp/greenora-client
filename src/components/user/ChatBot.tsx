@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IoMdClose } from "react-icons/io";
 import { BsSend } from "react-icons/bs";
 import { FaRobot, FaUser } from "react-icons/fa";
-import { BiMessageRoundedDots } from "react-icons/bi";
-// import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { BiMessageRoundedDots, BiCopy } from "react-icons/bi";
+import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-// import { useAuth } from '../../context/AuthContext';
-import { getUserData, getAdminData, initiateChat } from '../../services/userService';
+import { getUserData, getAdminData } from '../../services/userService';
+import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
+import ReactMarkdown from 'react-markdown';
 
 
 const socket = io("http://localhost:3007", {
@@ -29,27 +30,16 @@ interface IMessage {
 const quickRepliesMap = {
     initial: [
         "How can I recycle?",
-        "Schedule a pickup",
-        "Pricing plans",
-        "Contact support",
-        "Chat with Admin"
+        "Schedule pickup",
+        "Contact support"
     ],
-    recycling: [
-        "Types of recyclables",
-        "Recycling process",
-        "Collection schedule",
-        "Back to main menu"
-    ],
-    pickup: [
-        "Schedule now",
-        "View available slots",
-        "Cancel pickup",
-        "Back to main menu"
-    ],
-    pricing: [
-        "View all plans",
-        "Compare plans",
-        "Special offers",
+    wasteTypes: [
+        "Plastic",
+        "Paper",
+        "Glass",
+        "Metal",
+        "Electronic Waste",
+        "Organic Waste",
         "Back to main menu"
     ]
 };
@@ -83,38 +73,46 @@ const ChatBot: React.FC = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [showNotification, setShowNotification] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [botMessages, setBotMessages] = useState<IBotMessage[]>([]);
+    const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [chatMode, setChatMode] = useState<'bot' | 'admin'>('bot');
     const [userId, setUserId] = useState<string>('');
     const [adminId, setAdminId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
+    const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages]);
-    
+    }, [botMessages, chatMessages]);
 
+    // Add new useEffect for chat mode changes
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [chatMode]);
 
     useEffect(() => {
         socket.connect();
         if (chatMode === 'bot') {
-            // Initialize with bot welcome message
-            const botWelcomeMessage: IBotMessage = {
-                message: "👋 Hello! I'm GreenoBot, your eco-friendly assistant. How can I help you today?",
-                isBot: true,
-                timestamp: new Date(),
-                status: 'read',
-                showQuickReplies: true,
-                quickReplies: 'initial'
-            };
-            setMessages([botWelcomeMessage]);
-
-
+            // Only show welcome message if there are no existing bot messages
+            if (botMessages.length === 0) {
+                const botWelcomeMessage: IBotMessage = {
+                    message: "👋 Hello! I'm GreenoBot, your eco-friendly assistant. How can I help you today?",
+                    isBot: true,
+                    timestamp: new Date(),
+                    status: 'read',
+                    showQuickReplies: true,
+                    quickReplies: 'initial'
+                };
+                setBotMessages([botWelcomeMessage]);
+            }
         } else if (chatMode === 'admin') {
-
             setIsLoading(true);
 
             const fetchUserData = async () => {
@@ -157,7 +155,6 @@ const ChatBot: React.FC = () => {
                     });
                     console.log("chat response:", chatResponse);
 
-
                     if (chatResponse.success && chatResponse.data) {
                         setIsLoading(false);
                         // Existing chat found
@@ -165,7 +162,7 @@ const ChatBot: React.FC = () => {
                         console.log("Existing chat found:", chatId);
                         socket.emit("join-room", { chatId, userId });
                         socket.emit("get-chat-history", { chatId: chatId });
-                    } 
+                    }
                 } catch (error) {
                     console.error("Error getting chat:", error);
                     setIsLoading(false);
@@ -177,7 +174,7 @@ const ChatBot: React.FC = () => {
                         timestamp: new Date(),
                         status: 'read'
                     };
-                    setMessages([errorMessage]);
+                    setBotMessages([errorMessage]);
                 }
             });
 
@@ -186,32 +183,15 @@ const ChatBot: React.FC = () => {
                 // console.log(`Admin is ${status}`);
                 // setAdminStatus(status);
             });
-
         } else {
             socket.emit("leave-room", "admin-room");
             socket.emit("disconnect-admin");
             socket.disconnect();
-
-            // Reset to bot messages when switching back to bot mode
-            const botWelcomeMessage: IBotMessage = {
-                message: "👋 Hello! I'm GreenoBot, your eco-friendly assistant. How can I help you today?",
-                isBot: true,
-                timestamp: new Date(),
-                status: 'read',
-                showQuickReplies: true,
-                quickReplies: 'initial'
-            };
-            setMessages([botWelcomeMessage]);
         }
-
-        
-
-        
-    }, 
-    [chatMode]);
+    }, [chatMode]);
 
     useEffect(() => {
-        socket.on("admin-status-changed", ( status ) => {
+        socket.on("admin-status-changed", (status) => {
             // console.log(`admin is ${status}`);
             // Update admin status if the status update is for the admin
             // if (userId === adminId) {
@@ -227,7 +207,7 @@ const ChatBot: React.FC = () => {
             if (chatMode === 'admin') {
                 // Ensure message is a string
                 const messageText = typeof message.message === 'string' ? message.message : JSON.stringify(message.message);
-                
+
                 const newMessage: IMessage = {
                     _id: message._id,
                     chatId: message.chatId,
@@ -237,7 +217,7 @@ const ChatBot: React.FC = () => {
                     timestamp: new Date(message.timestamp)
                 };
 
-                setMessages(prev => [...prev, newMessage]);
+                setChatMessages(prev => [...prev, newMessage]);
             }
         });
 
@@ -259,7 +239,7 @@ const ChatBot: React.FC = () => {
                         isRead: msg.isRead,
                     }));
 
-                    setMessages(formattedMessages);
+                    setChatMessages(formattedMessages);
                 } else {
                     // If no messages, add a welcome message
                     const welcomeMessage: IBotMessage = {
@@ -268,7 +248,7 @@ const ChatBot: React.FC = () => {
                         timestamp: new Date(),
                         status: 'read'
                     };
-                    setMessages([welcomeMessage]);
+                    setBotMessages([welcomeMessage]);
                 }
             }
         });
@@ -292,13 +272,13 @@ const ChatBot: React.FC = () => {
 
     const simulateTyping = () => {
         setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 2000);
+        setTimeout(() => setIsTyping(false), 500);
     };
 
-    const getBotResponse = (userMessage: string): { text: string; quickReplies: keyof typeof quickRepliesMap } => {
+    const getBotResponse = (userMessage: string): { text?: string; quickReplies?: keyof typeof quickRepliesMap } => {
         const lowerMessage = userMessage.toLowerCase();
 
-        if (lowerMessage.includes('chat with admin')) {
+        if (lowerMessage.includes('contact support')) {
             // Switch to admin mode
             setChatMode('admin');
             socket.emit('join-room', 'admin-room');
@@ -306,31 +286,32 @@ const ChatBot: React.FC = () => {
                 text: "Connecting you to admin support...",
                 quickReplies: 'initial'
             };
-        } else if (lowerMessage.includes('recycle')) {
+        } else if (lowerMessage.includes('schedule pickup')) {
+            // Close chat and redirect to pickup page
+            setIsOpen(false);
+            navigate("/pickup");
             return {
-                text: "I'd be happy to help you with recycling! What would you like to know about our recycling services? 🌱",
-                quickReplies: 'recycling'
+                text: "Redirecting to pickup scheduling...",
+                quickReplies: 'initial'
             };
-        } else if (lowerMessage.includes('pickup') || lowerMessage.includes('schedule')) {
+        } else if (lowerMessage.includes('how can i recycle')) {
             return {
-                text: "Great! I can help you schedule a pickup. When would you like us to collect your recyclables? 📅",
-                quickReplies: 'pickup'
-            };
-        } else if (lowerMessage.includes('price') || lowerMessage.includes('pricing') || lowerMessage.includes('plan')) {
-            return {
-                text: "We offer several pricing plans to fit your needs. Would you like to see our options? 💰",
-                quickReplies: 'pricing'
+                text: "What type of waste would you like to recycle?",
+                quickReplies: 'wasteTypes'
             };
         } else if (lowerMessage.includes('back to main') || lowerMessage.includes('main menu')) {
             return {
-                text: "Back to the main menu. How else can I assist you today?",
+                text: "How can I help you today?",
                 quickReplies: 'initial'
             };
+        } else if (['plastic', 'paper', 'glass', 'metal', 'electronic waste', 'organic waste'].some(type => lowerMessage.includes(type))) {
+            const question = `How can I recycle ${userMessage}?`;
+            fetchGreenoBotResponse(question);
+
+            return {};
         } else {
-            return {
-                text: "I'm here to help with recycling, scheduling pickups, and pricing information. What would you like to know about?",
-                quickReplies: 'initial'
-            };
+            fetchGreenoBotResponse(userMessage);
+            return {};
         }
     };
 
@@ -342,17 +323,14 @@ const ChatBot: React.FC = () => {
         if (!messageText.trim()) return;
 
         if (messageText.toLowerCase() === 'chat with admin') {
-            // Switch to admin mode
             setChatMode('admin');
             return;
         }
 
         if (chatMode === 'admin') {
-
             setMessage('');
 
             // Send message to admin via socket
-            // This will create a new chat if one doesn't exist
             socket.emit('send-message', {
                 message: messageText,
                 participant1: userId,
@@ -362,46 +340,83 @@ const ChatBot: React.FC = () => {
                 timestamp: new Date()
             });
         } else {
-            // Add user message for bot chat
-            const userBotMessage: IBotMessage = {
+            // Add user message first
+            const userMessage: IBotMessage = {
                 message: messageText,
                 isBot: false,
                 timestamp: new Date(),
-                status: 'sending'
+                status: 'sent'
             };
-
-            setMessages(prev => [...prev, userBotMessage]);
+            setBotMessages(prev => [...prev, userMessage]);
             setMessage('');
 
-            // Update status to sent
-            setTimeout(() => {
-                setMessages(prev =>
-                    prev.map(msg => {
-                        if (isBotMessage(msg) && !msg.isBot && msg.status === 'sending') {
-                            return { ...msg, status: 'sent' };
-                        }
-                        return msg;
-                    })
-                );
-            }, 500);
+            // Check if the message is from quick replies
+            // const isQuickReply = Object.values(quickRepliesMap).flat().includes(messageText);
 
-            // Handle bot chat
-            simulateTyping();
+            // if (isQuickReply) {
+            //     simulateTyping();
+            // }
+
+            // Get bot response
             const response = getBotResponse(messageText);
 
-            setTimeout(() => {
-                const botMessage: IBotMessage = {
-                    message: response.text,
+            // Only add bot message if there's a text response
+            if (response.text && response.quickReplies) {
+                const botReplyMessage: IBotMessage = {
+                    message: response.text || '',
                     isBot: true,
                     timestamp: new Date(),
                     status: 'read',
                     showQuickReplies: true,
                     quickReplies: response.quickReplies
                 };
-                setMessages(prev => [...prev, botMessage]);
-            }, 2500);
+                setBotMessages(prev => [...prev, botReplyMessage]);
+            }
         }
     };
+
+    const cleanMarkdownText = (text: string): string => {
+        return text
+            .replace(/\*\*\s*(.*?)\*\*/g, '$1') // Remove bold formatting
+            .replace(/^\*\s+/gm, '- ') // Convert bullet points to dashes
+            .replace(/\n/g, '<br />'); // Convert newlines to HTML line breaks
+    };
+
+    const fetchGreenoBotResponse = async (prompt: string) => {
+        try {
+            setIsTyping(true);
+
+            const response = await getGreenoBotResponse(prompt);
+            console.log("GreenoBotResponse:", response);
+
+            const botMessage: IBotMessage = {
+                message: response.data,
+                isBot: true,
+                timestamp: new Date(),
+                status: 'read',
+                showQuickReplies: true,
+                quickReplies: 'initial'
+            };
+
+            setBotMessages(prev => [...prev, botMessage]);
+        } catch (error) {
+            console.error("Error fetching GreenoBot response:", error);
+        } finally {
+            setIsTyping(false);
+        }
+    }
+
+    const copyToClipboard = async (text: string, messageId: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedMessageId(messageId);
+            setTimeout(() => setCopiedMessageId(null), 2000); // Reset after 2 seconds
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+    };
+
+    const allMessages = chatMode === 'admin' ? chatMessages : botMessages;
 
     return (
         <div className="fixed bottom-4 right-4 z-40">
@@ -447,7 +462,7 @@ const ChatBot: React.FC = () => {
                                 : 'text-green-100 hover:bg-white/5'
                                 }`}
                         >
-                            Admin Chat
+                            Customer Service
                         </button>
                     </div>
 
@@ -462,22 +477,22 @@ const ChatBot: React.FC = () => {
                                         <FaUser className="w-5 h-5 sm:w-6 sm:h-6 text-green-900" />
                                     )}
                                 </div>
-                                <span 
+                                <span
                                     className={`absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 
-                                    ${chatMode === 'admin' 
-                                        ? adminStatus === 'online' ? 'bg-green-400' : 'bg-red-400'
-                                        : 'bg-green-400'
-                                    } 
+                                    ${chatMode === 'admin'
+                                            ? adminStatus === 'online' ? 'bg-green-400' : 'bg-red-400'
+                                            : 'bg-green-400'
+                                        } 
                                     border-2 border-white rounded-full`}>
                                 </span>
                             </div>
                             <div>
                                 <h3 className="text-white font-medium text-sm sm:text-base">
-                                    {chatMode === 'bot' ? 'GreenoBot' : 'Admin Support'}
+                                    {chatMode === 'bot' ? 'GreenoBot' : 'Assistant'}
                                 </h3>
                                 <p className="text-green-100 text-xs sm:text-sm">
-                                    {isTyping ? 'Typing...' : 
-                                     chatMode === 'admin' ? adminStatus : 'Online'}
+                                    {isTyping ? 'Typing...' :
+                                        chatMode === 'admin' ? adminStatus : 'Online'}
                                 </p>
                             </div>
                         </div>
@@ -496,7 +511,7 @@ const ChatBot: React.FC = () => {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
-                    {messages.map((msg, index) => (
+                    {allMessages.map((msg, index) => (
                         <div key={index}>
                             <div
                                 className={`flex ${(isBotMessage(msg) && msg.isBot) ||
@@ -508,13 +523,31 @@ const ChatBot: React.FC = () => {
                                 <div
                                     className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-2xl ${(isBotMessage(msg) && msg.isBot) ||
                                         (isDatabaseMessage(msg) && msg.senderId !== userId)
-                                        ? 'bg-white text-gray-800 shadow-md'
+                                        ? 'bg-white text-gray-800 shadow-md border'
                                         : 'bg-green-900 text-white'
                                         } relative group`}
                                 >
-                                    <p className="text-xs sm:text-sm">
-                                        {isDatabaseMessage(msg) ? msg.message : (typeof msg.message === 'string' ? msg.message : JSON.stringify(msg.message))}
-                                    </p>
+                                    <div className="flex flex-col">
+                                        <p className="text-xs sm:text-sm mr-5">
+                                            {isDatabaseMessage(msg) ? msg.message : (typeof msg.message === 'string' ?
+                                                <ReactMarkdown>{msg.message}</ReactMarkdown> :
+                                                JSON.stringify(msg.message))}
+                                        </p>
+                                        {(isBotMessage(msg) && msg.isBot) && (
+                                            <button
+                                                onClick={() => copyToClipboard(msg.message, msg.timestamp.toString())}
+                                                className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                                title="Copy message"
+                                            >
+                                                <BiCopy className="w-4 h-4 text-gray-500" />
+                                                {copiedMessageId === msg.timestamp.toString() && (
+                                                    <span className="absolute -top-6 right-0 bg-gray-800 text-white text-xs px-2 py-1 rounded">
+                                                        Copied!
+                                                    </span>
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
                                     <div className="flex items-center justify-end gap-1.5 sm:gap-2 mt-1">
                                         <p className="text-[10px] sm:text-xs opacity-70">
                                             {msg.timestamp.toLocaleTimeString([], {
@@ -531,7 +564,7 @@ const ChatBot: React.FC = () => {
                                         <button
                                             key={idx}
                                             onClick={() => handleSubmit(reply)}
-                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-100 text-green-900 rounded-full text-xs sm:text-sm hover:bg-green-200 transition-colors"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-100 text-green-950 border rounded-full text-xs sm:text-sm hover:bg-green-200 transition-colors"
                                         >
                                             {reply}
                                         </button>

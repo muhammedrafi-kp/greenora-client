@@ -20,15 +20,7 @@ export const getAdminData = async () => {
     }
 }
 
-export const initiateChat = async (chatData: object) => {
-    try {
-        const response = await apiClient.post('/chat-service/chat', chatData);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching chat history:", error);
-        throw error;
-    }
-}
+
 
 export const updateUserData = async (userData: FormData) => {
     try {
@@ -173,15 +165,6 @@ export const calculatePickupCost = async (items: Array<object>) => {
 //     }
 // }
 
-export const getCollectionHistory = async () => {
-    try {
-        const response = await apiClient.get('/request-service/collection');
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching collection histories:", error);
-        throw error;
-    }
-}
 
 export const getCollectorData = async (collectorId?: string) => {
     try {

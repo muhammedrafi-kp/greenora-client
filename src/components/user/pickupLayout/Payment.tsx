@@ -98,7 +98,7 @@ const Payment: React.FC = () => {
         if (response.success) {
 
           const options: RazorpayOrderOptions = {
-            key: "rzp_test_b0szQvJZ7F009R", // Razorpay Key ID from .env
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Razorpay Key ID from .env
             amount: response.amount,
             currency: "INR",
             name: "Greenora",

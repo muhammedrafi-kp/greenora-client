@@ -190,15 +190,7 @@ export const updateServiceArea = async (serviceAreaId: string, serviceAreaData: 
 }
 
 
-export const getCollectionHistories = async (params: object) => {
-  try {
-    const response = await apiClient.get('/request-service/collection/collections', { params });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching collection histories:", error);
-    throw error;
-  }
-}
+
 
 export const getCollectorData = async (collectorId?: string) => {
   try {

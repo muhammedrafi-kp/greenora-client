@@ -82,7 +82,7 @@ const ReceivePayment: React.FC = () => {
 
     const { formData, collection } = stateData;
 
-    
+
 
     const [selectedPayment, setSelectedPayment] = useState<'digital' | 'cash'>('digital');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -120,7 +120,7 @@ const ReceivePayment: React.FC = () => {
             formData.proofs.forEach((proof, index) => {
                 formDataToSend.append('collectionProofs', proof);
             });
-            
+
             const response = await sendPaymentRequest(formDataToSend);
             console.log("response", response);
 
@@ -138,49 +138,41 @@ const ReceivePayment: React.FC = () => {
         try {
             const finalPaymentData = {
                 paymentId: collection.paymentId,
-                status: "success",
                 method: selectedPayment,
-                paymentDate: new Date().toISOString(),
-                amount: totalAmount,
             } as Partial<IPayment>;
 
             const finalCollectionData = {
                 items: formData.items,
                 notes: formData.notes,
-                status: "completed",
-                proofs: formData.proofs,
             } as Partial<ICollection>;
 
             const formDataToSend = new FormData();
+            // Add collection data  
+            formDataToSend.append('collectionData', JSON.stringify(finalCollectionData));
 
             // Add payment data
             formDataToSend.append('paymentData', JSON.stringify(finalPaymentData));
 
-            // Add collection data  
-            formDataToSend.append('collectionData', JSON.stringify(finalCollectionData));
-            formData.proofs.forEach((proof, index) => {
+            formData.proofs.forEach((proof) => {
                 formDataToSend.append('collectionProofs', proof);
             });
+
             console.log("formDataToSend", formDataToSend);
 
             console.log("finalPaymentData", finalPaymentData);
             console.log("finalCollectionData", finalCollectionData);
 
-            // const response = await completeCollection(
-            //     collection._id,
-            //     finalPaymentData,
-            //     finalCollectionData
-            // );
-
             const response = await completeCollection(
-                collection._id,
+                collection.collectionId,
                 formDataToSend
             );
 
-            // if (response.success) {
-            //     toast.success('Collection completed');
-            //     navigate('/collector/tasks')
-            // }
+            console.log("response :", response);
+
+            if (response.success) {
+                toast.success('Collection completed');
+                navigate('/collector/tasks')
+            }
         } catch (error: any) {
             console.error("Error completing collection:", error);
             if (error.response?.status === 404) {
@@ -195,11 +187,6 @@ const ReceivePayment: React.FC = () => {
         }
     };
 
-    const handlePayNow = () => {
-        const paymentUrl = "https://pay.google.com/gp/p/1234567890";
-        window.open(paymentUrl, '_blank');
-        console.log("pay now");
-    }
 
     return (
         <div className="bg-gray-50 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
@@ -275,8 +262,8 @@ const ReceivePayment: React.FC = () => {
                                         {/* Digital Payment Option (Wallet/Online) */}
                                         <div
                                             className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedPayment === 'digital'
-                                                    ? 'border-green-500 bg-green-50'
-                                                    : 'border-gray-200 hover:border-green-300'
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-gray-200 hover:border-green-300'
                                                 }`}
                                             onClick={() => handlePaymentMethodSelect('digital')}
                                         >
@@ -297,8 +284,8 @@ const ReceivePayment: React.FC = () => {
                                         {/* Cash Payment Option */}
                                         <div
                                             className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedPayment === 'cash'
-                                                    ? 'border-green-500 bg-green-50'
-                                                    : 'border-gray-200 hover:border-green-300'
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-gray-200 hover:border-green-300'
                                                 }`}
                                             onClick={() => handlePaymentMethodSelect('cash')}
                                         >
@@ -385,14 +372,6 @@ const ReceivePayment: React.FC = () => {
                                         )}
                                     </button>
 
-
-                                    {/* pay now button */}
-                                    <button
-                                        onClick={handlePayNow}
-                                        className="px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg transition-colors"
-                                    >
-                                        Pay Now
-                                    </button>
                                 </div>
                             </div>
                         </>

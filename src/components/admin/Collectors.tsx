@@ -341,8 +341,10 @@ const Collectors: React.FC = () => {
                         {/* Filters Row */}
                         <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                             {/* Status Filter */}
-                            <div className="flex-1 min-w-[150px]">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                                    Status
+                                </label>
                                 <select
                                     value={selectedStatus}
                                     onChange={handleStatusChange}
@@ -355,8 +357,10 @@ const Collectors: React.FC = () => {
                             </div>
 
                             {/* Verification Filter */}
-                            <div className="flex-1 min-w-[150px]">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Verification</label>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                                    Verification
+                                </label>
                                 <select
                                     value={selectedVerification}
                                     onChange={handleVerificationChange}
@@ -369,14 +373,16 @@ const Collectors: React.FC = () => {
                             </div>
 
                             {/* District Filter */}
-                            <div className="flex-1 min-w-[150px]">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                                    District
+                                </label>
                                 <select
                                     value={selectedDistrict}
                                     onChange={handleDistrictChange}
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                                 >
-                                    <option value="all">All Districts</option>
+                                    <option value="all">All </option>
                                     {districts.map((district) => (
                                         <option key={district._id} value={district._id}>
                                             {district.name}
@@ -386,15 +392,17 @@ const Collectors: React.FC = () => {
                             </div>
 
                             {/* Service Area Filter */}
-                            <div className="flex-1 min-w-[150px]">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                                    Service Area
+                                </label>
                                 <select
                                     value={selectedServiceArea}
                                     onChange={handleServiceAreaChange}
                                     disabled={selectedDistrict === 'all'}
                                     className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm ${selectedDistrict === 'all' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                 >
-                                    <option value="all">All Service Areas</option>
+                                    <option value="all">All </option>
                                     {serviceAreas.map((area) => (
                                         <option key={area._id} value={area._id}>
                                             {area.name}
@@ -404,8 +412,10 @@ const Collectors: React.FC = () => {
                             </div>
 
                             {/* Sort Filter */}
-                            <div className="flex-1 min-w-[150px]">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                                    Sort By
+                                </label>
                                 <select
                                     value={`${sortField}-${sortDirection}`}
                                     onChange={handleSortChange}

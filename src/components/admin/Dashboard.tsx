@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { FaCalendarAlt } from "react-icons/fa";
+
 
 const AdminDashboard:React.FC = () => {
   // Sample data - in a real implementation, you would fetch this from your MongoDB
@@ -59,6 +63,97 @@ const AdminDashboard:React.FC = () => {
   // Colors for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
+  // New state for revenue filters
+  const [dateFilter, setDateFilter] = useState('today');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [districtFilter, setDistrictFilter] = useState('all');
+  const [serviceAreaFilter, setServiceAreaFilter] = useState('all');
+
+  // Sample data for different time ranges
+  const getRevenueData = useMemo(() => {
+    switch (dateFilter) {
+      case 'today':
+      case 'yesterday':
+        // Single day data
+        return [
+          { 
+            date: 'Today', 
+            waste: 15000, 
+            scrap: -8000,
+            total: 7000
+          }
+        ];
+      
+      case 'last7days':
+        // Daily data for last 7 days
+        return [
+          { date: 'Mon', waste: 15000, scrap: -8000, total: 7000 },
+          { date: 'Tue', waste: 18000, scrap: -9500, total: 8500 },
+          { date: 'Wed', waste: 12000, scrap: -6500, total: 5500 },
+          { date: 'Thu', waste: 20000, scrap: -11000, total: 9000 },
+          { date: 'Fri', waste: 16000, scrap: -9000, total: 7000 },
+          { date: 'Sat', waste: 14000, scrap: -7500, total: 6500 },
+          { date: 'Sun', waste: 17000, scrap: -8500, total: 8500 }
+        ];
+      
+      case 'thismonth':
+        // Daily data for current month
+        return Array.from({ length: 30 }, (_, i) => ({
+          date: `${i + 1}`,
+          waste: Math.floor(Math.random() * 20000) + 10000,
+          scrap: -(Math.floor(Math.random() * 10000) + 5000),
+          total: Math.floor(Math.random() * 10000) + 5000
+        }));
+      
+      case 'lastmonth':
+        // Daily data for last month
+        return Array.from({ length: 31 }, (_, i) => ({
+          date: `${i + 1}`,
+          waste: Math.floor(Math.random() * 20000) + 10000,
+          scrap: -(Math.floor(Math.random() * 10000) + 5000),
+          total: Math.floor(Math.random() * 10000) + 5000
+        }));
+      
+      case 'thisyear':
+        // Monthly data for current year
+        return [
+          { date: 'Jan', waste: 450000, scrap: -240000, total: 210000 },
+          { date: 'Feb', waste: 480000, scrap: -250000, total: 230000 },
+          { date: 'Mar', waste: 420000, scrap: -220000, total: 200000 },
+          { date: 'Apr', waste: 460000, scrap: -230000, total: 230000 },
+          { date: 'May', waste: 490000, scrap: -260000, total: 230000 },
+          { date: 'Jun', waste: 440000, scrap: -210000, total: 230000 },
+          { date: 'Jul', waste: 470000, scrap: -240000, total: 230000 },
+          { date: 'Aug', waste: 430000, scrap: -220000, total: 210000 },
+          { date: 'Sep', waste: 460000, scrap: -230000, total: 230000 },
+          { date: 'Oct', waste: 480000, scrap: -250000, total: 230000 },
+          { date: 'Nov', waste: 450000, scrap: -240000, total: 210000 },
+          { date: 'Dec', waste: 500000, scrap: -270000, total: 230000 }
+        ];
+      
+      case 'custom':
+        // For custom range, we'll show daily data
+        if (startDate && endDate) {
+          const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          return Array.from({ length: days + 1 }, (_, i) => {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
+            return {
+              date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              waste: Math.floor(Math.random() * 20000) + 10000,
+              scrap: -(Math.floor(Math.random() * 10000) + 5000),
+              total: Math.floor(Math.random() * 10000) + 5000
+            };
+          });
+        }
+        return [];
+      
+      default:
+        return [];
+    }
+  }, [dateFilter, startDate, endDate]);
+
   return (
     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
       {/* Stats Cards */}
@@ -105,6 +200,159 @@ const AdminDashboard:React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Revenue Graph Section */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border mt-6">
+        <h2 className="text-xl font-semibold text-gray-700 mb-4">Revenue Overview</h2>
+        
+        {/* Filters Section */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          {/* District Filter */}
+          <div className="relative">
+            <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700">
+              District
+            </label>
+            <select
+              value={districtFilter}
+              onChange={(e) => setDistrictFilter(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All </option>
+              <option value="north">North</option>
+              <option value="south">South</option>
+              <option value="east">East</option>
+              <option value="west">West</option>
+              <option value="central">Central</option>
+            </select>
+          </div>
+
+          {/* Service Area Filter */}
+          <div className="relative">
+            <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700">
+              Service Area
+            </label>
+            <select
+              value={serviceAreaFilter}
+              onChange={(e) => setServiceAreaFilter(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All </option>
+              <option value="area1">Area 1</option>
+              <option value="area2">Area 2</option>
+              <option value="area3">Area 3</option>
+            </select>
+          </div>
+
+          {/* Date Filter */}
+          <div className="relative">
+            <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700">
+              Date Range
+            </label>
+            <div className="flex items-center gap-2">
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last7days">Last 7 Days</option>
+                <option value="thismonth">This Month</option>
+                <option value="lastmonth">Last Month</option>
+                <option value="thisyear">This Year</option>
+                <option value="custom">Custom Range</option>
+              </select>
+              {dateFilter === 'custom' && (
+                <div className="flex gap-2">
+                  <div className="relative">
+                    <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                      Start Date
+                    </label>
+                    <div className="relative">
+                      <DatePicker
+                        selected={startDate}
+                        onChange={(date) => setStartDate(date || undefined)}
+                        selectsStart
+                        startDate={startDate}
+                        endDate={endDate}
+                        placeholderText=""
+                        className="border rounded-md pl-3 pr-8 py-2 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <FaCalendarAlt className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                      End Date
+                    </label>
+                    <div className="relative">
+                      <DatePicker
+                        selected={endDate}
+                        onChange={(date) => setEndDate(date || undefined)}
+                        selectsEnd
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        placeholderText=""
+                        className="border rounded-md pl-3 pr-8 py-2 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <FaCalendarAlt className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Revenue Graph */}
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={getRevenueData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date" 
+                tick={{ fontSize: 12 }}
+                angle={dateFilter === 'thismonth' || dateFilter === 'lastmonth' ? -45 : 0}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: number, name: string) => {
+                  const formattedValue = `₹${Math.abs(value).toLocaleString()}`;
+                  if (name === 'Waste Revenue') {
+                    return [formattedValue, 'Waste'];
+                  } else if (name === 'Scrap Expense') {
+                    return [formattedValue, 'Scrap'];
+                  } else {
+                    return [formattedValue, 'Net Total'];
+                  }
+                }}
+                labelFormatter={(label) => `Date: ${label}`}
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '0.375rem',
+                  padding: '0.5rem'
+                }}
+              />
+              <Legend />
+              <Bar dataKey="waste" name="Waste Revenue" fill="#0088FE" />
+              <Bar dataKey="scrap" name="Scrap Expense" fill="#FF8042" />
+              <Bar dataKey="total" name="Net Total" fill="#00C49F" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Time range selector */}

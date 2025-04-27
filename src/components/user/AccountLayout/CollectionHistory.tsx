@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FaClipboardList, FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
-import { getCollectionHistory } from '../../../services/userService';
-import { getPaymentData, getWalletData } from '../../../services/paymentService';
+import { getCollectionHistory } from '../../../services/collectionService';
+import { getPaymentData, getWalletData, verifyPayment } from '../../../services/paymentService';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, CreditCard, Lock } from 'lucide-react';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
+import toast from 'react-hot-toast';
 
 
 interface Category {
@@ -47,6 +48,9 @@ interface Collection {
 
 const CollectionHistory: React.FC = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [filteredCollections, setFilteredCollections] = useState<Collection[]>([]);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
@@ -55,32 +59,84 @@ const CollectionHistory: React.FC = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [onlinePaymentLoading, setOnlinePaymentLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [showWaste, setShowWaste] = useState<boolean | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const navigate = useNavigate();
 
   const { Razorpay } = useRazorpay();
 
-  const fetchPickupHistory = async () => {
+  const isAnyFilterActive = () => {
+    return startDate !== '' || endDate !== '' || selectedStatus !== 'all' || showWaste !== null;
+  };
 
+  const fetchPickupHistory = async (pageNum: number = 1, isNewFilter: boolean = false) => {
+    if (isNewFilter) {
+      setPage(1);
+      setCollections([]);
+      setHasMore(true);
+    }
 
-    setLoading(true)
+    const loadingState = isNewFilter ? setLoading : setIsLoadingMore;
+    loadingState(true);
+
     try {
-      const response = await getCollectionHistory();
-      console.log(response.data);
+      const filters = {
+        startDate,
+        endDate,
+        status: selectedStatus !== 'all' ? selectedStatus : undefined,
+        type: showWaste !== null ? (showWaste ? 'waste' : 'scrap') : undefined,
+        page: pageNum,
+        limit: 10
+      };
+
+      const response = await getCollectionHistory(filters);
+      console.log("collections:", response.data);
+
       if (response.success) {
-        setCollections(response.data);
-        setLoading(false);
+        if (isNewFilter) {
+          setCollections(response.data);
+        } else {
+          const existingIds = new Set(collections.map(c => c._id));
+          const newCollections = response.data.filter(
+            (collection: Collection) => !existingIds.has(collection._id)
+          );
+          setCollections(prev => [...prev, ...newCollections]);
+        }
+        setHasMore(response.data.length > 0);
       }
     } catch (error) {
       console.error('Error fetching collection histories:', error);
     } finally {
-      setLoading(false);
+      loadingState(false);
+    }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isLoadingMore && hasMore) {
+      setPage(prevPage => {
+        if (prevPage === page) {
+          return prevPage + 1;
+        }
+        return prevPage;
+      });
     }
   };
 
   useEffect(() => {
-    fetchPickupHistory();
-  }, []);
+    if (page > 1 && !isLoadingMore) {
+      fetchPickupHistory(page);
+    }
+  }, [page]);
+
+  useEffect(() => {
+    fetchPickupHistory(1, true);
+  }, [startDate, endDate, selectedStatus, showWaste]);
 
   const getStatusIconAndColor = (status: 'completed' | 'scheduled' | 'cancelled' | 'pending') => {
     switch (status) {
@@ -143,6 +199,24 @@ const CollectionHistory: React.FC = () => {
           order_id: response.data.orderId,
           handler: async (response: any) => {
             console.log("Payment successful:", response);
+
+            try {
+              const verificationResponse = await verifyPayment({
+                paymentId: selectedCollection.paymentId,
+                collectionId: selectedCollection.collectionId,
+                razorpayResponse: response,
+              });
+
+              if (verificationResponse.success) {
+                toast.success('Payment completed.');
+              } else {
+                toast.error('Payment failed.');
+              }
+            } catch (error) {
+              console.error('Error verifying payment:', error);
+              toast.error('Error verifying payment. Please try again or contact support.');
+            }
+
             setShowPaymentModal(false);
             setSelectedMethod(null);
             setSelectedCollection(null);
@@ -178,6 +252,13 @@ const CollectionHistory: React.FC = () => {
       console.error('Error processing payment:', error);
       setPaymentLoading(false);
     }
+  };
+
+  const handleClearFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setSelectedStatus('all');
+    setShowWaste(null);
   };
 
   const PaymentModal = () => {
@@ -299,38 +380,321 @@ const CollectionHistory: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center text-gray-500 py-8">Loading pickup history...</div>;
+    return <div className="text-center text-gray-500 py-8">Loading collection history...</div>;
   }
 
   return (
     <div>
       <div className="mb-6">
-        <h2 className="lg:text-lg xs:text-base text-sm font-semibold flex items-center gap-2">
-          {/* <FaClipboardList />  */}
-          Collection History
-        </h2>
-        {collections.length > 0 && (
-          <div className="flex gap-2 mt-2">
-            <button className="px-4 py-2 bg-gray-200 rounded-lg text-xs">All</button>
-            <button className="px-4 py-2 bg-gray-200 rounded-lg text-xs">Completed</button>
-            <button className="px-4 py-2 bg-gray-200 rounded-lg text-xs">In progress</button>
-            <button className="px-4 py-2 bg-gray-200 rounded-lg text-xs">Cancelled</button>
+        <div className="flex items-center justify-between">
+          <h2 className="lg:text-lg xs:text-base text-sm font-semibold flex items-center gap-2">
+            Collection History
+          </h2>
+          {/* Filter Icon for Small Screens */}
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className="sm:hidden p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </button>
+        </div>
+        
+        {/* Desktop Filters */}
+        <div className="hidden sm:flex flex-wrap items-center gap-4 mt-4">
+         
+          {/* Status Filter Buttons */}
+          <div className="flex gap-2">
+            {[
+              { value: 'all', label: 'All' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'scheduled', label: 'Scheduled' },
+              { value: 'cancelled', label: 'Cancelled' }
+            ].map((status) => (
+              <button 
+                key={status.value}
+                onClick={() => setSelectedStatus(status.value)}
+                className={`px-4 py-2 rounded-lg text-xs transition-colors ${
+                  selectedStatus === status.value 
+                    ? 'bg-green-800 text-white font-medium' 
+                    : 'bg-gray-200 hover:bg-gray-300 font-medium'
+                }`}
+              >
+                {status.label}
+              </button>
+            ))}
+          </div>
+
+           {/* Type Selector */}
+           <div className="flex flex-col gap-1 relative">
+            <div className="relative">
+              <select
+                value={showWaste === null ? 'all' : (showWaste ? 'waste' : 'scrap')}
+                onChange={(e) => setShowWaste(e.target.value === 'all' ? null : e.target.value === 'waste')}
+                className="px-3 pr-8 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full appearance-none bg-white"
+              >
+                <option value="all">All </option>
+                <option value="waste">Waste</option>
+                <option value="scrap">Scrap</option>
+              </select>
+              <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                Type
+              </span>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          
+
+          {/* Date Filter Section */}
+          <div className="flex gap-4">
+            <div className="flex flex-col gap-1 relative">
+              <div className="relative">
+                <input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    const newStartDate = e.target.value;
+                    if (endDate && newStartDate > endDate) {
+                      toast.error('Start date cannot be greater than end date');
+                      return;
+                    }
+                    setStartDate(newStartDate);
+                  }}
+                  max={endDate || undefined}
+                  className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
+                    !startDate ? 'text-gray-500' : 'text-gray-900'
+                  }`}
+                />
+                <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                  {startDate ? (
+                    <span className="line-through opacity-50">From</span>
+                  ) : (
+                    "From"
+                  )}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 relative">
+              <div className="relative">
+                <input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    const newEndDate = e.target.value;
+                    if (startDate && newEndDate < startDate) {
+                      toast.error('End date cannot be less than start date');
+                      return;
+                    }
+                    setEndDate(newEndDate);
+                  }}
+                  min={startDate || undefined}
+                  className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
+                    !endDate ? 'text-gray-500' : 'text-gray-900'
+                  }`}
+                />
+                <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                  {endDate ? (
+                    <span className="line-through opacity-50">To</span>
+                  ) : (
+                    "To"
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Clear Filter Button - Only show when filters are active */}
+          {isAnyFilterActive() && (
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-2 rounded-lg text-xs font-medium bg-gray-200 hover:bg-gray-300 transition-colors flex items-center gap-1"
+            >
+              Clear Filters
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+
+
+        </div>
+
+        {/* Filter Modal for Small Screens */}
+        {showFilterModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 sm:hidden">
+            <div className="bg-white rounded-xl w-full max-w-md mx-4">
+              <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-800">Filters</h3>
+                  <button
+                    onClick={() => setShowFilterModal(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Type Selector */}
+                <div className="flex flex-col gap-1 relative">
+                  <div className="relative">
+                    <select
+                      value={showWaste === null ? 'all' : (showWaste ? 'waste' : 'scrap')}
+                      onChange={(e) => setShowWaste(e.target.value === 'all' ? null : e.target.value === 'waste')}
+                      className="px-3 pr-8 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full appearance-none bg-white"
+                    >
+                      <option value="all">All </option>
+                      <option value="waste">Waste</option>
+                      <option value="scrap">Scrap</option>
+                    </select>
+                    <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                      Type
+                    </span>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Filter Buttons */}
+                <div className="space-y-2">
+                  <div className="flex flex-col gap-1 relative">
+                    <div className="relative">
+                      <select
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        className="px-3 pr-8 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full appearance-none bg-white"
+                      >
+                        <option value="all">All </option>
+                        <option value="completed">Completed</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                      <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                        Status
+                      </span>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date Filter Section */}
+                <div className="space-y-4">
+                  <p className="text-xs font-medium text-gray-600">Date Range</p>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1 relative">
+                      <div className="relative">
+                        <input
+                          id="modalStartDate"
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => {
+                            const newStartDate = e.target.value;
+                            if (endDate && newStartDate > endDate) {
+                              toast.error('Start date cannot be greater than end date');
+                              return;
+                            }
+                            setStartDate(newStartDate);
+                          }}
+                          max={endDate || undefined}
+                          className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
+                            !startDate ? 'text-gray-500' : 'text-gray-900'
+                          }`}
+                        />
+                        <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                          From
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1 relative">
+                      <div className="relative">
+                        <input
+                          id="modalEndDate"
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => {
+                            const newEndDate = e.target.value;
+                            if (startDate && newEndDate < startDate) {
+                              toast.error('End date cannot be less than start date');
+                              return;
+                            }
+                            setEndDate(newEndDate);
+                          }}
+                          min={startDate || undefined}
+                          className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
+                            !endDate ? 'text-gray-500' : 'text-gray-900'
+                          }`}
+                        />
+                        <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
+                          To
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  {isAnyFilterActive() && (
+                    <button
+                      onClick={() => {
+                        handleClearFilters();
+                        setShowFilterModal(false);
+                      }}
+                      className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                    >
+                      Clear Filters
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowFilterModal(false)}
+                    className="w-full bg-green-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
+
+
       </div>
 
-      {collections.length === 0 ? (
+      {loading ? (
+        <div className="text-center text-gray-500 py-8">Loading collection history...</div>
+      ) : collections.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
           No collection history available.
         </div>
       ) : (
-        <div className="space-y-4">
+        <div 
+          onScroll={handleScroll}
+          className="space-y-4 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
+        >
           {collections.map((collection) => {
             const { icon, color } = getStatusIconAndColor(collection.status);
             return (
               <div
                 key={collection._id}
-                className="p-4 rounded-lg  bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                className="p-4 rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   {/* Left Section: Request Details */}
@@ -370,7 +734,7 @@ const CollectionHistory: React.FC = () => {
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleViewDetails(collection)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
                       >
                         <FaEye /> View Details
                       </button>
@@ -388,6 +752,11 @@ const CollectionHistory: React.FC = () => {
               </div>
             );
           })}
+          {isLoadingMore && (
+            <div className="text-center py-4">
+              <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
+            </div>
+          )}
         </div>
       )}
       <PaymentModal />

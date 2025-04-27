@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Search, X, SlidersHorizontal,  Calendar, ChevronLeft, ChevronRight, Table, File } from 'lucide-react';
+import { Search, X, SlidersHorizontal, Calendar, ChevronLeft, ChevronRight, Table, File } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { getCollectionHistories } from '../../services/adminService';
+import { getCollectionHistories } from '../../services/collectionService';
 import { getDistricts, getServiceAreas } from '../../services/userService';
 import { useNavigate } from 'react-router-dom';
 import { exportTableData } from '../../utils/exportUtils';
@@ -64,7 +64,7 @@ const Requests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCollections, setTotalCollections] = useState(0);
   const collectionsPerPage = 10;
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -139,22 +139,23 @@ const Requests: React.FC = () => {
 
   const handleExport = (type: 'csv' | 'pdf') => {
     setExportType(type);
-    
-    const headers = ['Collection ID', 'User', 'Type', 'Status', 'Created At'];
+
+    const headers = ['Collection ID', 'User', 'Type', 'Status', 'Estimated Cost', 'Created At'];
     const exportData = {
       headers,
       data: collections.map((collection) => ({
-        'Collection ID': collection.collectionId,
+        'Collection ID': collection.collectionId.toLocaleUpperCase(),
         'User': collection.user.name,
         'Type': collection.type,
         'Status': collection.status,
+        'Estimated Cost': collection.estimatedCost,
         'Created At': new Date(collection.createdAt).toLocaleDateString()
       })),
       fileName: 'collection_requests'
     };
 
     exportTableData(type, exportData);
-    
+
     setShowExportMessage(true);
     setTimeout(() => {
       setShowExportMessage(false);
@@ -274,8 +275,10 @@ const Requests: React.FC = () => {
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Status Filter */}
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <div className="relative">
+                    <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                      Status
+                    </label>
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value)}
@@ -290,14 +293,16 @@ const Requests: React.FC = () => {
                   </div>
 
                   {/* District Filter */}
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                  <div className="relative">
+                    <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                      District
+                    </label>
                     <select
                       value={selectedDistrict}
                       onChange={(e) => setSelectedDistrict(e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                     >
-                      <option value="all">All Districts</option>
+                      <option value="all">All </option>
                       {districts.map((district) => (
                         <option key={district._id} value={district._id}>
                           {district.name}
@@ -307,15 +312,17 @@ const Requests: React.FC = () => {
                   </div>
 
                   {/* Service Area Filter */}
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
+                  <div className="relative">
+                    <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                      Service Area
+                    </label>
                     <select
                       value={selectedServiceArea}
                       onChange={(e) => setSelectedServiceArea(e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                       disabled={selectedDistrict === 'all'}
                     >
-                      <option value="all">All Areas</option>
+                      <option value="all">All </option>
                       {serviceAreas.map((area) => (
                         <option key={area._id} value={area._id}>
                           {area.name}
@@ -325,32 +332,40 @@ const Requests: React.FC = () => {
                   </div>
 
                   {/* Date Range Filter */}
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                      <Calendar className="w-4 h-4" /> Date Range
-                    </label>
+                  <div className="relative">
+                    
                     <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
-                        placeholder="Start Date"
-                      />
-                      <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
-                        placeholder="End Date"
-                        min={startDate}
-                      />
+                      <div className="relative">
+                        <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
+                        />
+                      </div>
+                      <div className="relative">
+                        <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
+                          min={startDate}
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* Sort By Filter */}
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sort By Date</label>
+                  <div className="relative">
+                    <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                      Sort By Date
+                    </label>
                     <select
                       value={sortAscending ? 'asc' : 'desc'}
                       onChange={(e) => setSortAscending(e.target.value === 'asc')}
@@ -364,19 +379,26 @@ const Requests: React.FC = () => {
 
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-4 mt-4">
-                  <button
-                    onClick={() => {
-                      setSelectedStatus('all');
-                      setSelectedDistrict('all');
-                      setSelectedServiceArea('all');
-                      setStartDate('');
-                      setEndDate('');
-                      setSortAscending(false);
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-center gap-2"
-                  >
-                    <X className="w-4 h-4" /> Clear Filters
-                  </button>
+                  {(selectedStatus !== 'all' || 
+                    selectedDistrict !== 'all' || 
+                    selectedServiceArea !== 'all' || 
+                    startDate || 
+                    endDate || 
+                    sortAscending) && (
+                    <button
+                      onClick={() => {
+                        setSelectedStatus('all');
+                        setSelectedDistrict('all');
+                        setSelectedServiceArea('all');
+                        setStartDate('');
+                        setEndDate('');
+                        setSortAscending(false);
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-center gap-2"
+                    >
+                      <X className="w-4 h-4" /> Clear Filters
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -458,22 +480,20 @@ const Requests: React.FC = () => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-lg border ${
-                    currentPage === 1
+                  className={`p-2 rounded-lg border ${currentPage === 1
                       ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className={`p-2 rounded-lg border ${
-                    currentPage === totalPages
+                  className={`p-2 rounded-lg border ${currentPage === totalPages
                       ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>

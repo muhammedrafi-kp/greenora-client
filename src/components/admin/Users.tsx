@@ -246,20 +246,24 @@ const Users: React.FC = () => {
           {showFilters && (
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
               <div className="flex flex-wrap gap-4">
-                <div className="flex-1 min-w-[200px]">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <div className="relative flex-1 min-w-[200px]">
+                  <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                    Status
+                  </label>
                   <select
                     value={selectedStatus}
                     onChange={handleStatusChange}
                     className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white"
                   >
-                    <option value="all">All Status</option>
+                    <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="blocked">Blocked</option>
                   </select>
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <div className="relative flex-1 min-w-[200px]">
+                  <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700 z-10">
+                    Sort By
+                  </label>
                   <select
                     value={`${sortField}-${sortDirection}`}
                     onChange={handleSortChange}

@@ -43,7 +43,7 @@ export const exportToPDF = ({ headers, data, fileName }: ExportData) => {
         styles: { fontSize: 8 },
         columnStyles: headers.reduce((acc, _, index) => ({
             ...acc,
-            [index]: { cellWidth: 30 }
+            [index]: { cellWidth: 32 }
         }), {})
     });
 

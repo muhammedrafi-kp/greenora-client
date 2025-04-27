@@ -3,7 +3,8 @@ import { FaPaperPlane, FaPaperclip } from 'react-icons/fa';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-import { getUserData, getAdminData, initiateChat } from '../../services/userService';
+import { getUserData, getAdminData } from '../../services/userService';
+import { initiateChat } from '../../services/chatService';
 
 const socket = io("http://localhost:3007", {
     transports: ["websocket", "polling"],
