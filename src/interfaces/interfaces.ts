@@ -7,6 +7,7 @@ export interface IUserSignUpData {
 }
 
 export interface IUserData {
+    id: string;
     name: string;
     email: string;
     phone: string;
@@ -51,4 +52,15 @@ export interface IFormErrors {
     phone?: string;
     password?: string;
     confirmPassword?: string;
+}
+
+
+export interface IChat  {
+    participant1?: string;
+    participant2?: string;
+    participant2Name?: string;
+    participant2ProfileUrl?: string;
+    lastMessage?: string;
+    participant1Role?: 'admin' ;
+    participant2Role?: 'user' | 'collector';
 }

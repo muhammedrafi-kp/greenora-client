@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, Download, X, ChevronLeft, ChevronRight, User, Table, File } from 'lucide-react';
+import { Search, X, User, Table, File } from 'lucide-react';
 import Modal from '../common/Modal';
 import DataTable from '../common/DataTable';
-import { getCollectors, updateCollectorStatus } from "../../services/adminService";
-import { getDistricts, getServiceAreas } from '../../services/userService';
+import { getCollectors, updateCollectorStatus } from "../../services/userService";
+import { getDistricts, getServiceAreas } from '../../services/locationService';
 import toast from 'react-hot-toast';
 import { exportTableData } from '../../utils/exportUtils';
 
@@ -479,10 +479,10 @@ const Collectors: React.FC = () => {
                                     accessor: 'verification',
                                     render: (row) => (
                                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${row.verificationStatus === 'approved'
-                                                ? 'bg-green-100 text-green-800'
-                                                : row.verificationStatus === 'rejected'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                            ? 'bg-green-100 text-green-800'
+                                            : row.verificationStatus === 'rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                             }`}>
                                             {row.verificationStatus === 'approved' ? 'Verified' : row.verificationStatus === 'rejected' ? 'Rejected' : 'Pending'}
                                         </span>
@@ -502,8 +502,8 @@ const Collectors: React.FC = () => {
                                             <button
                                                 onClick={() => handleStatusChangeModal(row)}
                                                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${!row.isBlocked
-                                                        ? 'border border-red-700 hover:bg-red-700 text-gray-800 hover:text-white'
-                                                        : 'border border-green-700 hover:bg-green-700 text-gray-800 hover:text-white'
+                                                    ? 'border border-red-700 hover:bg-red-700 text-gray-800 hover:text-white'
+                                                    : 'border border-green-700 hover:bg-green-700 text-gray-800 hover:text-white'
                                                     }`}
                                             >
                                                 {!row.isBlocked ? 'Block' : 'Unblock'}

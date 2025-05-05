@@ -26,7 +26,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ closeModal }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setEmailError(''); // Clear previous errors
+        setEmailError(''); 
         setIsLoading(true);
         try {
             const response = await sendResetLink('user', email);
@@ -47,7 +47,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ closeModal }) => {
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
-        setEmailError(''); // Clear error when user types
+        setEmailError('');
     };
 
     const renderStep = () => {

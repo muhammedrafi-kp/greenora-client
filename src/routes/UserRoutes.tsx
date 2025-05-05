@@ -25,9 +25,7 @@ import UserPickupReview from '../pages/user/UserPickupReview';
 import UserPickupPayment from '../pages/user/UserPickupPayment';
 import UserPickupSuccess from '../pages/user/UserPickupSuccess';
 import UserPickupFailure from '../pages/user/UserPickupFailure';
-// import UserPickupRequest from '../pages/user/UserPickupRequest';
 import UserProtectedRoute from '../ProtectedRoutes/UserProtectedRoute';
-import ChatBot from '../components/user/ChatBot';
 import Layout from '../components/user/Layout';
 const UserRoutes: React.FC = () => {
     return (

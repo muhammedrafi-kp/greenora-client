@@ -1,15 +1,13 @@
-import React from 'react'
-// import Navbar from '../../components/agent/Navbar';
-import Login from '../../components/collector/Login';
+  import React from 'react'
+  import Login from '../../components/collector/Login';
 
 
-const CollectorLogin:React.FC = () => {
-  return (
-    <div>
-      {/* <Navbar/> */}
-      <Login/>
-    </div>
-  )
-}
+  const CollectorLogin:React.FC = () => {
+    return (
+      <div >
+        <Login/>
+      </div>
+    )
+  }
 
-export default CollectorLogin;
+  export default CollectorLogin;

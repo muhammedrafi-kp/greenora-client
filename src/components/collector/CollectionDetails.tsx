@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Package, Clock, Phone, User, ArrowLeft, Truck, Plus, Minus, CreditCard } from 'lucide-react';
-import { getPaymentData, getDistrictAndServiceArea } from '../../services/collectorService';
+import { MapPin, Calendar, Package, Clock, Phone, User, ArrowLeft, Truck, CreditCard } from 'lucide-react';
+import { getDistrictAndServiceArea } from '../../services/locationService';
+import { getPaymentData } from '../../services/paymentService';
 
 interface ICollection {
     _id: string;

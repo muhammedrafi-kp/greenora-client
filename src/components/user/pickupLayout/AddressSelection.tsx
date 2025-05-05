@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAddresses, getDistricts, getServiceAreas, checkPinCode, addAddress, deleteAddress, updateAddress } from '../../../services/userService';
+import { getDistricts,getServiceAreas,getAddresses, addAddress, deleteAddress, updateAddress,checkPinCode } from '../../../services/locationService';
 import { toast } from 'react-hot-toast';
 import { validateAddressForm, validatePinCodeInput, IAddressFormErrors, validateMobileInput } from '../../../utils/validations';
 import { MapPin, Pencil, Trash2, LocateFixed } from "lucide-react"
@@ -37,12 +37,18 @@ interface IAddressFormData {
 }
 
 const AddressSelection = () => {
-  // const { requestId } = useParams();
   const [districts, setDistricts] = useState<IDistrict[]>([]);
   const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
   const [addresses, setAddresses] = useState<IAddresses[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState<IAddresses>({
+    _id: '',
+    name: '',
+    mobile: '',
+    pinCode: '',
+    locality: '',
+    addressLine: ''
+  });
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [newAddress, setNewAddress] = useState<IAddressFormData>({
     name: '',
@@ -58,6 +64,7 @@ const AddressSelection = () => {
     locality: '',
     addressLine: ''
   });
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [addressToEdit, setAddressToEdit] = useState<IAddresses | null>(null);
@@ -125,7 +132,7 @@ const AddressSelection = () => {
 
   // handle address select
   const handleAddressSelect = (address: IAddresses) => {
-    setSelectedAddress(address._id);
+    setSelectedAddress(address);
     dispatch(setAddress({ address }));
     dispatch(setDistrict({ district: selectedDistrict }));
     dispatch(setServiceArea({ serviceArea: selectedServiceArea }));
@@ -314,6 +321,7 @@ const AddressSelection = () => {
 
   // handle confirm edit
   const handleConfirmEdit = async () => {
+    console.log("newAddress :", newAddress);
     const { isValid, errors: validationErrors } = validateAddressForm(newAddress);
 
     if (!isValid) {
@@ -330,6 +338,7 @@ const AddressSelection = () => {
 
       setIsLoading(true);
       const response = await updateAddress(addressToEdit?._id as string, newAddress);
+      console.log("edit address response :", response);
       if (response.success) {
         fetchAddresses();
         setShowEditModal(false);
@@ -343,7 +352,20 @@ const AddressSelection = () => {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+
+    try {
+      const response = await checkPinCode(selectedServiceArea, selectedAddress.pinCode);
+      console.log("pinCode response :", response);
+      if (!response.success) {
+        toast.error("Service is not available in this area.");
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking pin code:', error);
+      toast.error('Failed to check pin code');
+    }
+
     dispatch(setStep({ step: 3 }));
     navigate('/pickup/details');
   };
@@ -405,7 +427,7 @@ const AddressSelection = () => {
                 <div
                   key={addr._id}
                   onClick={() => !isLoading && handleAddressSelect(addr)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedAddress === addr._id
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedAddress._id === addr._id
                       ? "border-green-500 bg-green-50"
                       : "border-gray-200 hover:border-green-200"
                     } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -447,7 +469,18 @@ const AddressSelection = () => {
                 <div className="flex justify-between items-center">
                   <button
                     type="button"
-                    onClick={() => setShowNewAddress(!showNewAddress)}
+                    onClick={() => {
+                      setShowNewAddress(!showNewAddress);
+                      if (!showNewAddress) {
+                        setErrors({
+                          name: '',
+                          mobile: '',
+                          pinCode: '',
+                          locality: '',
+                          addressLine: ''
+                        });
+                      }
+                    }}
                     className="text-green-600 text-sm font-medium hover:text-green-700"
                   >
                     + Add New Address
@@ -583,9 +616,9 @@ const AddressSelection = () => {
         <button
           type="button"
           onClick={() => handleContinue()}
-          disabled={!selectedAddress || isLoading}
+          disabled={!selectedAddress._id || isLoading}
           className={`w-1/2 bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-sm font-medium
-            ${(!selectedAddress || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            ${(!selectedAddress._id || isLoading) ? 'opacity-50' : ''}`}
         >
           Continue
         </button>

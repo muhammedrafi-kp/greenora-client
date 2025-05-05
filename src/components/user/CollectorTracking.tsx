@@ -9,7 +9,7 @@ import { FaArrowLeft, FaTruck } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 
 
-const MAPBOX_KEY = "pk.eyJ1IjoicmZ5MTAiLCJhIjoiY204cGs1Nzc5MDM1dzJsc2gyOXFnY3RwbCJ9.Rk-lBQ2SG0GldFcU8wGmjg";
+const MAPBOX_KEY = import.meta.env.VITE_MAPBOX_KEY;
 
 interface Location {
     latitude: number | null;

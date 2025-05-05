@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import { HiOutlineMail } from "react-icons/hi";
+import { sendResetLink } from '../../services/authService';
+import toast from 'react-hot-toast';
 
-
-// interface ForgotPasswordFormProps {
-//     onBack: () => void;
-// }
-
-
-// Component for entering email to receive reset link
-const ForgetPassword: React.FC = ( ) => {
-    const [email, setEmail] = useState('asdfg');
+const ForgetPassword: React.FC = () => {
+    const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,11 +22,17 @@ const ForgetPassword: React.FC = ( ) => {
         setError('');
 
         try {
-            // Add your API call here to send reset link
-            // await sendPasswordResetLink(email);
-            setSuccess(true);
+            const response = await sendResetLink('collector', email);
+            console.log('response :', response);
+            if (response.success) {
+                setSuccess(true);
+            }
         } catch (error: any) {
-            setError('Email not found. Please check and try again.');
+            if (error.response?.status === 404) {
+                setError("User with this email doesn't exist");
+            } else {
+                toast.error('Failed to send reset link');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -44,14 +46,7 @@ const ForgetPassword: React.FC = ( ) => {
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-900"></div>
                     </div>
                 )}
-
-                {/* <h2 className="mb-3 text-xl font-semibold sm:mb-5 sm:text-2xl md:text-3xl text-center">
-                    Forgot Password
-                </h2> */}
-
                 {success ? (
-
-
                     <div className="text-center">
                         <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
                             <HiOutlineMail className="h-8 w-8 text-green-900" />
@@ -63,29 +58,13 @@ const ForgetPassword: React.FC = ( ) => {
                             <span className="font-medium text-gray-900">{email}</span>
                         </p>
                         <button
-                            // onClick={}
+                            onClick={() => navigate('/collector/login')}
                             className="w-full bg-green-900 hover:bg-green-800 text-white font-medium mt-8 sm:py-2 py-1 xs:text-base text-sm rounded-lg disabled:opacity-50"
                         >
-                            Back to Login
+                            Close
                         </button>
                     </div>
 
-
-                    // <div className="text-center">
-                    //     <p className="md:text-sm text-xs text-gray-600 mb-6">
-                    //         Password reset link has been sent to<br />
-                    //         <span className="font-medium">{email}</span>
-                    //     </p>
-                    //     <p className="md:text-sm text-xs text-gray-600 mb-6">
-                    //         Please check your email and follow the instructions to reset your password.
-                    //     </p>
-                    //     <button
-                    //         onClick={onBack}
-                    //         className="text-green-900 hover:underline md:text-sm text-xs"
-                    //     >
-                    //         Back to Login
-                    //     </button>
-                    // </div>
                 ) : (
                     <>
                         <div className="text-center mb-6">
@@ -97,9 +76,7 @@ const ForgetPassword: React.FC = ( ) => {
                         </div>
 
                         <form onSubmit={handleSubmit}>
-                            {/* <p className="md:text-sm text-xs text-gray-600 mb-6">
-                            Enter your email address and we'll send you a link to reset your password.
-                        </p> */}
+
 
                             <input
                                 type="email"
@@ -122,7 +99,7 @@ const ForgetPassword: React.FC = ( ) => {
                             <div className="text-center md:text-sm xs:text-xs text-xs mt-4">
                                 <button
                                     type="button"
-                                    // onClick={onBack}
+                                    onClick={() => navigate('/collector/login')}
                                     className="text-green-900 hover:underline"
                                 >
                                     Back to Login

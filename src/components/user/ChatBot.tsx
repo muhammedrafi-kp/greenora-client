@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoMdClose } from "react-icons/io";
-import { BsSend } from "react-icons/bs";
+import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { FaRobot, FaUser } from "react-icons/fa";
 import { BiMessageRoundedDots, BiCopy } from "react-icons/bi";
+import { IoIosArrowDown } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { getUserData, getAdminData } from '../../services/userService';
 import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
 import ReactMarkdown from 'react-markdown';
+import { IUserData } from '../../interfaces/interfaces';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import "../../styles/scrollbar.css";
 
-
-const socket = io("http://localhost:3007", {
+const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
     transports: ["websocket", "polling"],
     withCredentials: true,
 });
@@ -72,15 +75,20 @@ const ChatBot: React.FC = () => {
     const [message, setMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [showNotification, setShowNotification] = useState(true);
+    const [isAdminTyping, setIsAdminTyping] = useState(false);
+    const [isAdminOnline, setIsAdminOnline] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [botMessages, setBotMessages] = useState<IBotMessage[]>([]);
     const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [chatMode, setChatMode] = useState<'bot' | 'admin'>('bot');
-    const [userId, setUserId] = useState<string>('');
+    const [user, setUser] = useState<IUserData | null>(null);
     const [adminId, setAdminId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
     const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+    const typingTimeoutRef = useRef<NodeJS.Timeout>();
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
 
@@ -99,6 +107,9 @@ const ChatBot: React.FC = () => {
 
     useEffect(() => {
         socket.connect();
+
+        socket.emit("user_connected", user?.id);
+
         if (chatMode === 'bot') {
             // Only show welcome message if there are no existing bot messages
             if (botMessages.length === 0) {
@@ -119,9 +130,9 @@ const ChatBot: React.FC = () => {
                 const response = await getUserData();
                 console.log("user response:", response);
                 if (response.success) {
-                    setUserId(response.data.id);
+                    setUser(response.data);
                     console.log("user id:", response.data.id);
-                    return response.data.id;
+                    return response.data;
                 }
                 return null;
             };
@@ -137,22 +148,29 @@ const ChatBot: React.FC = () => {
                 return null;
             };
 
-            Promise.all([fetchUserData(), fetchAdminData()]).then(async ([userId, adminId]) => {
-                if (!userId || !adminId) {
+            Promise.all([fetchUserData(), fetchAdminData()]).then(async ([userData, adminId]) => {
+                console.log("user data:", userData);
+                console.log("admin id:", adminId);
+
+                if (!userData?.id || !adminId) {
+                    console.log("user or admin id not found");
                     setIsLoading(false);
                     return;
                 }
 
-                socket.emit('user-online', userId);
+                socket.emit('user_online', userData.id);
 
                 try {
                     // Try to get existing chat or create a new one
                     const chatResponse = await initiateChat({
-                        participant1: userId,
-                        participant2: adminId,
-                        participant1Role: 'user',
-                        participant2Role: 'admin'
+                        participant1: adminId,
+                        participant2: userData.id,
+                        participant2Name: userData.name,
+                        participant2ProfileUrl: userData.profileUrl,
+                        participant1Role: 'admin',
+                        participant2Role: 'user'
                     });
+
                     console.log("chat response:", chatResponse);
 
                     if (chatResponse.success && chatResponse.data) {
@@ -160,8 +178,9 @@ const ChatBot: React.FC = () => {
                         // Existing chat found
                         const chatId = chatResponse.data._id;
                         console.log("Existing chat found:", chatId);
-                        socket.emit("join-room", { chatId, userId });
-                        socket.emit("get-chat-history", { chatId: chatId });
+                        socket.emit("join_room", { chatId, userId: userData.id });
+                        socket.emit("get_chat_history", { chatId: chatId });
+                        socket.emit("get_admin_online_status");
                     }
                 } catch (error) {
                     console.error("Error getting chat:", error);
@@ -178,36 +197,28 @@ const ChatBot: React.FC = () => {
                 }
             });
 
-            // Listen for admin status changes
-            socket.on("admin-status-changed", (status: 'online' | 'offline') => {
-                // console.log(`Admin is ${status}`);
-                // setAdminStatus(status);
-            });
+
         } else {
-            socket.emit("leave-room", "admin-room");
-            socket.emit("disconnect-admin");
+            socket.emit("leave_room", "admin-room");
+            socket.emit("disconnect_admin");
             socket.disconnect();
         }
     }, [chatMode]);
 
     useEffect(() => {
-        socket.on("admin-status-changed", (status) => {
-            // console.log(`admin is ${status}`);
-            // Update admin status if the status update is for the admin
-            // if (userId === adminId) {
-            //     setAdminStatus(status);
-            // }
+
+        socket.on("admin_online_status", (status) => {
+            console.log("admin online status:", status);
+            setIsAdminOnline(status);
         });
 
-        // Listen for incoming messages
-        socket.on('receive-message', (message: IMessage) => {
+        socket.on('receive_message', (message: IMessage) => {
             console.log("Received message:", message);
+            setIsAdminTyping(false);
 
             // Only process incoming messages when in admin chat mode
             if (chatMode === 'admin') {
-                // Ensure message is a string
                 const messageText = typeof message.message === 'string' ? message.message : JSON.stringify(message.message);
-
                 const newMessage: IMessage = {
                     _id: message._id,
                     chatId: message.chatId,
@@ -221,8 +232,18 @@ const ChatBot: React.FC = () => {
             }
         });
 
+        socket.on('admin_typing', () => {
+            console.log("Admin is typing...:");
+            setIsAdminTyping(true);
+        });
+
+        socket.on('admin_stop_typing', () => {
+            console.log("Admin stopped typing...");
+            setIsAdminTyping(false);
+        });
+
         // Listen for chat history
-        socket.on('chat-history', (data: { messages: IMessage[] }) => {
+        socket.on('chat_history', (data: { messages: IMessage[] }) => {
             console.log("Received chat history:", data);
             setIsLoading(false);
 
@@ -255,25 +276,22 @@ const ChatBot: React.FC = () => {
 
         // Clean up socket listeners on unmount
         return () => {
-            socket.off('receive-message');
-            socket.off('chat-history');
-            socket.off('user-status-updated');
-            socket.off('admin-status-changed');
+            socket.off('receive_message');
+            socket.off('chat_history');
+            socket.off('admin_online_status');
             if (socket.connected && chatMode !== 'admin') {
                 socket.disconnect();
             }
+            socket.off('admin_typing');
+            socket.off('admin_stop_typing');
         };
-    }, [userId, adminId, chatMode]);
+    }, [user, adminId, chatMode]);
 
     const toggleChat = () => {
         setIsOpen(!isOpen);
         setShowNotification(false);
     };
 
-    const simulateTyping = () => {
-        setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 500);
-    };
 
     const getBotResponse = (userMessage: string): { text?: string; quickReplies?: keyof typeof quickRepliesMap } => {
         const lowerMessage = userMessage.toLowerCase();
@@ -281,7 +299,7 @@ const ChatBot: React.FC = () => {
         if (lowerMessage.includes('contact support')) {
             // Switch to admin mode
             setChatMode('admin');
-            socket.emit('join-room', 'admin-room');
+            socket.emit('join_room', 'admin-room');
             return {
                 text: "Connecting you to admin support...",
                 quickReplies: 'initial'
@@ -331,12 +349,10 @@ const ChatBot: React.FC = () => {
             setMessage('');
 
             // Send message to admin via socket
-            socket.emit('send-message', {
+            socket.emit('send_message', {
                 message: messageText,
-                participant1: userId,
-                participant2: adminId,
-                participant1Role: 'user',
-                participant2Role: 'admin',
+                senderId: user?.id,
+                receiverId: adminId,
                 timestamp: new Date()
             });
         } else {
@@ -375,13 +391,6 @@ const ChatBot: React.FC = () => {
         }
     };
 
-    const cleanMarkdownText = (text: string): string => {
-        return text
-            .replace(/\*\*\s*(.*?)\*\*/g, '$1') // Remove bold formatting
-            .replace(/^\*\s+/gm, '- ') // Convert bullet points to dashes
-            .replace(/\n/g, '<br />'); // Convert newlines to HTML line breaks
-    };
-
     const fetchGreenoBotResponse = async (prompt: string) => {
         try {
             setIsTyping(true);
@@ -417,6 +426,60 @@ const ChatBot: React.FC = () => {
     };
 
     const allMessages = chatMode === 'admin' ? chatMessages : botMessages;
+
+    const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMessage(e.target.value);
+
+        if (chatMode === 'admin' && user?.id) {
+            // Clear any existing timeout
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+
+            console.log("chatId:", chatMessages[0]?.chatId);
+
+            // Emit typing event
+            socket.emit('typing', {
+                userId: user.id,
+                chatId: chatMessages[0]?.chatId
+            });
+
+            // Set timeout to emit stop typing after 1 second of no typing
+            typingTimeoutRef.current = setTimeout(() => {
+                socket.emit('stop_typing', {
+                    userId: user.id,
+                    chatId: chatMessages[0]?.chatId
+                });
+            }, 1000);
+        }
+    };
+
+    // Clean up typing timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    // Add click outside handler for emoji picker
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const onEmojiClick = (emojiData: EmojiClickData) => {
+        setMessage(prev => prev + emojiData.emoji);
+    };
 
     return (
         <div className="fixed bottom-4 right-4 z-40">
@@ -456,14 +519,16 @@ const ChatBot: React.FC = () => {
                             GreenoBot
                         </button>
                         <button
-                            onClick={() => setChatMode('admin')}
+                            onClick={() => {
+                                setChatMode('admin');
+                                setChatMessages([]);
+                            }}
                             className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${chatMode === 'admin'
                                 ? 'bg-white/10 text-white border-b-2 border-white'
                                 : 'text-green-100 hover:bg-white/5'
                                 }`}
                         >
-                            Customer Service
-                        </button>
+                            Customer Support                        </button>
                     </div>
 
                     {/* Chat Info */}
@@ -480,7 +545,7 @@ const ChatBot: React.FC = () => {
                                 <span
                                     className={`absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 
                                     ${chatMode === 'admin'
-                                            ? adminStatus === 'online' ? 'bg-green-400' : 'bg-red-400'
+                                            ? isAdminOnline ? 'bg-green-400' : 'bg-red-400'
                                             : 'bg-green-400'
                                         } 
                                     border-2 border-white rounded-full`}>
@@ -492,7 +557,8 @@ const ChatBot: React.FC = () => {
                                 </h3>
                                 <p className="text-green-100 text-xs sm:text-sm">
                                     {isTyping ? 'Typing...' :
-                                        chatMode === 'admin' ? adminStatus : 'Online'}
+                                        isAdminTyping ? 'typing...' :
+                                            chatMode === 'admin' ? isAdminOnline ? 'Online' : 'Offline' : 'Online'}
                                 </p>
                             </div>
                         </div>
@@ -500,39 +566,39 @@ const ChatBot: React.FC = () => {
                             onClick={toggleChat}
                             className="text-white hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors relative group"
                         >
-                            <IoMdClose className="w-5 h-5 sm:w-6 sm:h-6" />
+                            <IoIosArrowDown className="w-5 h-5 sm:w-6 sm:h-6" />
                             {/* Tooltip */}
                             <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                Close chat
+                                Minimize chat
                             </span>
                         </button>
                     </div>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50 custom-scrollbar">
                     {allMessages.map((msg, index) => (
                         <div key={index}>
                             <div
                                 className={`flex ${(isBotMessage(msg) && msg.isBot) ||
-                                    (isDatabaseMessage(msg) && msg.senderId !== userId)
+                                    (isDatabaseMessage(msg) && msg.senderId !== user?.id)
                                     ? 'justify-start'
                                     : 'justify-end'
                                     }`}
                             >
                                 <div
                                     className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-2xl ${(isBotMessage(msg) && msg.isBot) ||
-                                        (isDatabaseMessage(msg) && msg.senderId !== userId)
+                                        (isDatabaseMessage(msg) && msg.senderId !== user?.id)
                                         ? 'bg-white text-gray-800 shadow-md border'
                                         : 'bg-green-900 text-white'
                                         } relative group`}
                                 >
                                     <div className="flex flex-col">
-                                        <p className="text-xs sm:text-sm mr-5">
+                                        <div className="text-xs sm:text-sm mr-5">
                                             {isDatabaseMessage(msg) ? msg.message : (typeof msg.message === 'string' ?
                                                 <ReactMarkdown>{msg.message}</ReactMarkdown> :
                                                 JSON.stringify(msg.message))}
-                                        </p>
+                                        </div>
                                         {(isBotMessage(msg) && msg.isBot) && (
                                             <button
                                                 onClick={() => copyToClipboard(msg.message, msg.timestamp.toString())}
@@ -584,6 +650,17 @@ const ChatBot: React.FC = () => {
                             </div>
                         </div>
                     )}
+                    {isAdminTyping && chatMode === 'admin' && (
+                        <div className="flex justify-start">
+                            <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-md">
+                                <div className="flex gap-1.5 sm:gap-2">
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div ref={messagesEndRef} />
                     {isLoading && (
                         <div className="flex justify-center items-center">
@@ -595,20 +672,46 @@ const ChatBot: React.FC = () => {
 
                 {/* Input */}
                 <form onSubmit={handleSubmit} className="p-3 sm:p-4 bg-white border-t">
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 items-center relative">
+                        <div ref={emojiPickerRef}>
+                            <button
+                                type="button"
+                                className="p-2 text-gray-500 hover:text-[#0E2A39] hover:bg-green-100 rounded-full transition-colors relative group"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            >
+                                <BsEmojiSmile className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                    Emoji
+                                </span>
+                            </button>
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-12 left-0 z-50">
+                                    <EmojiPicker
+                                        onEmojiClick={onEmojiClick}
+                                        width={300}
+                                        height={400}
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <input
                             type="text"
                             value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            onChange={handleMessageChange}
                             placeholder="Type your message..."
-                            className="flex-1 border rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm focus:outline-none focus:border-green-900 bg-gray-50"
+                            className="flex-1 border rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-sm focus:outline-none focus:border-green-900 bg-gray-50"
                         />
-                        <button
-                            type="submit"
-                            className="bg-green-900 text-white p-2 sm:p-3 rounded-full hover:bg-green-800 transition-colors"
-                        >
-                            <BsSend className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
+                        {message.trim() && (
+                            <button
+                                type="submit"
+                                className="bg-green-900 text-white p-2 sm:p-3 rounded-full hover:bg-green-800 transition-colors relative group"
+                            >
+                                <BsSend className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                    Send message
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </form>
             </div>

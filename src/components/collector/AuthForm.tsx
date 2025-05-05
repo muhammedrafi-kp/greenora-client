@@ -1,22 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { FcGoogle } from "react-icons/fc";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
-// import { collectorLogin } from "../../redux/collectorAuthSlice";
 import { loginSuccess } from "../../redux/authSlice";
 import { validateField, validateForm } from "../../validations/userValidation";
 import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
 import { loginCollector, signUpCollector,googleCallbackCollector } from "../../services/authService";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import toast from 'react-hot-toast';
-// import OtpVerification from "./OtpVerification";
 
 interface AuthFormProps {
     initialMode?: 'login' | 'signup';
 }
-
-
 
 const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
     const [isLogin, setIsLogin] = useState(initialMode === 'login');

@@ -15,6 +15,7 @@
     "@types/mapbox-gl": "^3.4.1",
     "@types/react-map-gl": "^6.1.7",
     "axios": "^1.7.9",
+    "emoji-picker-react": "^4.12.2",
     "framer-motion": "^11.15.0",
     "install": "^0.13.0",
     "jspdf": "^3.0.1",

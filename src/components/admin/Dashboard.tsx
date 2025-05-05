@@ -1,12 +1,37 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt } from "react-icons/fa";
+import { getDistricts, getServiceAreas } from '../../services/locationService';
+import { getRevenueData } from '../../services/collectionService';
 
+interface IDistrict {
+  _id: string;
+  name: string;
+}
+
+interface IServiceArea {
+  _id: string;
+  name: string;
+}
+
+interface IRevenueData {
+  date: string;
+  waste: number;
+  scrap: number;
+  total: number;
+  wasteCollections: number;
+  scrapCollections: number;
+}
 
 const AdminDashboard:React.FC = () => {
-  // Sample data - in a real implementation, you would fetch this from your MongoDB
+
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
+  const [selectedServiceArea, setSelectedServiceArea] = useState<string>('all');
+  const [revenueData, setRevenueData] = useState<IRevenueData[]>([]);
   const [timeRange, setTimeRange] = useState('month');
   
   // Collection type distribution
@@ -67,92 +92,76 @@ const AdminDashboard:React.FC = () => {
   const [dateFilter, setDateFilter] = useState('today');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [districtFilter, setDistrictFilter] = useState('all');
-  const [serviceAreaFilter, setServiceAreaFilter] = useState('all');
 
-  // Sample data for different time ranges
-  const getRevenueData = useMemo(() => {
-    switch (dateFilter) {
-      case 'today':
-      case 'yesterday':
-        // Single day data
-        return [
-          { 
-            date: 'Today', 
-            waste: 15000, 
-            scrap: -8000,
-            total: 7000
-          }
-        ];
-      
-      case 'last7days':
-        // Daily data for last 7 days
-        return [
-          { date: 'Mon', waste: 15000, scrap: -8000, total: 7000 },
-          { date: 'Tue', waste: 18000, scrap: -9500, total: 8500 },
-          { date: 'Wed', waste: 12000, scrap: -6500, total: 5500 },
-          { date: 'Thu', waste: 20000, scrap: -11000, total: 9000 },
-          { date: 'Fri', waste: 16000, scrap: -9000, total: 7000 },
-          { date: 'Sat', waste: 14000, scrap: -7500, total: 6500 },
-          { date: 'Sun', waste: 17000, scrap: -8500, total: 8500 }
-        ];
-      
-      case 'thismonth':
-        // Daily data for current month
-        return Array.from({ length: 30 }, (_, i) => ({
-          date: `${i + 1}`,
-          waste: Math.floor(Math.random() * 20000) + 10000,
-          scrap: -(Math.floor(Math.random() * 10000) + 5000),
-          total: Math.floor(Math.random() * 10000) + 5000
-        }));
-      
-      case 'lastmonth':
-        // Daily data for last month
-        return Array.from({ length: 31 }, (_, i) => ({
-          date: `${i + 1}`,
-          waste: Math.floor(Math.random() * 20000) + 10000,
-          scrap: -(Math.floor(Math.random() * 10000) + 5000),
-          total: Math.floor(Math.random() * 10000) + 5000
-        }));
-      
-      case 'thisyear':
-        // Monthly data for current year
-        return [
-          { date: 'Jan', waste: 450000, scrap: -240000, total: 210000 },
-          { date: 'Feb', waste: 480000, scrap: -250000, total: 230000 },
-          { date: 'Mar', waste: 420000, scrap: -220000, total: 200000 },
-          { date: 'Apr', waste: 460000, scrap: -230000, total: 230000 },
-          { date: 'May', waste: 490000, scrap: -260000, total: 230000 },
-          { date: 'Jun', waste: 440000, scrap: -210000, total: 230000 },
-          { date: 'Jul', waste: 470000, scrap: -240000, total: 230000 },
-          { date: 'Aug', waste: 430000, scrap: -220000, total: 210000 },
-          { date: 'Sep', waste: 460000, scrap: -230000, total: 230000 },
-          { date: 'Oct', waste: 480000, scrap: -250000, total: 230000 },
-          { date: 'Nov', waste: 450000, scrap: -240000, total: 210000 },
-          { date: 'Dec', waste: 500000, scrap: -270000, total: 230000 }
-        ];
-      
-      case 'custom':
-        // For custom range, we'll show daily data
-        if (startDate && endDate) {
-          const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-          return Array.from({ length: days + 1 }, (_, i) => {
-            const date = new Date(startDate);
-            date.setDate(date.getDate() + i);
-            return {
-              date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-              waste: Math.floor(Math.random() * 20000) + 10000,
-              scrap: -(Math.floor(Math.random() * 10000) + 5000),
-              total: Math.floor(Math.random() * 10000) + 5000
-            };
-          });
-        }
-        return [];
-      
-      default:
-        return [];
+  useEffect(() => {
+    fetchDistricts();
+    fetchRevenueData();
+  }, []);
+
+  useEffect(() => {
+    if (selectedDistrict !== 'all') {
+      fetchServiceAreas(selectedDistrict);
+    } else {
+      setServiceAreas([]);
+      setSelectedServiceArea('all');
     }
-  }, [dateFilter, startDate, endDate]);
+  }, [selectedDistrict]);
+
+  useEffect(() => {
+    fetchRevenueData();
+  }, [selectedDistrict, selectedServiceArea, dateFilter, startDate, endDate]);
+
+  const fetchDistricts = async () => {
+    try {
+      const response = await getDistricts();
+      if (response.success) {
+        setDistricts(response.data);
+      }
+    } catch (error) {
+      console.log('Failed to fetch districts:',error);
+    }
+  };
+
+  const fetchServiceAreas = async (district: string) => {
+    try {
+      const response = await getServiceAreas(district);
+      if (response.success) {
+        setServiceAreas(response.data);
+      }
+    } catch (error) {
+      console.log('Failed to fetch service areas:',error);
+    }
+  };
+
+  const fetchRevenueData = async () => {
+    try {
+      const params = {
+        district: selectedDistrict,
+        serviceArea: selectedServiceArea,
+        dateFilter: dateFilter,
+        startDate: startDate,
+        endDate: endDate
+      };
+      const response = await getRevenueData(params);
+      if (response.success) {
+        setRevenueData(response.data);
+      }
+    } catch (error) {
+      console.log('Failed to fetch revenue data:',error);
+    }
+  };
+
+  // Remove the dummy data generation function and use revenueData directly
+  const getRevenueData1 = useMemo(() => {
+    return revenueData.map(item => ({
+      date: item.date,
+      waste: item.waste,
+      scrap: item.scrap,
+      total: item.total,
+      wasteCollections: item.wasteCollections,
+      scrapCollections: item.scrapCollections
+    }));
+  }, [revenueData]);
 
   return (
     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
@@ -214,16 +223,16 @@ const AdminDashboard:React.FC = () => {
               District
             </label>
             <select
-              value={districtFilter}
-              onChange={(e) => setDistrictFilter(e.target.value)}
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
               className="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">All </option>
-              <option value="north">North</option>
-              <option value="south">South</option>
-              <option value="east">East</option>
-              <option value="west">West</option>
-              <option value="central">Central</option>
+              <option value="all">All</option>
+              {districts.map((district) => (
+                <option key={district._id} value={district._id}>
+                  {district.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -233,14 +242,18 @@ const AdminDashboard:React.FC = () => {
               Service Area
             </label>
             <select
-              value={serviceAreaFilter}
-              onChange={(e) => setServiceAreaFilter(e.target.value)}
+              value={selectedServiceArea}
+              onChange={(e) => setSelectedServiceArea(e.target.value)}
+              disabled={selectedDistrict === 'all'}
               className="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              
             >
-              <option value="all">All </option>
-              <option value="area1">Area 1</option>
-              <option value="area2">Area 2</option>
-              <option value="area3">Area 3</option>
+              <option value="all">All</option>
+              {serviceAreas.map((area) => (
+                <option key={area._id} value={area._id}>
+                  {area.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -310,7 +323,7 @@ const AdminDashboard:React.FC = () => {
         <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={getRevenueData}
+              data={getRevenueData1}
               margin={{
                 top: 20,
                 right: 30,
@@ -331,14 +344,27 @@ const AdminDashboard:React.FC = () => {
                 formatter={(value: number, name: string) => {
                   const formattedValue = `₹${Math.abs(value).toLocaleString()}`;
                   if (name === 'Waste Revenue') {
-                    return [formattedValue, 'Waste'];
+                    return [formattedValue, 'Waste Revenue'];
                   } else if (name === 'Scrap Expense') {
-                    return [formattedValue, 'Scrap'];
+                    return [formattedValue, 'Scrap Expense'];
                   } else {
                     return [formattedValue, 'Net Total'];
                   }
                 }}
-                labelFormatter={(label) => `Date: ${label}`}
+                labelFormatter={(label) => {
+                  const tooltipDataPoint = getRevenueData1.find(d => d.date === label);
+                  return (
+                    <span>
+                      <span>Date: {label}</span>
+                      {tooltipDataPoint && (
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          <span>Waste Collections: {tooltipDataPoint.wasteCollections}</span>
+                          <span>Scrap Collections: {tooltipDataPoint.scrapCollections}</span>
+                        </span>
+                      )}
+                    </span>
+                  );
+                }}
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',

@@ -5,7 +5,6 @@ import { getPricingPlans, addPricingPlan, updatePricingPlan, deletePricingPlan }
 import { toast } from 'react-hot-toast';
 
 
-
 export interface ISubscriptionPlan {
   _id: string;
   name: string;

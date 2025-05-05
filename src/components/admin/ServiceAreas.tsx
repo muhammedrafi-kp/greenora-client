@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, X, LocateFixed } from 'lucide-react';
 import Modal from '../common/Modal';
 import { keralaDistricts } from "../../data/districts";
-import { addDistrict, getDistrictsWithServiceAreas, updateDistrict, deleteDistrict, addServiceArea } from '../../services/adminService';
+import { addDistrict, getDistrictsWithServiceAreas, updateDistrict, deleteDistrict, addServiceArea } from '../../services/locationService';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -158,6 +158,8 @@ const ServiceAreas: React.FC = () => {
       serviceDays: area.serviceDays,
       capacity: area.capacity.toString(),
       location: area.location,
+      postalCodes: area.postalCodes,
+      center: area.center
     });
     setShowModal(true);
   };
@@ -200,7 +202,7 @@ const ServiceAreas: React.FC = () => {
       }
 
       if (formInput.center.coordinates[0] === 0 && formInput.center.coordinates[1] === 0) {
-        newErrors.location = 'Please select a valid location from the suggestions or use current location';
+        newErrors.location = 'Please select a valid location';
       }
     }
 
@@ -296,9 +298,9 @@ const ServiceAreas: React.FC = () => {
     setIsLoadingSuggestions(true);
     try {
       const response = await axios.get(
-        `https://api.locationiq.com/v1/autocomplete`, {
+        `${import.meta.env.VITE_LOCATIONIQ_API_URL}/autocomplete`, {
           params: {
-            key: 'pk.99d62c10fe5ff3c54c5d6e83671878ec',
+            key: import.meta.env.VITE_LOCATIONIQ_API_KEY,
             q: query,
             limit: 5,
             dedupe: 1
@@ -346,9 +348,9 @@ const ServiceAreas: React.FC = () => {
           try {
             // Perform reverse geocoding using LocationIQ API
             const response = await axios.get(
-              `https://api.locationiq.com/v1/reverse`, {
+              `${import.meta.env.VITE_LOCATIONIQ_API_URL}/reverse`, {
               params: {
-                key: 'pk.99d62c10fe5ff3c54c5d6e83671878ec',
+                key: import.meta.env.VITE_LOCATIONIQ_API_KEY,
                 lat: latitude,
                 lon: longitude,
                 format: 'json',

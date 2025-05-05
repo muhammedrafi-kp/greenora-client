@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, User, Table, File } from 'lucide-react';
 import Modal from '../common/Modal';
-import { getUsers, updateUserStatus } from "../../services/adminService";
+import { getUsers, updateUserStatus } from "../../services/userService";
 import toast from 'react-hot-toast';
 import { exportTableData } from '../../utils/exportUtils';
 

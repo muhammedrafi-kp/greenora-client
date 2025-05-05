@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { X } from 'lucide-react';
-import { getCategories } from '../../services/adminService';
+import { getCategories } from '../../services/collectionService';
 
 interface ICollection {
     _id: string;

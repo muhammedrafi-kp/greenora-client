@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import { getUserData, getAdminData } from '../../services/userService';
 import { initiateChat } from '../../services/chatService';
 
-const socket = io("http://localhost:3007", {
+const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
     transports: ["websocket", "polling"],
     withCredentials: true,
 });

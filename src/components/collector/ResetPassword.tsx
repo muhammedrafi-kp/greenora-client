@@ -36,7 +36,7 @@ const ResetPassword: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-green-900 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
                 <div className="text-center">
                     <h2 className="text-2xl font-semibold text-gray-900">Reset Password</h2>
@@ -55,7 +55,7 @@ const ResetPassword: React.FC = () => {
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full border rounded-lg h-12 px-3 focus:ring-2 focus:ring-green-900 focus:border-transparent"
+                                className="w-full border rounded-lg h-12 px-3 focus:border-transparent"
                                 placeholder="Enter new password"
                                 required
                             />
@@ -76,7 +76,7 @@ const ResetPassword: React.FC = () => {
                                 type={showConfirmPassword ? "text" : "password"}
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full border rounded-lg h-12 px-3 focus:ring-2 focus:ring-green-900 focus:border-transparent"
+                                className="w-full border rounded-lg h-12 px-3 focus:border-transparent"
                                 placeholder="Confirm new password"
                                 required
                             />

@@ -70,7 +70,12 @@ const Wallet: React.FC = () => {
   const filterTransactions = () => {
     if (!walletData?.transactions) return [];
 
-    return walletData.transactions.filter(transaction => {
+    // Sort by timestamp descending (latest first)
+    const sorted = [...walletData.transactions].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return sorted.filter(transaction => {
       const transactionDate = new Date(transaction.timestamp).toISOString().split('T')[0];
       const matchesType = selectedType === 'all' || transaction.type === selectedType;
       const matchesStartDate = !startDate || transactionDate >= startDate;

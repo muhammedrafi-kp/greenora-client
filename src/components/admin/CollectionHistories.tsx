@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Search, X, SlidersHorizontal, Calendar, ChevronLeft, ChevronRight, Table, File } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { getCollectionHistories } from '../../services/collectionService';
-import { getDistricts, getServiceAreas } from '../../services/userService';
+import { getCollectionRequests } from '../../services/collectionService';
+import { getDistricts, getServiceAreas } from '../../services/locationService';
 import { useNavigate } from 'react-router-dom';
 import { exportTableData } from '../../utils/exportUtils';
 
@@ -122,8 +122,8 @@ const Requests: React.FC = () => {
         page: currentPage,
         limit: collectionsPerPage
       };
-
-      const response = await getCollectionHistories(params);
+      console.log("params ", params)
+      const response = await getCollectionRequests(params);
       console.log(response);
       if (response.success) {
         setCollections(response.collections || []);

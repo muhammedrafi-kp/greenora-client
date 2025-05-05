@@ -7,7 +7,6 @@ const UserPricing: React.FC = () => {
     <div>
       <NavBar />
       <Pricing />
-
     </div>
   )
 }

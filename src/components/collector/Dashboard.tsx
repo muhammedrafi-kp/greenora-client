@@ -150,7 +150,11 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-const DashboardCard = ({ title, icon, children }) => (
+const DashboardCard = ({ title, icon, children }: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) => (
   <div className="bg-white rounded-lg border shadow-sm md:p-4 xs:p-3 p-2">
     <div className="flex items-center justify-between mb-2">
       <h3 className="md:text-sm xs:text-xs text-xxs font-medium">{title}</h3>
@@ -251,7 +255,7 @@ const CollectorDashboard = () => {
   // Colors for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'In Progress': return 'bg-blue-100 text-blue-800';
@@ -264,7 +268,7 @@ const CollectorDashboard = () => {
     <main className="flex-1 overflow-x-hidden overflow-y-auto">
       <div className="md:p-6 xs:p-4 p-3 max-w-7xl mx-auto">
         {/* Collector Profile Summary */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
+        {/* <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-blue-100 rounded-full">
               <CircleUser className="w-12 h-12 text-blue-600" />
@@ -297,7 +301,7 @@ const CollectorDashboard = () => {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
         
         {/* Navigation Tabs */}
         <div className="mb-6 flex border-b">

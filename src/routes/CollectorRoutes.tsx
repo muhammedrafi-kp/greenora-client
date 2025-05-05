@@ -9,19 +9,15 @@ import CollectorReview from '../pages/collector/CollectorReview';
 import CollectorReceivePayment from '../pages/collector/CollectorReceivePayment';
 import CollectorNotifications from '../pages/collector/CollectorNotifications';
 import CollectorChat from '../pages/collector/CollectorChat';
-// import AgentPickupHistory from '../pages/agent/AgentPickupHistory';
-// import AgentRoutePlanning from '../pages/agent/AgentRoutePlanning';
-// import ChangePassword from '../components/collector/ChangePassword';
 import OtpVerification from '../components/collector/OtpVerification';
 import ForgetPassword from '../components/collector/ForgetPassword';
-import ResetPassword from '../components/collector/ResetPassword';
+import CollectorResetPassword from '../pages/collector/CollectorResetPassword';
 
 import CollectorProtectedRoute from '../ProtectedRoutes/CollectorProtectedRoute';
 import CollectorLoginProtector from '../ProtectedRoutes/CollectorLoginProtector';
 import CollectorCollectionDetails from '../pages/collector/CollectorCollectionDetails';
 import AddCollectionDetails from '../components/collector/AddCollectionDetails';
 import CollectorAddCollectionDetails from '../pages/collector/CollectorAddCollectionDetails';
-import RoutePlanning from '../components/collector/RoutePlanning';
 
 
 const AgentRoutes: React.FC = () => {
@@ -33,6 +29,8 @@ const AgentRoutes: React.FC = () => {
         <Route path="/login" element={<CollectorLogin />} />
         <Route path="/signup" element={<CollectorSignUp />} />
         <Route path="/verify-otp" element={<OtpVerification />} />
+        <Route path="/forgot-password" element={<ForgetPassword />} />
+        <Route path="/reset-password" element={<CollectorResetPassword />} />
       </Route>
 
       {/* Protected Routes */}
@@ -51,12 +49,6 @@ const AgentRoutes: React.FC = () => {
       </Route>
 
 
-      <Route path="/forgot-password" element={<ForgetPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-
-      <Route path="/collector/add-collection-details" element={<AddCollectionDetails />} />
-
-      <Route path="/route-planning" element={<RoutePlanning />} />
     </Routes>
 
 

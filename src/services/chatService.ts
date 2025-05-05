@@ -1,6 +1,8 @@
 import { apiClient } from "../apis/api";
+import { IChat } from "../interfaces/interfaces";
 
-export const initiateChat = async (chatData: object) => {
+
+export const initiateChat = async (chatData: IChat) => {
     try {
         const response = await apiClient.post('/chat-service/chat', chatData);
         return response.data;

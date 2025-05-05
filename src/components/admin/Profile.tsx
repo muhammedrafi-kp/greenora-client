@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Phone, Camera, Lock } from 'lucide-react';

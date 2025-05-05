@@ -1,10 +1,10 @@
 import React from 'react';
 import DetailsForm from '../../components/user/pickupLayout/DetailsForm';
 
-const UserPickupDetailsForm :React.FC= () => {
+const UserPickupDetailsForm: React.FC = () => {
   return (
     <div>
-      <DetailsForm/>
+      <DetailsForm />
     </div>
   )
 }

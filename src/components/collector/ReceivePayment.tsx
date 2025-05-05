@@ -96,7 +96,11 @@ const ReceivePayment: React.FC = () => {
 
     // Get advance amount from collection payment
     const advanceAmount = collection.payment?.advanceAmount || 50;
-    const remainingAmount = totalAmount - advanceAmount;
+    
+    // Calculate remaining amount based on collection type
+    const remainingAmount = collection.type === 'scrap' 
+        ? totalAmount + advanceAmount  // For scrap, add advance to total
+        : totalAmount - advanceAmount; // For waste, subtract advance from total
 
     const handlePaymentMethodSelect = (method: 'digital' | 'cash') => {
         setSelectedPayment(method);
@@ -117,11 +121,12 @@ const ReceivePayment: React.FC = () => {
 
             formDataToSend.append('collectionData', JSON.stringify(collectionData));
 
-            formData.proofs.forEach((proof, index) => {
+            formData.proofs.forEach((proof) => {
                 formDataToSend.append('collectionProofs', proof);
             });
 
             const response = await sendPaymentRequest(formDataToSend);
+
             console.log("response", response);
 
             toast.success('Payment request sent');
@@ -136,11 +141,7 @@ const ReceivePayment: React.FC = () => {
     const handleCompleteCollection = async () => {
         setIsProcessing(true);
         try {
-            const finalPaymentData = {
-                paymentId: collection.paymentId,
-                method: selectedPayment,
-            } as Partial<IPayment>;
-
+            
             const finalCollectionData = {
                 items: formData.items,
                 notes: formData.notes,
@@ -148,19 +149,14 @@ const ReceivePayment: React.FC = () => {
 
             const formDataToSend = new FormData();
             // Add collection data  
+            formDataToSend.append('paymentMethod', selectedPayment);
             formDataToSend.append('collectionData', JSON.stringify(finalCollectionData));
-
-            // Add payment data
-            formDataToSend.append('paymentData', JSON.stringify(finalPaymentData));
 
             formData.proofs.forEach((proof) => {
                 formDataToSend.append('collectionProofs', proof);
             });
 
-            console.log("formDataToSend", formDataToSend);
-
-            console.log("finalPaymentData", finalPaymentData);
-            console.log("finalCollectionData", finalCollectionData);
+            console.log("formDataToSend", formDataToSend)
 
             const response = await completeCollection(
                 collection.collectionId,
@@ -171,7 +167,7 @@ const ReceivePayment: React.FC = () => {
 
             if (response.success) {
                 toast.success('Collection completed');
-                navigate('/collector/tasks')
+                // navigate('/collector/tasks');
             }
         } catch (error: any) {
             console.error("Error completing collection:", error);
@@ -246,11 +242,17 @@ const ReceivePayment: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-600">Advance Paid:</span>
-                                        <span className="text-red-800">- ₹{advanceAmount.toFixed(2)}</span>
+                                        <span className={`${collection.type === 'scrap' ? 'text-green-600' : 'text-red-600'}`}>
+                                            {collection.type === 'scrap' ? '+' : '-'} ₹{advanceAmount.toFixed(2)}
+                                        </span>
                                     </div>
                                     <div className="pt-2 border-t flex justify-between items-center">
-                                        <span className="text-gray-700 font-medium">Remaining Amount:</span>
-                                        <span className="text-lg font-bold text-green-800">₹{remainingAmount.toFixed(2)}</span>
+                                        <span className="text-gray-700 font-medium">
+                                            {collection.type === 'scrap' ? 'Final Amount:' : 'Remaining Amount:'}
+                                        </span>
+                                        <span className='text-green-600'>
+                                        <span className="text-lg font-semibold text-green-800">₹{remainingAmount.toFixed(2)}</span>
+                                        </span>
                                     </div>
                                 </div>
 
@@ -272,12 +274,14 @@ const ReceivePayment: React.FC = () => {
                                                     <FaCreditCard className="text-green-600 text-xl" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-medium">Digital Payment</h3>
-                                                    <p className="text-xs text-gray-500">Wallet or Online Payment</p>
+                                                    <h3 className="font-medium">{collection.type === 'scrap' ? 'Add to Wallet' : 'Digital Payment'}</h3>
+                                                    <p className="text-xs text-gray-500">{collection.type === 'scrap' ? 'Add money to customer wallet' : 'Wallet or Online Payment'}</p>
                                                 </div>
                                             </div>
                                             <div className="mt-2 text-xs text-gray-500">
-                                                Customer can pay using wallet or online methods
+                                                {collection.type === 'scrap' 
+                                                    ? 'Add money to customer wallet' 
+                                                    : 'Customer can pay using wallet or online methods'}
                                             </div>
                                         </div>
 
@@ -295,11 +299,17 @@ const ReceivePayment: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <h3 className="font-medium">Pay in Hand</h3>
-                                                    <p className="text-xs text-gray-500">Collect cash from customer</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {collection.type === 'scrap' 
+                                                            ? 'Pay cash to customer' 
+                                                            : 'Collect cash from customer'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="mt-2 text-xs text-gray-500">
-                                                Collect ₹{remainingAmount.toFixed(2)} in cash from the customer.
+                                                {collection.type === 'scrap'
+                                                    ? `Pay ₹${remainingAmount.toFixed(2)} in cash to the customer.`
+                                                    : `Collect ₹${remainingAmount.toFixed(2)} in cash from the customer.`}
                                             </div>
                                         </div>
                                     </div>
@@ -311,26 +321,30 @@ const ReceivePayment: React.FC = () => {
                                         <div className="bg-gray-50 p-4 rounded-lg">
                                             <h3 className="font-medium mb-2">Digital Payment</h3>
                                             <p className="text-sm text-gray-600 mb-4">
-                                                Customer will pay ₹{remainingAmount.toFixed(2)} using wallet or online payment.
+                                                {collection.type === 'scrap' 
+                                                    ? `Add ₹${remainingAmount.toFixed(2)} to customer wallet.`
+                                                    : `Customer will pay ₹${remainingAmount.toFixed(2)} using wallet or online payment.`}
                                             </p>
-                                            <button
-                                                onClick={handleSendPaymentRequest}
-                                                disabled={isSendingRequest}
-                                                className={`w-1/3 mb-4 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-lg transition-colors flex items-center justify-center ${isSendingRequest ? 'opacity-70 cursor-not-allowed' : ''
-                                                    }`}
-                                            >
-                                                {isSendingRequest ? (
-                                                    <>
-                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Sending Request...
-                                                    </>
-                                                ) : (
-                                                    'Send Payment Request'
-                                                )}
-                                            </button>
+                                            {collection.type !== 'scrap' && (
+                                                <button
+                                                    onClick={handleSendPaymentRequest}
+                                                    disabled={isSendingRequest}
+                                                    className={`w-1/3 mb-4 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-lg transition-colors flex items-center justify-center ${isSendingRequest ? 'opacity-70 cursor-not-allowed' : ''
+                                                        }`}
+                                                >
+                                                    {isSendingRequest ? (
+                                                        <>
+                                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Sending Request...
+                                                        </>
+                                                    ) : (
+                                                        'Send Payment Request'
+                                                    )}
+                                                </button>
+                                            )}
                                         </div>
                                     )}
 
@@ -338,7 +352,9 @@ const ReceivePayment: React.FC = () => {
                                         <div className="bg-gray-50 p-4 rounded-lg">
                                             <h3 className="font-medium mb-2">Cash Payment</h3>
                                             <p className="text-sm text-gray-600">
-                                                Collect ₹{remainingAmount.toFixed(2)} in cash from the customer.
+                                                {collection.type === 'scrap' 
+                                                    ? `Pay ₹${remainingAmount.toFixed(2)} in cash to the customer.`
+                                                    : `Collect ₹${remainingAmount.toFixed(2)} in cash from the customer.`}
                                             </p>
                                         </div>
                                     )}

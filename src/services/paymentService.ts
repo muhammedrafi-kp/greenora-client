@@ -17,7 +17,6 @@ export const sendPaymentRequest = async (formData: FormData) => {
 export const getPaymentData = async (paymentId: string) => {
     try {
         const response = await apiClient.get(`/payment-service/collection-payment/${paymentId}`);
-        console.log("payment response:",response)
         return response.data;
     } catch (error) {
         console.error("Error fetching payment data:", error);
@@ -37,7 +36,9 @@ export const getWalletData = async () => {
 
 export const initiateAdvancePayment = async (collectionData: any, paymentMethod: string) => {
     try {
-        const response = await apiClient.post('/payment-service/collection-payment/initiate-advance-payment', { collectionData, paymentMethod });
+        // const response = await apiClient.post('/payment-service/collection-payment/initiate-advance-payment', { collectionData, paymentMethod });
+        const response = await apiClient.post('/request-service/collection/initiate-payment/advance', { collectionData, paymentMethod });
+
         return response.data;
     } catch (error) {
         console.error("Error creating payment order:", error);
@@ -48,7 +49,7 @@ export const initiateAdvancePayment = async (collectionData: any, paymentMethod:
 
 export const verifyAdvancePayment = async (paymentData: any) => {
     try {
-        const response = await apiClient.post('/payment-service/collection-payment/advance-verification', paymentData);
+        const response = await apiClient.post('/request-service/collection/verify-payment/advance', paymentData);
         return response.data;
     } catch (error) {
         console.error("Error verifying payment:", error);
@@ -56,9 +57,9 @@ export const verifyAdvancePayment = async (paymentData: any) => {
     }
 }
 
-export const verifyPayment = async (paymentData: any) => {
+export const verifyCollectionPayment = async ( collectionId: string, razorpayVerificationData: any ) => {
     try {
-        const response = await apiClient.post('/payment-service/collection-payment/verification', paymentData);
+        const response = await apiClient.post('/request-service/collection/verify-payment', { collectionId, razorpayVerificationData });
         return response.data;
     } catch (error) {
         console.error("Error verifying payment:", error);

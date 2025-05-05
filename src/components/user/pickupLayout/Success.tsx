@@ -99,7 +99,7 @@ const Success = () => {
                 Schedule Another Pickup
               </button>
               <button
-                onClick={() => navigate('/account/waste-collection-history')}
+                onClick={() => navigate('/account/collections')}
                 className="w-full bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-sm font-medium"
               >
                 View Collection History

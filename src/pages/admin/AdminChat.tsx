@@ -1,11 +1,11 @@
 import React from 'react'
 import Breadcrumbs from '../../components/admin/Breadcrumbs';
-import ChatAdmin from '../../components/admin/ChatAdmin';
+import ChatAdmin from '../../components/admin/Chats';
 
 const AdminChat: React.FC = () => {
     return (
         <div>
-            <Breadcrumbs title="Chats" />
+            {/* <Breadcrumbs title="Chats" /> */}
             <ChatAdmin />
         </div>
     )

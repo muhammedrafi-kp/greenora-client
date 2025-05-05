@@ -6,7 +6,10 @@ import { FaTransgender } from "react-icons/fa";
 import { ChangePassword } from '../common/ChangePassword';
 import ProfileSkeleton from '../collector/skeltons/ProfileSkelton';
 import { ICollectorData } from '../../interfaces/interfaces';
-import { getCollectorData, updateCollectorData, getDistricts, getServiceAreas,getDistrictAndServiceArea } from "../../services/collectorService";
+import { getCollectorData, updateCollectorData, getDistricts, getServiceAreas } from "../../services/collectorService";
+
+import { getDistrictAndServiceArea } from "../../services/locationService";
+
 import toast from 'react-hot-toast';
 
 interface ProfileProps {

@@ -21,6 +21,8 @@ const Payment: React.FC = () => {
   const dispatch = useDispatch();
   const { Razorpay } = useRazorpay();
 
+  console.log("collectionData From state:", collectionData);
+
   useEffect(() => {
     const fetchWalletData = async () => {
       setLoading(true);
@@ -62,8 +64,8 @@ const Payment: React.FC = () => {
       setLoading(true);
       try {
         const response = await initiateAdvancePayment(collectionData, "wallet");
-        console.log("wallet payment response:",response);
-        
+        console.log("wallet payment response:", response);
+
         if (response.success) {
           dispatch(setStep({ step: 1 }));
           dispatch(resetPickup());
@@ -91,28 +93,30 @@ const Payment: React.FC = () => {
     if (selectedMethod === 'online') {
 
       setLoading(true);
+      console.log("collectionData final:", collectionData);
       try {
-        const response = await initiateAdvancePayment(collectionData,"razorpay");
+        const response: { success: boolean, message: string, data: { amount: number, orderId: string } } = await initiateAdvancePayment(collectionData, "razorpay");
 
-        console.log("response:", response);
+        console.log("initiate payment response:", response);
         if (response.success) {
 
           const options: RazorpayOrderOptions = {
-            key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Razorpay Key ID from .env
-            amount: response.amount,
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: response.data.amount,
             currency: "INR",
             name: "Greenora",
-            description: "Test Transaction",
-            order_id: response.orderId, // Order ID from Backend
+            description: "Collection Advance Payment",
+            order_id: response.data.orderId,
             handler: async (response: any) => {
               try {
-                console.log("resposne2 :", response)
+                console.log("razorpay response :", response)
                 const verifyResponse = await verifyAdvancePayment(response);
 
+                console.log("verify payment response:", verifyResponse);
                 if (verifyResponse.success) {
-                  dispatch(setStep({ step: 1 }));
-                  dispatch(resetPickup());
-                  navigate('/pickup/success');
+                  // dispatch(setStep({ step: 1 }));
+                  // dispatch(resetPickup());
+                  // navigate('/pickup/success');
                 } else {
                   navigate('/pickup/failure', {
                     state: {

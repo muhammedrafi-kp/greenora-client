@@ -64,81 +64,7 @@ export const getCategories = async () => {
     }
 }
 
-export const getAddresses = async () => {
-    try {
-        const response = await apiClient.get(`/location-service/address/addresses`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching addresses:", error);
-        throw error;
-    }
-}
 
-export const addAddress = async (addressData: object) => {
-    try {
-        const response = await apiClient.post("/location-service/address", addressData);
-        return response.data;
-    } catch (error) {
-        console.error("Error adding address:", error);
-        throw error;
-    }
-}
-
-export const updateAddress = async (addressId: string, addressData: object) => {
-    try {
-        const response = await apiClient.put(`/location-service/address/${addressId}`, addressData);
-        return response.data;
-    } catch (error) {
-        console.error("Error updating address:", error);
-        throw error;
-    }
-}
-
-export const deleteAddress = async (addressId: string) => {
-    try {
-        const response = await apiClient.delete(`/location-service/address/${addressId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error deleting address:", error);
-        throw error;
-    }
-}
-
-export const getDistricts = async () => {
-    try {
-        const response = await apiClient.get(`/location-service/service-area/user/districts`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching districts:", error);
-        throw error;
-    }
-}
-
-export const getServiceAreas = async (districtId: string) => {
-    try {
-        const response = await apiClient.get(`/location-service/service-area/user/service-areas/${districtId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching service areas:", error);
-        throw error;
-    }
-}
-
-export const checkPinCode = async (serviceAreaId: string, pinCode: string) => {
-    try {
-        const response = await apiClient.post('/location-service/service-area/user/check-pin-code', {
-            serviceAreaId,
-            pinCode
-        });
-        return response.data;
-    } catch (error: any) {
-        // Return a structured error response instead of throwing
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to validate pin code'
-        };
-    }
-}
 
 export const calculatePickupCost = async (items: Array<object>) => {
     try {
@@ -166,9 +92,9 @@ export const calculatePickupCost = async (items: Array<object>) => {
 // }
 
 
-export const getCollectorData = async (collectorId?: string) => {
+export const getCollectorData = async (role:string,collectorId?: string) => {
     try {
-        const response = await apiClient.get(`/user-service/user/collector/${collectorId}`);
+        const response = await apiClient.get(`/user-service/${role}/collector/${collectorId}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching collector data:", error);
@@ -176,25 +102,6 @@ export const getCollectorData = async (collectorId?: string) => {
     }
 }
 
-export const cancelCollection = async (collectionId: string, reason: string) => {
-    try {
-        const response = await apiClient.patch('/request-service/collection/cancel', { collectionId, reason });
-        return response.data
-    } catch (error) {
-        console.error("Error while cancelling collection:", error);
-        throw error;
-    }
-}
-
-export const getPaymentData = async (paymentId: string) => {
-    try {
-        const response = await apiClient.get(`/payment-service/collection-payment/${paymentId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching payment data:", error);
-        throw error;
-    }
-}
 
 export const getPricingPlans = async () => {
     try {
@@ -308,3 +215,99 @@ export const askChatBot = async () => {
         throw error;
     }
 }
+
+
+//admin services
+
+
+export const getUsers = async (params?: {
+    search?: string;
+    status?: string;
+    sortField?: string;
+    sortOrder?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    try {
+      const response = await apiClient.get("/user-service/admin/users", { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw new Error('Failed to fetch users. Please try again later.');
+    }
+  }
+  
+  export const getCollectors = async (params?: {
+    search?: string;
+    status?: string;
+    verificationStatus?: string;
+    district?: string;
+    serviceArea?: string;
+    sortField?: string;
+    sortOrder?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    console.log("params :", params);
+    try {
+      const response = await apiClient.get("/user-service/admin/collectors", { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching collectors:', error);
+      throw new Error('Failed to fetch collectors. Please try again later.');
+    }
+  }
+  
+  export const getVerificationRequests = async () => {
+    try {
+      const response = await apiClient.get("/user-service/admin/verification-requests");
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching verification requests:', error);
+      throw new Error('Failed to fetch verification requests. Please try again later.');
+    }
+  }
+  
+  export const updateVerificationStatus = async (id: string, status: string) => {
+    try {
+      const response = await apiClient.patch(`/user-service/admin/verification-status/${id}`, { status });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating verification status:', error);
+      throw new Error('Failed to update verification status.');
+    }
+  }
+  
+  export const updateUserStatus = async (id: string) => {
+    try {
+      const response = await apiClient.patch(`/user-service/admin/user-status/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      throw new Error('Failed to update user status.');
+    }
+  }
+  
+  export const updateCollectorStatus = async (id: string) => {
+    try {
+      const response = await apiClient.patch(`/user-service/admin/collector-status/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating collector status:', error);
+      throw new Error('Failed to update collector status.');
+    }
+  }
+
+  export const getAvailableCollectors = async (serviceAreaId: string, preferredDate: string) => {
+    try {
+      // const encodedDate = encodeURIComponent(preferredDate);
+      console.log("preferredDate :", preferredDate);
+      const response = await apiClient.get("/user-service/admin/available-collectors", {
+        params: { serviceArea:serviceAreaId, preferredDate }
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching available collectors:", error);
+      throw error;
+    }
+  }

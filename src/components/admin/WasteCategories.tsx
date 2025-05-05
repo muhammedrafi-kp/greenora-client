@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2 } from 'lucide-react';
 import Modal from '../common/Modal';
-import { getCategories, addCategory, updateCategory, deleteCategory } from '../../services/adminService';
+import { getCategories, addCategory, updateCategory, deleteCategory } from '../../services/collectionService';
 import { toast } from 'react-hot-toast';
 
 export interface IWasteCategory {

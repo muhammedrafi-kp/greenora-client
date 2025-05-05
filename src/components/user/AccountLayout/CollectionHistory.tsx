@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaClipboardList, FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
 import { getCollectionHistory } from '../../../services/collectionService';
-import { getPaymentData, getWalletData, verifyPayment } from '../../../services/paymentService';
+import { getWalletData, verifyCollectionPayment } from '../../../services/paymentService';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, CreditCard, Lock } from 'lucide-react';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
@@ -14,12 +14,12 @@ interface Category {
   rate: number;
 }
 
-interface CollectionItem {
+interface ICollectionItem {
   categoryId: Category;
   qty: number;
 }
 
-interface Address {
+interface IAddress {
   name: string;
   mobile: string;
   pinCode: string;
@@ -27,7 +27,7 @@ interface Address {
   addressLine: string;
 }
 
-interface Collection {
+interface ICollection {
   _id: string;
   collectionId: string;
   collectorId: string;
@@ -35,30 +35,37 @@ interface Collection {
   serviceAreaId: string;
   type: string;
   status: 'completed' | 'scheduled' | 'cancelled' | 'pending';
-  paymentStatus: 'paid' | 'pending' | 'failed';
-  paymentId: string;
-  isPaymentRequested: boolean;
-  items: CollectionItem[];
+  payment: {
+    paymentId?: string;
+    advanceAmount?: number;
+    advancePaymentStatus?: "success" | "pending" | "failed" | "refunded";
+    advancePaymentMethod?: "online" | "wallet";
+    amount?: number;
+    method?: "online" | "wallet" | "cash";
+    status?: "pending" | "success" | "failed" | "requested";
+    orderId?: string;
+    isPaymentRequested?: boolean;
+    paidAt?: Date;
+  }
+  items: ICollectionItem[];
   estimatedCost: number;
-  address: Address;
+  address: IAddress;
   createdAt: string;
   preferredDate: string;
 }
 
 
 const CollectionHistory: React.FC = () => {
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [filteredCollections, setFilteredCollections] = useState<Collection[]>([]);
+  const [collections, setCollections] = useState<ICollection[]>([]);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<ICollection | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<'wallet' | 'online' | null>(null);
   const [walletBalance, setWalletBalance] = useState(0);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [onlinePaymentLoading, setOnlinePaymentLoading] = useState(false);
-  const [paymentData, setPaymentData] = useState<any>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [showWaste, setShowWaste] = useState<boolean | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -103,7 +110,7 @@ const CollectionHistory: React.FC = () => {
         } else {
           const existingIds = new Set(collections.map(c => c._id));
           const newCollections = response.data.filter(
-            (collection: Collection) => !existingIds.has(collection._id)
+            (collection: ICollection) => !existingIds.has(collection._id)
           );
           setCollections(prev => [...prev, ...newCollections]);
         }
@@ -151,13 +158,13 @@ const CollectionHistory: React.FC = () => {
     }
   };
 
-  const handleViewDetails = (pickup: Collection) => {
+  const handleViewDetails = (pickup: ICollection) => {
     navigate('/collection/details', {
       state: { collectionDetails: pickup }
     });
   };
 
-  const handlePayClick = async (collection: Collection) => {
+  const handlePayClick = async (collection: ICollection) => {
     setSelectedCollection(collection);
     try {
       const response = await getWalletData();
@@ -180,14 +187,8 @@ const CollectionHistory: React.FC = () => {
     setPaymentLoading(true);
     try {
       if (selectedMethod === 'online') {
-        const response = await getPaymentData(selectedCollection.paymentId);
-        console.log("Payment data response:", response);
-
-        if (!response.success || !response.data?.orderId) {
-          throw new Error('Failed to create Razorpay order');
-        }
-
-        const amount = Math.round(selectedCollection.estimatedCost * 100);
+        const amount = Math.round((selectedCollection.estimatedCost - (selectedCollection.payment.advanceAmount || 0)) * 100);
+        const orderId = selectedCollection.payment.orderId || '';
         console.log("Payment amount:", amount);
 
         const options: RazorpayOrderOptions = {
@@ -196,19 +197,16 @@ const CollectionHistory: React.FC = () => {
           currency: "INR" as any,
           name: "Greenora",
           description: "Payment for Collection",
-          order_id: response.data.orderId,
+          order_id: orderId,
           handler: async (response: any) => {
             console.log("Payment successful:", response);
 
             try {
-              const verificationResponse = await verifyPayment({
-                paymentId: selectedCollection.paymentId,
-                collectionId: selectedCollection.collectionId,
-                razorpayResponse: response,
-              });
+              const verificationResponse = await verifyCollectionPayment(selectedCollection.collectionId, response);
 
               if (verificationResponse.success) {
                 toast.success('Payment completed.');
+                fetchPickupHistory();
               } else {
                 toast.error('Payment failed.');
               }
@@ -241,7 +239,13 @@ const CollectionHistory: React.FC = () => {
         console.log("Razorpay options:", options);
         const razorpay = new Razorpay(options);
         razorpay.open();
-      } else {
+        setShowPaymentModal(false);
+        setSelectedMethod(null);
+        setSelectedCollection(null);
+        fetchPickupHistory();
+      } else if (selectedMethod === 'wallet') {
+
+        
         // Handle wallet payment
         setShowPaymentModal(false);
         setSelectedMethod(null);
@@ -379,10 +383,6 @@ const CollectionHistory: React.FC = () => {
     );
   };
 
-  if (loading) {
-    return <div className="text-center text-gray-500 py-8">Loading collection history...</div>;
-  }
-
   return (
     <div>
       <div className="mb-6">
@@ -400,10 +400,10 @@ const CollectionHistory: React.FC = () => {
             </svg>
           </button>
         </div>
-        
+
         {/* Desktop Filters */}
         <div className="hidden sm:flex flex-wrap items-center gap-4 mt-4">
-         
+
           {/* Status Filter Buttons */}
           <div className="flex gap-2">
             {[
@@ -412,22 +412,21 @@ const CollectionHistory: React.FC = () => {
               { value: 'scheduled', label: 'Scheduled' },
               { value: 'cancelled', label: 'Cancelled' }
             ].map((status) => (
-              <button 
+              <button
                 key={status.value}
                 onClick={() => setSelectedStatus(status.value)}
-                className={`px-4 py-2 rounded-lg text-xs transition-colors ${
-                  selectedStatus === status.value 
-                    ? 'bg-green-800 text-white font-medium' 
-                    : 'bg-gray-200 hover:bg-gray-300 font-medium'
-                }`}
+                className={`px-4 py-2 rounded-lg text-xs transition-colors ${selectedStatus === status.value
+                  ? 'bg-green-800 text-white font-medium'
+                  : 'bg-gray-200 hover:bg-gray-300 font-medium'
+                  }`}
               >
                 {status.label}
               </button>
             ))}
           </div>
 
-           {/* Type Selector */}
-           <div className="flex flex-col gap-1 relative">
+          {/* Type Selector */}
+          <div className="flex flex-col gap-1 relative">
             <div className="relative">
               <select
                 value={showWaste === null ? 'all' : (showWaste ? 'waste' : 'scrap')}
@@ -449,7 +448,7 @@ const CollectionHistory: React.FC = () => {
             </div>
           </div>
 
-          
+
 
           {/* Date Filter Section */}
           <div className="flex gap-4">
@@ -468,9 +467,8 @@ const CollectionHistory: React.FC = () => {
                     setStartDate(newStartDate);
                   }}
                   max={endDate || undefined}
-                  className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
-                    !startDate ? 'text-gray-500' : 'text-gray-900'
-                  }`}
+                  className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${!startDate ? 'text-gray-500' : 'text-gray-900'
+                    }`}
                 />
                 <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
                   {startDate ? (
@@ -496,9 +494,8 @@ const CollectionHistory: React.FC = () => {
                     setEndDate(newEndDate);
                   }}
                   min={startDate || undefined}
-                  className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
-                    !endDate ? 'text-gray-500' : 'text-gray-900'
-                  }`}
+                  className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${!endDate ? 'text-gray-500' : 'text-gray-900'
+                    }`}
                 />
                 <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
                   {endDate ? (
@@ -612,9 +609,8 @@ const CollectionHistory: React.FC = () => {
                             setStartDate(newStartDate);
                           }}
                           max={endDate || undefined}
-                          className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
-                            !startDate ? 'text-gray-500' : 'text-gray-900'
-                          }`}
+                          className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${!startDate ? 'text-gray-500' : 'text-gray-900'
+                            }`}
                         />
                         <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
                           From
@@ -636,9 +632,8 @@ const CollectionHistory: React.FC = () => {
                             setEndDate(newEndDate);
                           }}
                           min={startDate || undefined}
-                          className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
-                            !endDate ? 'text-gray-500' : 'text-gray-900'
-                          }`}
+                          className={`px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${!endDate ? 'text-gray-500' : 'text-gray-900'
+                            }`}
                         />
                         <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-600 font-medium">
                           To
@@ -685,7 +680,7 @@ const CollectionHistory: React.FC = () => {
           No collection history available.
         </div>
       ) : (
-        <div 
+        <div
           onScroll={handleScroll}
           className="space-y-4 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
         >
@@ -738,7 +733,7 @@ const CollectionHistory: React.FC = () => {
                       >
                         <FaEye /> View Details
                       </button>
-                      {collection.isPaymentRequested && (
+                      {collection.payment.status === "requested" && (
                         <button
                           onClick={() => handlePayClick(collection)}
                           className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"

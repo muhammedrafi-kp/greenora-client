@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Package, Clock, Phone, User, Filter } from 'lucide-react';
-import { getAssignedCollections } from '../../services/collectorService';
-import toast from 'react-hot-toast';
+import { MapPin, Calendar, Package, Clock, Phone, User, Filter, ChevronDown } from 'lucide-react';
+import { getAssignedCollections } from '../../services/collectionService';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -39,20 +38,75 @@ interface ICollection {
 
 const AssignedCollections: React.FC = () => {
   const [collections, setCollections] = useState<ICollection[]>([]);
-  const [filteredCollections, setFilteredCollections] = useState<ICollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [dateFilterType, setDateFilterType] = useState<string>('all');
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDateRangePickerOpen, setIsDateRangePickerOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(3);
+  const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
-  
-  const fetchAssignedCollections = async () => {
+
+  const fetchAssignedCollections = async (pageNum: number, status?: string) => {
     try {
-      const response = await getAssignedCollections();
-      console.log("response :", response);
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+
+      if (dateFilterType !== 'all') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        switch (dateFilterType) {
+          case 'today':
+            startDate = today.toISOString().split('T')[0];
+            endDate = today.toISOString().split('T')[0];
+            break;
+          case 'yesterday':
+            startDate = yesterday.toISOString().split('T')[0];
+            endDate = yesterday.toISOString().split('T')[0];
+            break;
+          case 'custom':
+            if (selectedDate) {
+              startDate = selectedDate.toISOString().split('T')[0];
+              endDate = selectedDate.toISOString().split('T')[0];
+            }
+            break;
+          case 'range':
+            if (selectedDate) {
+              startDate = selectedDate.toISOString().split('T')[0];
+              if (endDate) {
+                endDate = new Date(endDate).toISOString().split('T')[0];
+              } else {
+                endDate = startDate;
+              }
+            }
+            break;
+        }
+      }
+
+      const params = {
+        status: status !== 'all' ? status : undefined,
+        startDate,
+        endDate,
+        page: pageNum,
+        limit,
+      }
+      console.log("params ", params)
+      const response = await getAssignedCollections(params);
+
+      console.log("collections ", response)
       if (response.success) {
-        setCollections(response.collections);
-        setFilteredCollections(response.collections);
+        if (pageNum === 1) {
+          setCollections(response.collections);
+        } else {
+          setCollections(prev => [...prev, ...response.collections]);
+        }
+        setHasMore(response.collections.length === limit);
       }
     } catch (error) {
       console.error('Error fetching collections:', error);
@@ -62,39 +116,53 @@ const AssignedCollections: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAssignedCollections();
-  }, []);
+    fetchAssignedCollections(1, activeFilter);
+  }, [activeFilter, dateFilterType, selectedDate, endDate]);
 
   useEffect(() => {
-    applyFilters();
-  }, [activeFilter, selectedDate, collections]);
+    if (page > 1) {
+      fetchAssignedCollections(page, activeFilter);
+    }
+  }, [page]);
 
-  const applyFilters = () => {
-    let filtered = [...collections];
-    
-    // Apply status filter
-    if (activeFilter !== 'all') {
-      filtered = filtered.filter(collection => collection.status === activeFilter);
-    }
-    
-    // Apply date filter
-    if (selectedDate) {
-      const dateString = selectedDate.toISOString().split('T')[0];
-      filtered = filtered.filter(collection => {
-        const collectionDate = new Date(collection.preferredDate).toISOString().split('T')[0];
-        return collectionDate === dateString;
-      });
-    }
-    
-    setFilteredCollections(filtered);
+  const handleScroll = () => {
+    if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore) return;
+    setPage(prev => prev + 1);
   };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore]);
 
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
   };
 
+  const handleDateFilterChange = (type: string) => {
+    setDateFilterType(type);
+    setIsDatePickerOpen(false);
+    setIsDateRangePickerOpen(false);
+    
+    if (type === 'all') {
+      setSelectedDate(null);
+      setEndDate(null);
+    } else if (type === 'today') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      setSelectedDate(today);
+    } else if (type === 'yesterday') {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+      setSelectedDate(yesterday);
+    }
+  };
+
   const clearDateFilter = () => {
+    setDateFilterType('all');
     setSelectedDate(null);
+    setEndDate(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -110,7 +178,7 @@ const AssignedCollections: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-900"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-900"></div>
       </div>
     );
   }
@@ -121,62 +189,107 @@ const AssignedCollections: React.FC = () => {
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
             <div className="flex gap-2 flex-wrap">
-              <button 
-                className={`px-4 py-2 rounded-lg text-sm ${activeFilter === 'all' ? 'bg-green-800 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                onClick={() => handleFilterClick('all')}
-              >
-                All
-              </button>
-              <button 
-                className={`px-4 py-2 rounded-lg text-sm ${activeFilter === 'pending' ? 'bg-green-800 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                onClick={() => handleFilterClick('pending')}
-              >
-                Pending
-              </button>
-              <button 
-                className={`px-4 py-2 rounded-lg text-sm ${activeFilter === 'scheduled' ? 'bg-green-800 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                onClick={() => handleFilterClick('scheduled')}
-              >
-                Scheduled
-              </button>
-              <button 
-                className={`px-4 py-2 rounded-lg text-sm ${activeFilter === 'completed' ? 'bg-green-800 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                onClick={() => handleFilterClick('completed')}
-              >
-                Completed
-              </button>
+              {[
+                { value: 'all', label: 'All' },
+                { value: 'scheduled', label: 'Scheduled' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' }
+              ].map((status) => (
+                <button
+                  key={status.value}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium ${activeFilter === status.value
+                    ? 'bg-green-800 text-white'
+                    : 'bg-gray-200 hover:bg-gray-300'
+                    }`}
+                  onClick={() => handleFilterClick(status.value)}
+                >
+                  {status.label}
+                </button>
+              ))}
             </div>
-            
+
             <div className="relative">
               <div className="flex items-center gap-2">
-                <div className="flex items-center">
-                  <button 
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm border ${selectedDate ? 'bg-green-50 border-green-300' : 'bg-white border-gray-300'}`}
-                    onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                <div className="relative">
+                  <select
+                    value={dateFilterType}
+                    onChange={(e) => handleDateFilterChange(e.target.value)}
+                    className="appearance-none px-4 py-2 rounded-lg text-sm border bg-white border-gray-300 pr-8"
                   >
-                    <Calendar className="w-4 h-4" />
-                    <span>{selectedDate ? selectedDate.toLocaleDateString() : 'Filter by Date'}</span>
-                  </button>
-                  
-                  {selectedDate && (
-                    <button 
-                      className="ml-2 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                      onClick={clearDateFilter}
-                    >
-                      Clear
-                    </button>
-                  )}
+                    <option value="all">All Dates</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="custom">Custom Date</option>
+                    <option value="range">Date Range</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
+
+                {(dateFilterType === 'custom' || dateFilterType === 'range') && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border bg-white border-gray-300"
+                      onClick={() => {
+                        if (dateFilterType === 'custom') {
+                          setIsDatePickerOpen(!isDatePickerOpen);
+                          setIsDateRangePickerOpen(false);
+                        } else {
+                          setIsDateRangePickerOpen(!isDateRangePickerOpen);
+                          setIsDatePickerOpen(false);
+                        }
+                      }}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {dateFilterType === 'custom'
+                          ? (selectedDate ? selectedDate.toLocaleDateString() : 'Select Date')
+                          : (selectedDate && endDate
+                            ? `${selectedDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+                            : 'Select Date Range')}
+                      </span>
+                    </button>
+
+                    {(selectedDate || endDate) && (
+                      <button
+                        className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                        onClick={clearDateFilter}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              
-              {isCalendarOpen && (
+
+              {isDatePickerOpen && (
                 <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-lg border border-gray-200">
                   <DatePicker
                     selected={selectedDate}
-                    onChange={(date:any) => {
+                    onChange={(date: Date | null) => {
                       setSelectedDate(date);
-                      setIsCalendarOpen(false);
+                      setIsDatePickerOpen(false);
                     }}
+                    inline
+                    calendarClassName="rounded-lg"
+                  />
+                </div>
+              )}
+
+              {isDateRangePickerOpen && (
+                <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-lg border border-gray-200">
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={(dates: [Date | null, Date | null]) => {
+                      const [start, end] = dates;
+                      setSelectedDate(start);
+                      setEndDate(end);
+                      if (end) {
+                        setIsDateRangePickerOpen(false);
+                      }
+                    }}
+                    startDate={selectedDate}
+                    endDate={endDate}
+                    selectsRange
                     inline
                     calendarClassName="rounded-lg"
                   />
@@ -184,21 +297,27 @@ const AssignedCollections: React.FC = () => {
               )}
             </div>
           </div>
-          
-          {selectedDate && (
+
+          {(dateFilterType !== 'all') && (
             <div className="mb-4 text-sm text-gray-600">
-              Showing collections for: <span className="font-medium">{selectedDate.toLocaleDateString()}</span>
+              Showing collections for: <span className="font-medium">
+                {dateFilterType === 'today' && 'Today'}
+                {dateFilterType === 'yesterday' && 'Yesterday'}
+                {dateFilterType === 'custom' && selectedDate && selectedDate.toLocaleDateString()}
+                {dateFilterType === 'range' && selectedDate && endDate &&
+                  `${selectedDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`}
+              </span>
             </div>
           )}
         </div>
 
-        {filteredCollections.length === 0 ? (
+        {collections.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No collections found for the selected filters.
           </div>
         ) : (
           <div className="grid gap-4">
-            {filteredCollections.map((collection) => (
+            {collections.map((collection) => (
               <div key={collection._id} className="bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow">
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-4">
@@ -217,14 +336,12 @@ const AssignedCollections: React.FC = () => {
                         <User className="w-4 h-4" />
                         <span>
                           {collection.user.name}
-                          {/* {collection.customer.name} */}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Phone className="w-4 h-4" />
                         <span>
                           {collection.user.phone}
-
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -253,12 +370,12 @@ const AssignedCollections: React.FC = () => {
                   </div>
 
                   <div className="mt-4 flex justify-end gap-2">
-                    {collection.status === 'scheduled' && 
-                     new Date(collection.preferredDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && (
-                      <button className="px-4 py-2 text-sm bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors">
-                        Start Collection
-                      </button>
-                    )}
+                    {collection.status === 'scheduled' &&
+                      new Date(collection.preferredDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && (
+                        <button className="px-4 py-2 text-sm bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors">
+                          Start Collection
+                        </button>
+                      )}
                     <button onClick={() => navigate(`/collector/collection-details`, { state: { collection } })} className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                       View Details
                     </button>
@@ -273,4 +390,4 @@ const AssignedCollections: React.FC = () => {
   );
 };
 
-export default AssignedCollections; 
+export default AssignedCollections;

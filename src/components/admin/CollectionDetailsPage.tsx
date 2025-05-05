@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, Phone } from 'lucide-react';
 import { FaRegClipboard } from 'react-icons/fa';
-import { getCollectorData, getPaymentData, getDistrictAndServiceArea ,getAvailableCollectors,scheduleCollection} from '../../services/adminService';
-import { cancelCollection } from '../../services/userService';
+import { getCollectorData, getAvailableCollectors } from '../../services/userService';
+import { scheduleCollection, cancelCollection } from '../../services/collectionService';
+import { getPaymentData } from '../../services/paymentService';
+import { getDistrictAndServiceArea } from '../../services/locationService';
 import { toast } from 'react-hot-toast';
 import ScheduleCollectionModal from './ScheduleCollectionModal';
 import CancelCollectionModal from './CancelCollectionModal';
@@ -109,7 +111,7 @@ const CollectionDetailsPage: React.FC = () => {
       setLoading(true);
       try {
         if (!collection.collectorId) return;
-        const response = await getCollectorData(collection.collectorId);
+        const response = await getCollectorData("admin", collection.collectorId);
         console.log("collector response:", response);
         if (response.success) {
           setCollector(response.data);
@@ -202,7 +204,7 @@ const CollectionDetailsPage: React.FC = () => {
     }
   };
 
-  const handleSchedule = async () => { 
+  const handleSchedule = async () => {
     try {
       setLoading(true);
       if (!selectedCollector || !selectedDate) {
@@ -243,6 +245,8 @@ const CollectionDetailsPage: React.FC = () => {
 
     try {
       setLoading(true);
+
+      console.log("selected reason:",collection.collectionId,typeof selectedReason);
       const response = await cancelCollection(
         collection.collectionId,
         selectedReason
@@ -404,7 +408,7 @@ const CollectionDetailsPage: React.FC = () => {
         {/* Items and Collector Section */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Collector Details Card - Show only if scheduled */}
-          {collection.status === 'scheduled' && (
+          {(collection.status === 'scheduled' || collection.status === 'completed') && (
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
                 <User className="w-5 h-5" /> Collector Information
@@ -423,7 +427,7 @@ const CollectionDetailsPage: React.FC = () => {
           )}
 
           {/* Items Table - Adjust colspan based on status */}
-          <div className={`bg-white rounded-lg shadow-sm border p-6 ${collection.status === 'scheduled' ? 'md:col-span-2' : 'md:col-span-3'}`}>
+          <div className={`bg-white rounded-lg shadow-sm border p-6 ${collection.status === 'scheduled' || collection.status === 'completed' ? 'md:col-span-2' : 'md:col-span-3'}`}>
             <h2 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Collection Items</h2>
 
             {collection.items.length === 0 ? (

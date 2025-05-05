@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, X, Check, ArrowLeft } from 'lucide-react';
-import { getVerificationRequests, updateVerificationStatus } from "../../services/adminService";
+import { getVerificationRequests, updateVerificationStatus } from "../../services/userService";
 import toast from 'react-hot-toast';
 import Modal from '../common/Modal';
 

@@ -20,7 +20,7 @@ const Layout: React.FC = () => {
             )}
             <div className="flex-1 flex flex-col h-full min-w-0">
                 <Navbar toggleSidebar={toggleSidebar} />
-                <main className="flex-1 overflow-y-auto overflow-x-auto">
+                <main className="flex-1 overflow-y-auto overflow-x-auto custom-scrollbar">
                     <div className="min-w-full">
                         <Outlet />
                     </div>

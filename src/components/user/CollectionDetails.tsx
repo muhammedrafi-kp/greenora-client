@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaArrowCircleLeft, FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock, FaCreditCard, FaMoneyBill, FaMapMarkerAlt, FaPhoneAlt, FaUser, FaMapMarkedAlt, FaRegCircle, FaClipboard } from 'react-icons/fa';
 import Modal from '../common/Modal';
-import { getCollectorData, getPaymentData, cancelCollection } from '../../services/userService';
 import toast from 'react-hot-toast';
+
+import { getCollectorData } from '../../services/userService';
+import { getPaymentData } from '../../services/paymentService';
+import { cancelCollection } from '../../services/collectionService';
 // Define the interfaces
 interface Category {
     _id: string;
@@ -125,7 +128,7 @@ const CollectionDetails: React.FC = () => {
 
             setIsLoading(true);
             try {
-                const response = await getCollectorData(collectionDetails.collectorId);
+                const response = await getCollectorData("user",collectionDetails.collectorId);
                 console.log("collector response:", response);
                 if (response.success) {
                     setCollector(response.data);
