@@ -8,40 +8,23 @@ import axios from 'axios';
 import Modal from '../../common/Modal';
 import { useDispatch } from 'react-redux';
 import { setStep, setDistrict, setServiceArea, setAddress } from '../../../redux/pickupSlice';
+import { IDistrict, IServiceArea ,IAddress} from '../../../types/location';
 
-interface IDistrict {
-  _id: string;
-  name: string;
-}
 
-interface IServiceArea {
-  _id: string;
-  name: string;
-}
-
-interface IAddresses {
-  _id: string;
-  name: string;
-  mobile: string;
-  pinCode: string;
-  locality: string;
-  addressLine: string;
-}
-
-interface IAddressFormData {
-  name: string;
-  mobile: string;
-  addressLine: string;
-  pinCode: string;
-  locality: string;
-}
+// interface IAddressFormData {
+//   name: string;
+//   mobile: string;
+//   addressLine: string;
+//   pinCode: string;
+//   locality: string;
+// }
 
 const AddressSelection = () => {
   const [districts, setDistricts] = useState<IDistrict[]>([]);
   const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
-  const [addresses, setAddresses] = useState<IAddresses[]>([]);
+  const [addresses, setAddresses] = useState<IAddress[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<IAddresses>({
+  const [selectedAddress, setSelectedAddress] = useState<IAddress>({
     _id: '',
     name: '',
     mobile: '',
@@ -50,7 +33,7 @@ const AddressSelection = () => {
     addressLine: ''
   });
   const [showNewAddress, setShowNewAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState<IAddressFormData>({
+  const [newAddress, setNewAddress] = useState<Partial<IAddress>>({
     name: '',
     mobile: '',
     addressLine: '',
@@ -67,7 +50,7 @@ const AddressSelection = () => {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [addressToEdit, setAddressToEdit] = useState<IAddresses | null>(null);
+  const [addressToEdit, setAddressToEdit] = useState<IAddress | null>(null);
   const [addressToDelete, setAddressToDelete] = useState<string>('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -131,7 +114,7 @@ const AddressSelection = () => {
   };
 
   // handle address select
-  const handleAddressSelect = (address: IAddresses) => {
+  const handleAddressSelect = (address: IAddress) => {
     setSelectedAddress(address);
     dispatch(setAddress({ address }));
     dispatch(setDistrict({ district: selectedDistrict }));
@@ -191,10 +174,15 @@ const AddressSelection = () => {
       return;
     }
 
+    if (!newAddress.pinCode) {
+      setErrors({ ...errors, pinCode: "Please enter pin code" });
+      return;
+    }
+
     // check pin code availability
     try {
       console.log(selectedServiceArea, newAddress.pinCode);
-      const pinCodeResponse = await checkPinCode(selectedServiceArea, newAddress.pinCode);
+      const pinCodeResponse = await checkPinCode(selectedServiceArea, newAddress.pinCode as string);
       if (!pinCodeResponse.success) {
         setErrors({ ...errors, pinCode: "Service is not available in this area." });
         return;
@@ -225,7 +213,7 @@ const AddressSelection = () => {
   };
 
   // handle edit address
-  const handleEditAddress = (e: React.MouseEvent, address: IAddresses) => {
+  const handleEditAddress = (e: React.MouseEvent, address: IAddress) => {
     e.stopPropagation();
     setAddressToEdit(address);
     setNewAddress({
@@ -330,7 +318,7 @@ const AddressSelection = () => {
     }
 
     try {
-      const pinCodeResponse = await checkPinCode(selectedServiceArea, newAddress.pinCode);
+      const pinCodeResponse = await checkPinCode(selectedServiceArea, newAddress.pinCode as string);
       if (!pinCodeResponse.success) {
         setErrors({ ...errors, pinCode: "Service is not available in this area." });
         return;
@@ -355,7 +343,7 @@ const AddressSelection = () => {
   const handleContinue = async () => {
 
     try {
-      const response = await checkPinCode(selectedServiceArea, selectedAddress.pinCode);
+      const response = await checkPinCode(selectedServiceArea, selectedAddress.pinCode as string);
       console.log("pinCode response :", response);
       if (!response.success) {
         toast.error("Service is not available in this area.");

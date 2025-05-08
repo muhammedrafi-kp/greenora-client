@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Info } from "lucide-react";
-import { getCategories } from '../../../services/userService';
-import { TbCoinRupeeFilled } from "react-icons/tb";
+import { getCategories } from '../../../services/collectionService';
 
 export interface IWasteCategory {
   _id: string;
@@ -17,7 +16,7 @@ const Charges: React.FC = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await getCategories();
+      const response = await getCategories(showWaste ? "waste" : "scrap");
       console.log("response", response);
       if (response.success) {
         console.log(response.data);
@@ -25,7 +24,7 @@ const Charges: React.FC = () => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [showWaste]);
 
   // Filter categories based on type
   const filteredCategories = categories.filter(category =>
@@ -37,7 +36,7 @@ const Charges: React.FC = () => {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="lg:text-lg xs:text-base text-sm sm:text-left flex items-center gap-2 text-center font-semibold">
+        <h2 className="lg:text-xl xs:text-base text-sm sm:text-left flex items-center gap-2 text-center font-bold">
           {/* <TbCoinRupeeFilled /> */}
           Collection Charges
         </h2>
@@ -47,7 +46,7 @@ const Charges: React.FC = () => {
         <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
           <button
             onClick={() => setShowWaste(true)}
-            className={`px-4 py-2 xs:text-sm text-xs transition-colors ${showWaste
+            className={`px-4 py-2 xs:text-sm text-xs font-semibold transition-colors ${showWaste
               ? 'bg-green-800 text-white'
               : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
@@ -56,7 +55,7 @@ const Charges: React.FC = () => {
           </button>
           <button
             onClick={() => setShowWaste(false)}
-            className={`md:px-3 px-2 md:py-2 py-1 xs:text-sm text-xs transition-colors ${!showWaste
+            className={`md:px-3 px-2 md:py-2 py-1 xs:text-sm text-xs font-semibold transition-colors ${!showWaste
               ? 'bg-green-800 text-white'
               : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}

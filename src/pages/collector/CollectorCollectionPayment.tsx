@@ -1,15 +1,15 @@
 import React from 'react';
 import Layout from '../../components/collector/layout/Layout';
 import Breadcrumbs from '../../components/collector/Breadcrumbs';
-import ReceivePayment from '../../components/collector/ReceivePayment';
+import CollectionPayment from '../../components/collector/CollectionPayment';
 
-const CollectorReceivePayment : React.FC = () => {
+const CollectorCollectionPayment : React.FC = () => {
   return (
     <Layout>
       <Breadcrumbs title='Receive Payment' />
-      <ReceivePayment />
+      <CollectionPayment />
     </Layout>
   )
 }
 
-export default CollectorReceivePayment
+export default CollectorCollectionPayment;

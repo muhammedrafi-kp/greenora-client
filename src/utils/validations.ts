@@ -1,8 +1,8 @@
+import { IAddress } from "../types/location";
+
 export interface IAddressFormErrors {
   name: string;
   mobile: string;
-  // districtId: string;
-  // serviceAreaId: string;
   pinCode: string;
   locality: string;
   addressLine: string;
@@ -18,7 +18,7 @@ export interface IAddressFormData {
   addressLine: string;
 }
 
-export const validateAddressForm = (formData: IAddressFormData): { isValid: boolean; errors: IAddressFormErrors } => {
+export const validateAddressForm = (formData: Partial<IAddress>): { isValid: boolean; errors: IAddressFormErrors } => {
   let isValid = true;
   const errors: IAddressFormErrors = {
     name: '',
@@ -31,7 +31,7 @@ export const validateAddressForm = (formData: IAddressFormData): { isValid: bool
   };
 
   // Name validation
-  if (!formData.name.trim()) {
+  if (!formData.name?.trim()) {
     errors.name = 'Please enter name';
     isValid = false;
   }
@@ -67,13 +67,13 @@ export const validateAddressForm = (formData: IAddressFormData): { isValid: bool
   }
 
   // Place validation
-  if (!formData.locality.trim()) {
+  if (!formData.locality?.trim()) {
     errors.locality = 'Please enter locality';
     isValid = false;
   }
 
   // Address Line validation
-  if (!formData.addressLine.trim()) {
+  if (!formData.addressLine?.trim()) {
     errors.addressLine = 'Please enter address line';
     isValid = false;
   }

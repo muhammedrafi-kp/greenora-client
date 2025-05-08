@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2 } from 'lucide-react';
 import Modal from '../common/Modal';
-import { getPricingPlans, addPricingPlan, updatePricingPlan, deletePricingPlan } from '../../services/adminService';
+import { getPricingPlans, addPricingPlan, updatePricingPlan, deletePricingPlan } from '../../services/subscriptionService';
 import { toast } from 'react-hot-toast';
 
 

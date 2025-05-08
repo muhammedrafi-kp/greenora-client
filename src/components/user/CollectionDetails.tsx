@@ -3,74 +3,67 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FaArrowCircleLeft, FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock, FaCreditCard, FaMoneyBill, FaMapMarkerAlt, FaPhoneAlt, FaUser, FaMapMarkedAlt, FaRegCircle, FaClipboard } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import toast from 'react-hot-toast';
-
+import { ICollection } from '../../types/collection';
+import {ICollector} from "../../types/user";
 import { getCollectorData } from '../../services/userService';
-import { getPaymentData } from '../../services/paymentService';
 import { cancelCollection } from '../../services/collectionService';
+
 // Define the interfaces
-interface Category {
-    _id: string;
-    name: string;
-}
+// interface ICategory {
+//     _id: string;
+//     name: string;
+// }
 
-interface ICollector {
-    _id: string;
-    name: string;
-    email: string;
-    phone: string;
-    profileUrl: string;
-}
-
-interface Payment {
-    _id: string;
-    paymentId: string;
-    amount: number;
-    advanceAmount: number;
-    advancePaymentStatus: string;
-    status: "pending" | "success" | "failed";
-    method: "online" | "wallet" | "cash";
-    orderId?: string;
-    paidAt?: Date;
-};
+// interface ICollector {
+//     _id: string;
+//     name: string;
+//     email: string;
+//     phone: string;
+//     profileUrl: string;
+// }
 
 
-interface CollectionItem {
-    categoryId: Category;
-    name: string;
-    rate: number;
-    qty: number;
-}
+// interface Item {
+//     categoryId: ICategory;
+//     name: string;
+//     rate: number;
+//     qty: number;
+// }
 
-interface Address {
-    name: string;
-    mobile: string;
-    pinCode: string;
-    locality: string;
-    addressLine: string;
-}
+// interface IAddress {
+//     name: string;
+//     mobile: string;
+//     pinCode: string;
+//     locality: string;
+//     addressLine: string;
+// }
 
-interface CancellationReason {
-    id: string;
-    reason: string;
-}
-
-interface CollectionDetails {
-    _id: string;
-    collectionId: string;
-    collectorId?: string;
-    districtId: string;
-    serviceAreaId: string;
-    type: string;
-    status: 'completed' | 'scheduled' | 'in progress' | 'cancelled' | 'pending';
-    paymentStatus: 'paid' | 'pending' | 'failed';
-    paymentId: string;
-    items: CollectionItem[];
-    estimatedCost: number;
-    preferredDate: string;
-    createdAt: string;
-    address: Address;
-    collector?: ICollector;
-}
+// interface ICollection {
+//     _id: string;
+//     collectionId: string;
+//     collectorId?: string;
+//     districtId: string;
+//     serviceAreaId: string;
+//     type: string;
+//     status: 'completed' | 'scheduled' | 'in progress' | 'cancelled' | 'pending';
+//     paymentStatus: 'paid' | 'pending' | 'failed';
+//     payment: {
+//         paymentId: string;
+//         amount: number;
+//         advanceAmount: number;
+//         advancePaymentStatus: "success" | "pending" | "failed" | "refunded";
+//         status: "pending" | "success" | "failed" | "requested";
+//         method: "online" | "wallet" | "cash";
+//         orderId: string;
+//         paidAt: Date;
+//     };
+//     items: Item[];
+//     estimatedCost: number;
+//     preferredDate: string;
+//     createdAt: string;
+//     address: IAddress;
+//     collector?: ICollector;
+// }
 
 const LoadingSpinner = () => (
     <div className="flex justify-center items-center h-64">
@@ -81,8 +74,9 @@ const LoadingSpinner = () => (
 const CollectionDetails: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { collectionDetails } = location.state as { collectionDetails: CollectionDetails } || {};
+    const { collectionDetails } = location.state as { collectionDetails: ICollection } || {};
 
+    console.log("collectionDetails:", collectionDetails);
     // Add check for missing collection data
     useEffect(() => {
         if (!collectionDetails) {
@@ -91,7 +85,6 @@ const CollectionDetails: React.FC = () => {
         }
     }, [collectionDetails, navigate]);
 
-    // Early return if no collection details
     if (!collectionDetails) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -105,7 +98,6 @@ const CollectionDetails: React.FC = () => {
     const [customReason, setCustomReason] = useState<string>('');
     const [isCustomReason, setIsCustomReason] = useState(false);
     const [collector, setCollector] = useState<ICollector | null>(null);
-    const [payment, setPayment] = useState<Payment | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [serviceRating, setServiceRating] = useState<number>(0);
     const [collectorRating, setCollectorRating] = useState<number>(0);
@@ -114,7 +106,8 @@ const CollectionDetails: React.FC = () => {
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [activeTab, setActiveTab] = useState<'service' | 'collector'>('service');
     const [hoverRating, setHoverRating] = useState<number>(0);
-    const predefinedReasons: CancellationReason[] = [
+
+    const predefinedReasons: {id: string, reason: string}[] = [
         { id: '1', reason: 'Changed my mind' },
         { id: '2', reason: 'Found better rates elsewhere' },
         { id: '3', reason: 'Scheduling conflict' },
@@ -135,30 +128,14 @@ const CollectionDetails: React.FC = () => {
                 }
             } catch (error) {
                 console.error("Error fetching collector data:", error);
-            }
-        };
-
-        const fetchPaymentData = async () => {
-            try {
-                if (!collectionDetails.paymentId) return;
-
-                const response = await getPaymentData(collectionDetails.paymentId);
-                console.log("payment response:", response);
-                if (response.success) {
-                    setPayment(response.data);
-                }
-            } catch (error) {
-                console.error("Error fetching payment data:", error);
-            } finally {
+            }finally{
                 setIsLoading(false);
             }
         };
 
         fetchCollectorData();
-        fetchPaymentData();
-    }, [collectionDetails.collectorId, collectionDetails.paymentId]);
+    }, [collectionDetails.collectorId]);
 
-    console.log("payment:", payment);
 
     const getStatusIconAndColor = (status: 'completed' | 'scheduled' | 'cancelled' | 'in progress' | 'pending'): { icon: JSX.Element; color: string } => {
         switch (status) {
@@ -175,14 +152,16 @@ const CollectionDetails: React.FC = () => {
         }
     };
 
-    const getPaymentStatusIconAndColor = (status: 'paid' | 'pending' | 'failed') => {
+    const getPaymentStatusIconAndColor = (status:  "pending" | "success" | "failed"|"requested") => {
         switch (status) {
-            case 'paid':
+            case 'success':
                 return { icon: <FaCreditCard />, color: 'bg-green-100 text-green-600' };
             case 'pending':
                 return { icon: <FaMoneyBill />, color: 'bg-yellow-100 text-yellow-600' };
             case 'failed':
                 return { icon: <FaTimesCircle />, color: 'bg-red-100 text-red-600' };
+            case 'requested':
+                return { icon: <FaMoneyBill />, color: 'bg-blue-100 text-blue-600' };
         }
     };
 
@@ -226,7 +205,7 @@ const CollectionDetails: React.FC = () => {
     };
 
     const { icon, color } = getStatusIconAndColor(collectionDetails.status);
-    // const { icon: paymentIcon, color: paymentColor } = getPaymentStatusIconAndColor(payment?.status as 'pending' | 'paid' | 'failed');
+    const { icon: paymentIcon, color: paymentColor } = getPaymentStatusIconAndColor(collectionDetails.payment?.status || 'pending');
 
     const steps = [
         { number: 1, name: "Requested", status: "completed" },
@@ -339,11 +318,8 @@ const CollectionDetails: React.FC = () => {
                         <div className="space-y-6">
                             {/* Collection Details Card */}
                             <div className="bg-white rounded-lg shadow-md p-6 border">
-                                {/* <h3 className="text-md font-semibold mb-3 border-b pb-2">Collection Information</h3> */}
                                 <h3 className="text-md font-semibold mb-3 border-b pb-2 flex items-center gap-2">
                                     <FaClipboard className="text-green-800" /> Collection Details
-                                    {/* <FaClipboard className="p-2 bg-yellow-50 rounded-full text-green-800" /> Collection Details */}
-
                                 </h3>
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
@@ -356,21 +332,22 @@ const CollectionDetails: React.FC = () => {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium text-gray-600">Status</span>
-                                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${color}`}>
-                                            {/* {icon} */}
-                                            <span className="text-sm font-medium">{collectionDetails.status.charAt(0).toUpperCase() + collectionDetails.status.slice(1)}</span>
+                                        <div className={`flex items-center gap-2 px-1 py-0.5 rounded-full ${color}`}>
+                                            <div className={`flex items-center gap-2 px-1 py-0.5`}>
+                                                {icon}
+                                                <span className="text-sm font-medium">{collectionDetails.status.charAt(0).toUpperCase() + collectionDetails.status.slice(1)}</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium text-gray-600">Payment Status</span>
-                                        {/* <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${paymentColor}`}> */}
-                                        <div className={`flex items-center gap-2 px-3 py-1`}>
-
-                                            {/* {paymentIcon} */}
-                                            <span className="text-sm font-medium">
-                                                {/* {payment?.status ? payment.status.charAt(0).toUpperCase() + payment.status.slice(1) : 'Unknown'} */}
-                                                {payment?.status}
-                                            </span>
+                                        <div className={`flex items-center gap-2 px-1 py-0.5 rounded-full ${paymentColor}`}>
+                                            <div className={`flex items-center gap-2 px-1 py-0.5`}>
+                                                {paymentIcon}
+                                                <span className="text-sm font-medium">
+                                                    {(collectionDetails.payment?.status || 'pending').charAt(0).toUpperCase() + (collectionDetails.payment?.status || 'pending').slice(1)}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
@@ -386,47 +363,14 @@ const CollectionDetails: React.FC = () => {
 
                             {/* Address Details Card */}
                             <div className="bg-white rounded-lg shadow-md p-6 border">
-                                {/* <h3 className="text-md font-semibold flex items-center mb-3 border-b pb-2">
-                                <FaMapMarkerAlt className="text-green-800" />Address Information
-                            </h3> */}
-                                {/* <h3 className="text-md font-semibold mb-3 border-b pb-2 flex items-center gap-2">
-                                    <FaMapMarkerAlt className="text-green-800" /> Pickup Address
-                                </h3> */}
-
                                 <div className="mb-3 border-b pb-2 flex items-center gap-2">
                                     <div className="p-2 bg-yellow-50 rounded-full">
                                         <FaMapMarkerAlt className="text-yellow-600 w-5 h-5" />
                                     </div>
                                     <div>
-                                        {/* <p className="text-sm text-gray-500">Current Location</p> */}
                                         <p className="text-md font-semibold text-gray-800">Pickup Address</p>
                                     </div>
                                 </div>
-
-                                {/* <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <FaUser className="text-gray-500 flex-shrink-0" />
-                                    <div className="flex items-center justify-between w-full"> */}
-                                {/* <span className="text-sm font-medium text-gray-600">Name:</span> */}
-                                {/* <span className="text-gray-800">{collectionDetails.address.name}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <FaPhoneAlt className="text-gray-500 flex-shrink-0" />
-                                    <div className="flex items-center justify-between w-full"> */}
-                                {/* <span className="text-sm font-medium text-gray-600">Mobile:</span> */}
-                                {/* <span className="text-gray-800">{collectionDetails.address.mobile}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <FaMapMarkerAlt className="text-gray-500 flex-shrink-0 mt-1" />
-                                    <div className="flex items-center justify-between w-full"> */}
-                                {/* <span className="text-sm font-medium text-gray-600">Address:</span> */}
-                                {/* <span className="text-gray-800 text-right">
-                                        {collectionDetails.address.addressLine}, {collectionDetails.address.locality}, {collectionDetails.address.pinCode}
-                                    </span>
-                                </div>
-                            </div> */}
 
                                 <div className="space-y-2">
                                     <p className="text-gray-800 font-medium">{collectionDetails.address.name}</p>
@@ -439,8 +383,7 @@ const CollectionDetails: React.FC = () => {
 
                             {/* Collector Card */}
                             {collector && (
-                                <div className="bg-white rounded-lg shadow-md p-6 border ">
-
+                                <div className="bg-white rounded-lg shadow-md p-6 border">
                                     <div className="flex items-center mb-3 border-b pb-2 gap-2">
                                         <div className="p-2 bg-blue-50 rounded-full">
                                             <FaUser className="text-blue-600 w-5 h-5" />
@@ -450,8 +393,6 @@ const CollectionDetails: React.FC = () => {
                                         </div>
                                     </div>
 
-
-
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400">
                                             <FaUser className="text-2xl" />
@@ -460,9 +401,6 @@ const CollectionDetails: React.FC = () => {
                                             <p className="font-semibold text-gray-800">{collector.name}</p>
                                             <div className="flex items-center mt-1">
                                                 <div className="flex">
-                                                    {/* <svg key={i} className={`w-4 h-4 ${i < Math.floor(trackingData.collector.rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                    </svg> */}
                                                 </div>
                                                 <span className="text-sm text-gray-600 ml-1">{collector.name}</span>
                                             </div>
@@ -483,7 +421,7 @@ const CollectionDetails: React.FC = () => {
 
                         {/* Items */}
                         <div className="md:col-span-2">
-                            <div className="bg-white rounded-lg shadow-md p-6 border col-span-2 ">
+                            <div className="bg-white rounded-lg shadow-md p-6 border col-span-2">
                                 <h3 className="text-md font-semibold mb-4 border-b pb-2">Collection Items</h3>
 
                                 {collectionDetails.items.length === 0 ? (
@@ -501,8 +439,9 @@ const CollectionDetails: React.FC = () => {
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
                                                 {collectionDetails.items.map((item, index) => (
+                                                    console.log("item:", item),
                                                     <tr key={index}>
-                                                        <td className="px-4 py-3 text-sm text-gray-800">{item.categoryId?.name || `${item.categoryId}`}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800">{item.name || `${item.categoryId}`}</td>
                                                         <td className="px-4 py-3 text-sm text-gray-800 text-right">{item.qty}</td>
                                                         <td className="px-4 py-3 text-sm text-gray-800 text-right">
                                                             ₹{item.rate?.toFixed(2) || 'N/A'}
@@ -539,11 +478,6 @@ const CollectionDetails: React.FC = () => {
                                     </li>
                                 </ul>
                             </div>
-
-
-
-
-
                         </div>
                     </div>
 
@@ -595,16 +529,6 @@ const CollectionDetails: React.FC = () => {
                                         </button>
                                     ))}
                                 </div>
-                                {/* <p className="text-center text-sm text-gray-600">
-                                    {activeTab === 'service' 
-                                        ? serviceRating 
-                                            ? `You rated our service ${serviceRating} star${serviceRating > 1 ? 's' : ''}`
-                                            : 'Click to rate our service'
-                                        : collectorRating
-                                            ? `You rated our collector ${collectorRating} star${collectorRating > 1 ? 's' : ''}`
-                                            : 'Click to rate our collector'
-                                    }
-                                </p> */}
                             </div>
 
                             {/* Feedback Textarea */}

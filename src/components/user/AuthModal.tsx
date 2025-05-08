@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import OtpVerification from './OtpVerification';
 import ForgotPassword from './ForgotPassword';
-import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
+import { IUserSignUpData, IFormErrors } from "../../types/user";
 import { validateForm } from "../../validations/userValidation"
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from "../../redux/authSlice";
@@ -22,7 +22,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showOtpVerification, setShowOtpVerification] = useState(false);
-    // const [userEmail, setUserEmail] = useState('');
     const [showForgotPassword, setShowForgotPassword] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -82,7 +81,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                     errors.email = "Email already exists";
                     setFormError(errors);
                 }
-                // console.error('Authentication error:', error);
             } finally {
                 setIsLoading(false);
             }

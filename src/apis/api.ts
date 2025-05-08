@@ -4,10 +4,9 @@ import { loginSuccess, Logout } from "../redux/authSlice";
 import { toast } from "react-hot-toast";
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
+    baseURL: import.meta.env.VITE_BASE_URL,
     withCredentials: true,
 });
-
 
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
@@ -38,7 +37,7 @@ apiClient.interceptors.response.use(
                 const state = store.getState();
                 const role = state.auth.role;
                 console.log("role:", role);
-                const response = await axios.post(`http://localhost:80/user-service/${role}/refresh-token`,
+                const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/user-service/${role}/refresh-token`,
                     {},
                     { withCredentials: true }
                 );
@@ -57,14 +56,19 @@ apiClient.interceptors.response.use(
             }
         }
 
-        if (error.response?.status === 403 && 
-            typeof error.response.data === 'object' && 
-            error.response.data !== null && 
-            'message' in error.response.data && 
+        if (error.response?.status === 403 &&
+            typeof error.response.data === 'object' &&
+            error.response.data !== null &&
+            'message' in error.response.data &&
             error.response.data.message === "User is blocked.") {
             toast.error("Your account is blocked.");
             store.dispatch(Logout());
             return Promise.reject(error);
+        }
+
+
+        if ([500, 502, 503, 504].includes(error.response?.status || 0)) {
+            window.location.href = '/error/500';
         }
 
         return Promise.reject(error);
@@ -73,17 +77,17 @@ apiClient.interceptors.response.use(
 
 
 const publicApiClient = axios.create({
-    baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:80",
-    withCredentials: true, 
+    baseURL: import.meta.env.VITE_BASE_URL,
+    withCredentials: true,
 });
 
 publicApiClient.interceptors.response.use(
     (response: AxiosResponse) => response,
     (error: AxiosError) => {
-        if(error.response?.status === 403 &&
-            typeof error.response.data === 'object' && 
-            error.response.data !== null && 
-            'message' in error.response.data && 
+        if (error.response?.status === 403 &&
+            typeof error.response.data === 'object' &&
+            error.response.data !== null &&
+            'message' in error.response.data &&
             error.response.data.message === "User is blocked.") {
             toast.error("Your account is blocked.");
             store.dispatch(Logout());

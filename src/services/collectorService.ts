@@ -26,34 +26,6 @@ export const updateCollectorData = async (collectorData: FormData) => {
 }
 
 
-export const getDistricts = async () => {
-    try {
-        const response = await apiClient.get(`/location-service/service-area/user/districts`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching districts:", error);
-        throw error;
-    }
-}
-
-export const getServiceAreas = async (districtId: string) => {
-    try {
-        const response = await apiClient.get(`/location-service/service-area/user/service-areas/${districtId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching service areas:", error);
-        throw error;
-    }
-}
 
 
-export const completeCollection = async (collectionId: string, formData: FormData) => {
-    try {
-        const response = await apiClient.patch(`/request-service/collection/${collectionId}`, formData);
-        return response.data;
-    } catch (error) {
-        console.error("Error processing payment:", error);
-        throw error;
-    }
-}
 

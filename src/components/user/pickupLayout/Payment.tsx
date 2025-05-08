@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Lock, Wallet, CreditCard } from 'lucide-react';
-import { initiateAdvancePayment, verifyAdvancePayment, getWalletData } from '../../../services/paymentService';
+import { initiateRazorpayAdvance, payAdvanceWithWallet, verifyRazorpayAdvance, getWalletData } from '../../../services/paymentService';
 import { useDispatch } from 'react-redux';
 import { setStep, resetPickup } from '../../../redux/pickupSlice';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
@@ -63,7 +63,7 @@ const Payment: React.FC = () => {
     if (selectedMethod === 'wallet') {
       setLoading(true);
       try {
-        const response = await initiateAdvancePayment(collectionData, "wallet");
+        const response = await payAdvanceWithWallet(collectionData);
         console.log("wallet payment response:", response);
 
         if (response.success) {
@@ -77,6 +77,7 @@ const Payment: React.FC = () => {
               collectionData: collectionData
             }
           });
+          toast.error(response.message || 'Payment failed');
         }
       } catch (error: any) {
         navigate('/pickup/failure', {
@@ -85,6 +86,7 @@ const Payment: React.FC = () => {
             collectionData: collectionData
           }
         });
+        toast.error(error.message || 'Something went wrong');
       } finally {
         setLoading(false);
       }
@@ -95,7 +97,7 @@ const Payment: React.FC = () => {
       setLoading(true);
       console.log("collectionData final:", collectionData);
       try {
-        const response: { success: boolean, message: string, data: { amount: number, orderId: string } } = await initiateAdvancePayment(collectionData, "razorpay");
+        const response: { success: boolean, message: string, data: { amount: number, orderId: string } } = await initiateRazorpayAdvance(collectionData);
 
         console.log("initiate payment response:", response);
         if (response.success) {
@@ -110,7 +112,7 @@ const Payment: React.FC = () => {
             handler: async (response: any) => {
               try {
                 console.log("razorpay response :", response)
-                const verifyResponse = await verifyAdvancePayment(response);
+                const verifyResponse = await verifyRazorpayAdvance(response);
 
                 console.log("verify payment response:", verifyResponse);
                 if (verifyResponse.success) {

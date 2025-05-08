@@ -1,37 +1,37 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IoMdClose, IoMdSearch } from "react-icons/io";
+import { IoMdSearch } from "react-icons/io";
 import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import io from 'socket.io-client';
-import { getChats } from '../../services/adminService';
-import { getAdminData } from '../../services/userService';
+import { getChats } from '../../services/chatService';
 import { IoPersonCircleOutline } from 'react-icons/io5';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { IChat } from '../../types/chat';
 import '../../styles/scrollbar.css';
 
 // Initialize socket connection for admin
-const socket = io("http://localhost:3007", {
+const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
     transports: ["websocket", "polling"],
     withCredentials: true,
 });
 
+// console.log("VITE_CHAT_SERVICE_URL:", import.meta.env.VITE_CHAT_SERVICE_URL);
 
-
-interface IChat {
-    _id: string;
-    participant1: string;
-    participant1Role: string;
-    participant2: string;
-    participant2Role: "user" | "collector";
-    participant2Name: string;
-    participant2ProfileUrl: string;
-    lastMessage: string;
-    isTyping: boolean;
-    isOnline: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    unreadCount?: number;
-}
+// interface IChat {
+//     _id: string;
+//     participant1: string;
+//     participant1Role: string;
+//     participant2: string;
+//     participant2Role: "user" | "collector";
+//     participant2Name: string;
+//     participant2ProfileUrl: string;
+//     lastMessage: string;
+//     isTyping: boolean;
+//     isOnline: boolean;
+//     createdAt: Date;
+//     updatedAt: Date;
+//     unreadCount?: number;
+// }
 
 interface IMessage {
     _id: string;
@@ -136,8 +136,6 @@ const AdminChat: React.FC = () => {
         // Older
         return dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     };
-
-
 
     // Handle window resize
     useEffect(() => {
@@ -469,7 +467,7 @@ const AdminChat: React.FC = () => {
                                             >
                                                 <div className="flex items-center">
                                                     <div className="relative">
-                                                        {chat.participant2ProfileUrl && isValidImageUrl(chat.participant2ProfileUrl) && !imageErrors[chat._id] ? (
+                                                        {chat.participant2ProfileUrl && isValidImageUrl(chat.participant2ProfileUrl) && !imageErrors[chat._id || ''] ? (
                                                             <img
                                                                 src={chat.participant2ProfileUrl}
                                                                 alt={chat.participant2Name}
@@ -496,7 +494,7 @@ const AdminChat: React.FC = () => {
                                                                 </span>
                                                             </div>
                                                             <span className="text-xs text-gray-500">
-                                                                {formatChatDate(chat.updatedAt)}
+                                                                {formatChatDate(chat.updatedAt || new Date())}
                                                             </span>
                                                         </div>
                                                         <div className="flex justify-between items-center mt-1">
@@ -546,7 +544,7 @@ const AdminChat: React.FC = () => {
                                     </button>
                                 )}
                                 <div className="relative">
-                                    {currentChat.participant2ProfileUrl && isValidImageUrl(currentChat.participant2ProfileUrl) && !imageErrors[currentChat._id] ? (
+                                    {currentChat.participant2ProfileUrl && isValidImageUrl(currentChat.participant2ProfileUrl) && !imageErrors[currentChat._id || ''] ? (
                                         <img
                                             src={currentChat.participant2ProfileUrl}
                                             alt={currentChat.participant2Name}

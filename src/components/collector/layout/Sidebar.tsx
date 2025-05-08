@@ -3,10 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     FaHome,
     FaClipboardList,
-    FaTruck,
-    FaHistory,
-    FaMap,
-    FaCog,
     FaTimes
 } from 'react-icons/fa';
 import { GrContact } from "react-icons/gr";
@@ -60,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                             return (
                                 <li key={index}>
                                     <div 
-                                        className={`flex items-center space-x-3 text-white md:p-4 xs:p-3 p-1 rounded-lg cursor-pointer transition-colors duration-200
+                                        className={`flex items-center space-x-3 text-white font-semibold md:p-4 xs:p-3 p-1 rounded-lg cursor-pointer transition-colors duration-200
                                             ${isActive ? 'bg-green-900 font-medium' : 'hover:bg-green-900'}`}
                                         onClick={() => navigate(item.path)}
                                     >

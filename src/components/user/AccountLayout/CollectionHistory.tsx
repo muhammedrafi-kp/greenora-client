@@ -1,58 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
 import { getCollectionHistory } from '../../../services/collectionService';
-import { getWalletData, verifyCollectionPayment } from '../../../services/paymentService';
+import { getWalletData, paywithRazorpay, paywithWallet } from '../../../services/paymentService';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, CreditCard, Lock } from 'lucide-react';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
 import toast from 'react-hot-toast';
-
-
-interface Category {
-  _id: string;
-  name: string;
-  rate: number;
-}
-
-interface ICollectionItem {
-  categoryId: Category;
-  qty: number;
-}
-
-interface IAddress {
-  name: string;
-  mobile: string;
-  pinCode: string;
-  locality: string;
-  addressLine: string;
-}
-
-interface ICollection {
-  _id: string;
-  collectionId: string;
-  collectorId: string;
-  districtId: string;
-  serviceAreaId: string;
-  type: string;
-  status: 'completed' | 'scheduled' | 'cancelled' | 'pending';
-  payment: {
-    paymentId?: string;
-    advanceAmount?: number;
-    advancePaymentStatus?: "success" | "pending" | "failed" | "refunded";
-    advancePaymentMethod?: "online" | "wallet";
-    amount?: number;
-    method?: "online" | "wallet" | "cash";
-    status?: "pending" | "success" | "failed" | "requested";
-    orderId?: string;
-    isPaymentRequested?: boolean;
-    paidAt?: Date;
-  }
-  items: ICollectionItem[];
-  estimatedCost: number;
-  address: IAddress;
-  createdAt: string;
-  preferredDate: string;
-}
+import { ICollection } from '../../../types/collection';
 
 
 const CollectionHistory: React.FC = () => {
@@ -202,7 +156,7 @@ const CollectionHistory: React.FC = () => {
             console.log("Payment successful:", response);
 
             try {
-              const verificationResponse = await verifyCollectionPayment(selectedCollection.collectionId, response);
+              const verificationResponse = await paywithRazorpay(selectedCollection.collectionId, response);
 
               if (verificationResponse.success) {
                 toast.success('Payment completed.');
@@ -245,7 +199,16 @@ const CollectionHistory: React.FC = () => {
         fetchPickupHistory();
       } else if (selectedMethod === 'wallet') {
 
-        
+        const response = await paywithWallet(selectedCollection.collectionId);
+
+        console.log("Wallet response:", response);
+
+        if (response.success) {
+          toast.success('Payment completed.');
+        } else {
+          toast.error('Payment failed.');
+        }
+
         // Handle wallet payment
         setShowPaymentModal(false);
         setSelectedMethod(null);
@@ -254,6 +217,8 @@ const CollectionHistory: React.FC = () => {
       }
     } catch (error) {
       console.error('Error processing payment:', error);
+      setPaymentLoading(false);
+    } finally {
       setPaymentLoading(false);
     }
   };
@@ -387,7 +352,7 @@ const CollectionHistory: React.FC = () => {
     <div>
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <h2 className="lg:text-lg xs:text-base text-sm font-semibold flex items-center gap-2">
+          <h2 className="lg:text-xl xs:text-base text-sm font-bold flex items-center gap-2">
             Collection History
           </h2>
           {/* Filter Icon for Small Screens */}
@@ -705,7 +670,7 @@ const CollectionHistory: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-xs text-gray-600">Estimated cost:</span>
-                        <p className="text-sm font-medium text-gray-800">{collection.estimatedCost}₹</p>
+                        <p className="text-sm font-medium text-gray-800">₹{collection.estimatedCost}</p>
                       </div>
                       <div>
                         <span className="text-xs text-gray-600">Created Date:</span>
@@ -733,10 +698,10 @@ const CollectionHistory: React.FC = () => {
                       >
                         <FaEye /> View Details
                       </button>
-                      {collection.payment.status === "requested" && (
+                      {collection.status === "scheduled" && collection.payment && collection.payment.status === "requested" && (
                         <button
                           onClick={() => handlePayClick(collection)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
                         >
                           Pay
                         </button>

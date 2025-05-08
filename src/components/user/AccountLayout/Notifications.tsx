@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getNotifications,markNotificationAsRead,markAllNotificationsAsRead } from '../../../services/userService';
+import { getNotifications,markNotificationAsRead,markAllNotificationsAsRead } from '../../../services/notificationService';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUnreadCount } from '../../../redux/notificationSlice';
+import { INotification } from '../../../types/notification';
 
-// Match the interface from Navbar.tsx
-interface INotification {
-    _id: string;
-    title: string;
-    message: string;
-    url: string;
-    createdAt: string;
-    isRead: boolean;
-}
 
 const socket = io('http://localhost:3006', {
     withCredentials: true,
@@ -123,13 +115,13 @@ const Notifications: React.FC = () => {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-gray-800 lg:text-lg xs:text-base text-sm font-semibold">
+                <h2 className="text-gray-800 lg:text-xl xs:text-base text-sm font-bold">
                     Notifications
                 </h2>
                 {unreadCount > 0 && (
                     <button
                         onClick={handleMarkAllAsRead}
-                        className="text-sm text-green-700 hover:text-green-800 font-medium px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                        className="text-sm text-green-700 hover:text-green-800 font-medium px-2 py-1 rounded-md hover:bg-green-50 transition-colors"
                     >
                         Mark all as read
                     </button>
@@ -168,7 +160,7 @@ const Notifications: React.FC = () => {
                                         }).replace(' at ', ' ')}
                                     </span>
                                 </div>
-                                <p className={`text-gray-600 text-xs mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
+                                <p className={`text-gray-600 text-sm mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
                                     {notification.message}
                                 </p>
                             </div>

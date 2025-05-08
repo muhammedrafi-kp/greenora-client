@@ -1,13 +1,9 @@
 import { useState } from "react"
 import { ChevronUp, ChevronDown,Info  } from "lucide-react";
+import { ICategory } from "../../types/collection";
 
-export interface ICategory {
-  _id: string;
-  name: string;
-  type: "waste" | "scrap";
-  description: string;
-  rate: number;
-}
+
+
 
 interface PriceTableProps {
   type: "waste" | "scrap"

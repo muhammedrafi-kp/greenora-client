@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, Package, Clock, Phone, User, ArrowLeft, Truck, CreditCard } from 'lucide-react';
 import { getDistrictAndServiceArea } from '../../services/locationService';
-import { getPaymentData } from '../../services/paymentService';
 
 interface ICollection {
     _id: string;
@@ -17,7 +16,14 @@ interface ICollection {
     serviceAreaId: string;
     districtId: string;
     status: 'pending' | 'scheduled' | 'completed' | 'cancelled';
-    paymentId: string;
+    payment: {
+        paymentId: string;
+        advanceAmount: number;
+        advancePaymentStatus: string;
+        amount: number;
+        status: "pending" | "success" | "failed";
+        paidAt: string;
+    }
     createdAt: string;
     items: {
         categoryId: string;
@@ -37,19 +43,11 @@ interface ICollection {
     };
 }
 
-interface IPayment {
-    paymentId: string;
-    advanceAmount: number;
-    advancePaymentStatus: string;
-    status: "pending" | "success" | "failed";
-    paymentDate: string;
-}
 
 const CollectionDetails: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const collection: ICollection = location.state?.collection;
-    const [payment, setPayment] = useState<IPayment>({} as IPayment);
     const [district, setDistrict] = useState<string>('');
     const [serviceArea, setServiceArea] = useState<string>('');
     const [loading, setLoading] = useState(false);
@@ -58,21 +56,16 @@ const CollectionDetails: React.FC = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [districtResponse, paymentResponse] = await Promise.all([
+                const [districtResponse] = await Promise.all([
                     getDistrictAndServiceArea(collection.districtId, collection.serviceAreaId),
-                    getPaymentData(collection.paymentId)
                 ]);
-                
+
                 console.log("district and service area response:", districtResponse);
                 if (districtResponse.success) {
                     setDistrict(districtResponse.district.name);
                     setServiceArea(districtResponse.serviceArea.name);
                 }
 
-                console.log("payment response:", paymentResponse);
-                if (paymentResponse.success) {
-                    setPayment(paymentResponse.data);
-                }
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
@@ -81,7 +74,7 @@ const CollectionDetails: React.FC = () => {
         };
 
         fetchData();
-    }, [collection.districtId, collection.serviceAreaId, collection.paymentId]);
+    }, [collection.districtId, collection.serviceAreaId]);
 
     console.log("collection", collection);
 
@@ -129,7 +122,7 @@ const CollectionDetails: React.FC = () => {
                     {/* Header Section */}
                     <div className="p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
+                            <div>
                                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
                                     #{collection.collectionId.toUpperCase()}
                                 </h1>
@@ -194,7 +187,7 @@ const CollectionDetails: React.FC = () => {
                                         </span>
                                     </div>
 
-        </div>
+                                </div>
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <Package className="w-5 h-5 flex-shrink-0" />
@@ -208,15 +201,15 @@ const CollectionDetails: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <CreditCard className="w-5 h-5 flex-shrink-0" />
+                                            <span>
+                                                <div className="font-medium">Payment Status</div>
+                                                <div>{collection.payment.status.charAt(0).toUpperCase() + collection.payment.status.slice(1)}</div>
+                                            </span>
+
                                         {/* <span>
                                             <div className="font-medium">Payment Status</div>
-                                            <div>{collection.paymentStatus.charAt(0).toUpperCase() + collection.paymentStatus.slice(1)}</div>
+                                            <div>{collection.payment.status}</div>
                                         </span> */}
-
-                                          <span>
-                                            <div className="font-medium">Payment Status</div>
-                                            <div>{payment.status}</div>
-                                        </span> 
                                     </div>
                                 </div>
                             </div>

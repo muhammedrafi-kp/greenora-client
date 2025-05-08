@@ -5,9 +5,9 @@ import {
 import { FaTransgender } from "react-icons/fa";
 import { ChangePassword } from '../common/ChangePassword';
 import ProfileSkeleton from '../collector/skeltons/ProfileSkelton';
-import { ICollectorData } from '../../interfaces/interfaces';
-import { getCollectorData, updateCollectorData, getDistricts, getServiceAreas } from "../../services/collectorService";
-
+import { ICollector } from '../../types/user';
+import { getCollectorData, updateCollectorData } from "../../services/collectorService";
+import {getDistricts,getServiceAreas} from "../../services/locationService"
 import { getDistrictAndServiceArea } from "../../services/locationService";
 
 import toast from 'react-hot-toast';
@@ -47,7 +47,7 @@ const ProfileCard = ({ title, children }: { title: string; children: React.React
 );
 
 const Profile: React.FC<ProfileProps> = () => {
-  const [collectorData, setCollectorData] = useState<ICollectorData | null>(null);
+  const [collectorData, setCollectorData] = useState<ICollector | null>(null);
   const [districts, setDistricts] = useState<IDistrict[]>([]);
   const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
@@ -99,7 +99,7 @@ const Profile: React.FC<ProfileProps> = () => {
     let isValid = true;
 
     if (collectorData) {
-      const fields: Array<keyof Pick<ICollectorData, 'name' | 'phone' | 'serviceArea' | 'district' | 'gender'>> =
+      const fields: Array<keyof Pick<ICollector, 'name' | 'phone' | 'serviceArea' | 'district' | 'gender'>> =
         ['name', 'phone', 'serviceArea', 'district', 'gender'];
       fields.forEach((field) => {
         const error = validateField(field, collectorData[field] || '');
@@ -201,7 +201,7 @@ const Profile: React.FC<ProfileProps> = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setCollectorData((prev) => prev ? { ...prev, [name]: value } : null);
+    setCollectorData((prev: ICollector | null) => prev ? { ...prev, [name]: value } : null);
 
     const error = validateField(name, value);
     setErrors(prev => ({
@@ -228,7 +228,7 @@ const Profile: React.FC<ProfileProps> = () => {
 
   const handleIdProofChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
-    setCollectorData(prev => prev ? { ...prev, idProofType: value } : null);
+    setCollectorData((prev: ICollector | null) => prev ? { ...prev, idProofType: value } : null);
   };
 
   const handleIdImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back') => {
@@ -254,18 +254,18 @@ const Profile: React.FC<ProfileProps> = () => {
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
     setSelectedDistrict(value);
-    setCollectorData(prev => prev ? { ...prev, district: value, serviceArea: '' } : null);
+    setCollectorData((prev: ICollector | null) => prev ? { ...prev, district: value, serviceArea: '' } : null);
     setServiceAreas([]);
   };
 
   const handleServiceAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
-    setCollectorData(prev => prev ? { ...prev, serviceArea: value } : null);
+    setCollectorData((prev: ICollector | null) => prev ? { ...prev, serviceArea: value } : null);
   };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setCollectorData((prev) => prev ? { ...prev, [name]: value } : null);
+    setCollectorData((prev: ICollector | null) => prev ? { ...prev, [name]: value } : null);
 
     // Clear the error for gender if a valid option is selected
     if (name === 'gender' && value) {

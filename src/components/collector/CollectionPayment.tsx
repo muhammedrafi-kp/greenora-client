@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { FaWallet, FaMoneyBillWave, FaCreditCard, FaArrowLeft, FaCheck } from 'react-icons/fa';
-import { completeCollection } from '../../services/collectorService';
+import { FaMoneyBillWave, FaCreditCard, FaCheck } from 'react-icons/fa';
+import { completeCollection } from '../../services/collectionService';
 import { sendPaymentRequest } from '../../services/paymentService';
 
 interface Item {
@@ -42,19 +42,7 @@ interface ICollection {
 }
 
 
-interface IPayment {
-    paymentId: string;
-    advanceAmount: number;
-    advancePaymentStatus: string;
-    amount: number;
-    status: "pending" | "success" | "failed";
-    method: PaymentMethod;
-    paymentDate: string;
-}
-
-type PaymentMethod = 'wallet' | 'online' | 'cash';
-
-const ReceivePayment: React.FC = () => {
+const CollectionPayment: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -96,11 +84,11 @@ const ReceivePayment: React.FC = () => {
 
     // Get advance amount from collection payment
     const advanceAmount = collection.payment?.advanceAmount || 50;
-    
+
     // Calculate remaining amount based on collection type
-    const remainingAmount = collection.type === 'scrap' 
-        ? totalAmount + advanceAmount  // For scrap, add advance to total
-        : totalAmount - advanceAmount; // For waste, subtract advance from total
+    const remainingAmount = collection.type === 'scrap'
+        ? totalAmount + advanceAmount  
+        : totalAmount - advanceAmount; 
 
     const handlePaymentMethodSelect = (method: 'digital' | 'cash') => {
         setSelectedPayment(method);
@@ -141,7 +129,7 @@ const ReceivePayment: React.FC = () => {
     const handleCompleteCollection = async () => {
         setIsProcessing(true);
         try {
-            
+
             const finalCollectionData = {
                 items: formData.items,
                 notes: formData.notes,
@@ -167,14 +155,14 @@ const ReceivePayment: React.FC = () => {
 
             if (response.success) {
                 toast.success('Collection completed');
-                // navigate('/collector/tasks');
+                navigate('/collector/tasks');
             }
         } catch (error: any) {
             console.error("Error completing collection:", error);
             if (error.response?.status === 404) {
                 toast.error('Something went wrong');
             } else if (error.response?.status === 400) {
-                toast.error('Payment has not been completed yet');
+                toast.error('Payment is not completed yet');
             } else {
                 toast.error('Failed to complete collection');
             }
@@ -251,112 +239,128 @@ const ReceivePayment: React.FC = () => {
                                             {collection.type === 'scrap' ? 'Final Amount:' : 'Remaining Amount:'}
                                         </span>
                                         <span className='text-green-600'>
-                                        <span className="text-lg font-semibold text-green-800">₹{remainingAmount.toFixed(2)}</span>
+                                            <span className="text-lg font-semibold text-green-800">₹{remainingAmount.toFixed(2)}</span>
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Payment Methods */}
                                 <div>
-                                    <h2 className="text-lg font-medium mb-3">Select Payment Method</h2>
+                                    <h2 className="text-lg font-medium mb-3">
+                                        {collection.type === 'scrap' ? '' : 'Select Payment Method'}
+                                    </h2>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {/* Digital Payment Option (Wallet/Online) */}
-                                        <div
-                                            className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedPayment === 'digital'
-                                                ? 'border-green-500 bg-green-50'
-                                                : 'border-gray-200 hover:border-green-300'
-                                                }`}
-                                            onClick={() => handlePaymentMethodSelect('digital')}
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                <div className="bg-green-100 p-2 rounded-full">
-                                                    <FaCreditCard className="text-green-600 text-xl" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-medium">{collection.type === 'scrap' ? 'Add to Wallet' : 'Digital Payment'}</h3>
-                                                    <p className="text-xs text-gray-500">{collection.type === 'scrap' ? 'Add money to customer wallet' : 'Wallet or Online Payment'}</p>
-                                                </div>
-                                            </div>
-                                            <div className="mt-2 text-xs text-gray-500">
-                                                {collection.type === 'scrap' 
-                                                    ? 'Add money to customer wallet' 
-                                                    : 'Customer can pay using wallet or online methods'}
-                                            </div>
-                                        </div>
-
-                                        {/* Cash Payment Option */}
-                                        <div
-                                            className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedPayment === 'cash'
-                                                ? 'border-green-500 bg-green-50'
-                                                : 'border-gray-200 hover:border-green-300'
-                                                }`}
-                                            onClick={() => handlePaymentMethodSelect('cash')}
-                                        >
+                                    {collection.type === 'scrap' ? (
+                                        // Cash Payment Option for Scrap
+                                        <div className="border rounded-lg p-4 border-green-500 bg-green-50">
                                             <div className="flex items-center space-x-3">
                                                 <div className="bg-green-100 p-2 rounded-full">
                                                     <FaMoneyBillWave className="text-green-600 text-xl" />
                                                 </div>
                                                 <div>
                                                     <h3 className="font-medium">Pay in Hand</h3>
-                                                    <p className="text-xs text-gray-500">
-                                                        {collection.type === 'scrap' 
-                                                            ? 'Pay cash to customer' 
-                                                            : 'Collect cash from customer'}
-                                                    </p>
+                                                    <p className="text-xs text-gray-500">Pay cash to customer</p>
                                                 </div>
                                             </div>
                                             <div className="mt-2 text-xs text-gray-500">
-                                                {collection.type === 'scrap'
-                                                    ? `Pay ₹${remainingAmount.toFixed(2)} in cash to the customer.`
-                                                    : `Collect ₹${remainingAmount.toFixed(2)} in cash from the customer.`}
+                                                Pay ₹{remainingAmount.toFixed(2)} in cash to the customer.
                                             </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {/* Digital Payment Option (Wallet/Online) */}
+                                            <div
+                                                className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedPayment === 'digital'
+                                                    ? 'border-green-500 bg-green-50'
+                                                    : 'border-gray-200 hover:border-green-300'
+                                                    }`}
+                                                onClick={() => handlePaymentMethodSelect('digital')}
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="bg-green-100 p-2 rounded-full">
+                                                        <FaCreditCard className="text-green-600 text-xl" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-medium">Digital Payment</h3>
+                                                        <p className="text-xs text-gray-500">Wallet or Online Payment</p>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 text-xs text-gray-500">
+                                                    Customer can pay using wallet or online methods
+                                                </div>
+                                            </div>
+
+                                            {/* Cash Payment Option */}
+                                            <div
+                                                className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedPayment === 'cash'
+                                                    ? 'border-green-500 bg-green-50'
+                                                    : 'border-gray-200 hover:border-green-300'
+                                                    }`}
+                                                onClick={() => handlePaymentMethodSelect('cash')}
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="bg-green-100 p-2 rounded-full">
+                                                        <FaMoneyBillWave className="text-green-600 text-xl" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-medium">Pay in Hand</h3>
+                                                        <p className="text-xs text-gray-500">Collect cash from customer</p>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 text-xs text-gray-500">
+                                                    Collect ₹{remainingAmount.toFixed(2)} in cash from the customer.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Payment Details based on selected method */}
                                 <div className="border-t pt-4">
-                                    {selectedPayment === 'digital' && (
-                                        <div className="bg-gray-50 p-4 rounded-lg">
-                                            <h3 className="font-medium mb-2">Digital Payment</h3>
-                                            <p className="text-sm text-gray-600 mb-4">
-                                                {collection.type === 'scrap' 
-                                                    ? `Add ₹${remainingAmount.toFixed(2)} to customer wallet.`
-                                                    : `Customer will pay ₹${remainingAmount.toFixed(2)} using wallet or online payment.`}
-                                            </p>
-                                            {collection.type !== 'scrap' && (
-                                                <button
-                                                    onClick={handleSendPaymentRequest}
-                                                    disabled={isSendingRequest}
-                                                    className={`w-1/3 mb-4 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-lg transition-colors flex items-center justify-center ${isSendingRequest ? 'opacity-70 cursor-not-allowed' : ''
-                                                        }`}
-                                                >
-                                                    {isSendingRequest ? (
-                                                        <>
-                                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                            </svg>
-                                                            Sending Request...
-                                                        </>
-                                                    ) : (
-                                                        'Send Payment Request'
-                                                    )}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {selectedPayment === 'cash' && (
+                                    {collection.type === 'scrap' ? (
                                         <div className="bg-gray-50 p-4 rounded-lg">
                                             <h3 className="font-medium mb-2">Cash Payment</h3>
                                             <p className="text-sm text-gray-600">
-                                                {collection.type === 'scrap' 
-                                                    ? `Pay ₹${remainingAmount.toFixed(2)} in cash to the customer.`
-                                                    : `Collect ₹${remainingAmount.toFixed(2)} in cash from the customer.`}
+                                                Pay ₹{remainingAmount.toFixed(2)} in cash to the customer.
                                             </p>
                                         </div>
+                                    ) : (
+                                        <>
+                                            {selectedPayment === 'digital' && (
+                                                <div className="bg-gray-50 p-4 rounded-lg">
+                                                    <h3 className="font-medium mb-2">Digital Payment</h3>
+                                                    <p className="text-sm text-gray-600 mb-4">
+                                                        Customer will pay ₹{remainingAmount.toFixed(2)} using wallet or online payment.
+                                                    </p>
+                                                    <button
+                                                        onClick={handleSendPaymentRequest}
+                                                        disabled={isSendingRequest}
+                                                        className={`w-1/3 mb-4 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-lg transition-colors flex items-center justify-center ${isSendingRequest ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        {isSendingRequest ? (
+                                                            <>
+                                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                                Sending Request...
+                                                            </>
+                                                        ) : (
+                                                            'Send Payment Request'
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {selectedPayment === 'cash' && (
+                                                <div className="bg-gray-50 p-4 rounded-lg">
+                                                    <h3 className="font-medium mb-2">Cash Payment</h3>
+                                                    <p className="text-sm text-gray-600">
+                                                        Collect ₹{remainingAmount.toFixed(2)} in cash from the customer.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
 
@@ -398,4 +402,4 @@ const ReceivePayment: React.FC = () => {
     );
 };
 
-export default ReceivePayment;
+export default CollectionPayment;

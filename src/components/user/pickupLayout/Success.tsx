@@ -1,28 +1,11 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import { CheckCircle, Calendar, MapPin } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
-interface SuccessDetails {
-  requestId: string;
-  pickupDate: string;
-  pickupTime: string;
-  address: string;
-  amount: number;
-}
-
-const Success = () => {
+const Success: React.FC = () => {
   const { requestId } = useParams();
   const navigate = useNavigate();
-  //   const [details, setDetails] = useState<SuccessDetails | null>(null);
-  const [details, setDetails] = useState<SuccessDetails>({
-    requestId: '123456789',
-    pickupDate: '12/10/2024',
-    pickupTime: '02:00',
-    address: '123 Main St, Apt 4B, New York, NY 10001',
-    amount: 500
-  });
+  
 
   useEffect(() => {
     const fetchSuccessDetails = async () => {

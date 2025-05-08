@@ -1,11 +1,14 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom';
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import AdminUsersList from '../pages/admin/AdminUsersList';
-import AdminLogin from '../pages/admin/AdminLogin';
 
 import AdminProtectedRoute from '../ProtectedRoutes/AdminProtectedRoute';
 import AdminLoginProtector from '../ProtectedRoutes/AdminLoginProtector';
+import Layout from '../components/admin/layout/Layout';
+import Error404 from '../components/common/Error404';
+
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminUsersList from '../pages/admin/AdminUsersList';
+import AdminLogin from '../pages/admin/AdminLogin';
 import AdminCollectorsList from '../pages/admin/AdminCollectorsList';
 import AdminCollectorVerification from '../pages/admin/AdminCollectorVerification';
 import AdminWasteCategories from '../pages/admin/AdminWasteCategories';
@@ -14,8 +17,9 @@ import AdminServiceAreas from '../pages/admin/AdminServiceAreas';
 import AdminPricing from '../pages/admin/AdminPricing';
 import AdminCollectionHistories from '../pages/admin/AdminCollectionHistories';
 import AdminCollectionDetails from '../pages/admin/AdminCollectionDetails';
+import AdminSettings from '../pages/admin/AdminSettings';
 import AdminChat from '../pages/admin/AdminChat';
-import Layout from '../components/admin/layout/Layout';
+
 
 const AdminRoutes: React.FC = () => {
     return (
@@ -37,9 +41,10 @@ const AdminRoutes: React.FC = () => {
                     <Route path='/collections' element={<AdminCollectionHistories />} />
                     <Route path='/collection' element={<AdminCollectionDetails />} />
                     <Route path='/chat' element={<AdminChat />} />
-
+                    <Route path='/settings' element={<AdminSettings />} />
                 </Route>
             </Route>
+            <Route path="*" element={<Error404 role='admin' />} />
         </Routes>
     )
 }

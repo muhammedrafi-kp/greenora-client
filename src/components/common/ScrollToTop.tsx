@@ -5,7 +5,7 @@ const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0); // Scroll to top when route changes
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   return null;

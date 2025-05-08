@@ -8,8 +8,6 @@ interface LayoutProps {
     children: React.ReactNode;
 }
 
-import Breadcrumbs from '../../admin/Breadcrumbs';
-
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -23,9 +21,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {isSidebarOpen && (
                 <div className="fixed inset-0 z-20 bg-black opacity-50 md:hidden" onClick={toggleSidebar}></div>
             )}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden custom-scrollbar">
                 <Navbar toggleSidebar={toggleSidebar} />
-                {/* <Breadcrumbs/> */}
                 {children}
             </div>
         </div>

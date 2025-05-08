@@ -55,43 +55,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                     <h1 className="text-2xl font-bold text-white">Greenora Admin</h1>
                 </div>
 
-                {/* Sidebar Menu */}
-                {/* <nav className="p-4">
-                    <ul className="space-y-2">
-                        {[
-                            { icon: <FaHome />, text: 'Dashboard', path: '/admin' },
-                            { icon: <FaUsers />, text: 'Users', path: '/admin/users' },
-                            { icon: <FaPeopleGroup />, text: 'Collectors', path: '/admin/collectors' },
-                            { icon: <BiSolidCategory />, text: 'Categories', path: '/admin/categories' },
-                            { icon: <FaClipboardList />, text: 'Requests', path: '/admin/requests' },
-                            { icon: <FaCog />, text: 'Settings', path: '/admin/sett' },
-                            
-                        ].map((item, index) => (
-                            <li key={index}>
-                                <div
-                                    className={`flex items-center space-x-3 text-white/80 p-4 hover:bg-[#173C52] hover:text-white 
-                                    rounded-lg cursor-pointer transition-all duration-200 group
-                                    ${activePath === item.path ? 'bg-[#173C52] text-white' : ''}`}
-                                    onClick={() => {
-                                        setActivePath(item.path);
-                                        navigate(item.path);
-                                    }}
-                                >
-                                    <span className="group-hover:scale-110 transition-transform duration-200">
-                                        {item.icon}
-                                    </span>
-                                    <span>{item.text}</span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </nav> */}
-
                 <nav className="p-4">
                     <ul className="space-y-2">
                         <li>
                             <div
-                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center space-x-3 text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath === '/admin' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
@@ -107,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                         </li>
                         <li>
                             <div
-                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center space-x-3 text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath === '/admin/users' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
@@ -123,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                         </li>
                         <li>
                             <div
-                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center space-x-3 text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath === '/admin/collectors' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
@@ -140,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                         {/* Categories Dropdown */}
                         <li>
                             <div
-                                className={`flex items-center justify-between text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center justify-between text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath.startsWith('/admin/categories') ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
@@ -164,7 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                     ].map((item, index) => (
                                         <li key={index}>
                                             <div
-                                                className={`flex items-center space-x-3 text-white/80 p-2 hover:bg-[#173C52] hover:text-white 
+                                                className={`flex items-center space-x-3 text-white/80 font-semibold p-2 hover:bg-[#173C52] hover:text-white 
                                                 rounded-lg cursor-pointer transition-all duration-200
                                                 ${activePath === item.path ? 'bg-[#173C52] text-white' : ''}`}
                                                 onClick={(e) => {
@@ -183,7 +151,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
                         <li>
                             <div
-                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center space-x-3 text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath === '/admin/service-areas' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
@@ -216,7 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                         </li> */}
                         <li>
                             <div
-                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center space-x-3 text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath === '/admin/collections' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
@@ -230,9 +198,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 <span>Collection Requests</span>
                             </div>
                         </li>
-                        {/* <li>
+                        <li>
                             <div
-                                className={`flex items-center space-x-3 text-white/80 p-3 hover:bg-[#173C52] hover:text-white 
+                                className={`flex items-center space-x-3 text-white/80 font-semibold p-3 hover:bg-[#173C52] hover:text-white 
                                 rounded-lg cursor-pointer transition-all duration-200 group
                                 ${activePath === '/admin/settings' ? 'bg-[#173C52] text-white' : ''}`}
                                 onClick={() => {
@@ -245,7 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 </span>
                                 <span>Settings</span>
                             </div>
-                        </li> */}
+                        </li>
                     </ul>
                 </nav>
 

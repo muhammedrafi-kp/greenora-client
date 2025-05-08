@@ -3,32 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { MapPin, Package } from 'lucide-react';
-import { getCategories, calculatePickupCost, getDistrictAndServiceArea } from '../../../services/userService';
+import { getDistrictAndServiceArea } from '../../../services/locationService';
+import { getCategories, calculatePickupCost } from "../../../services/collectionService";
 import { setStep, setCost } from '../../../redux/pickupSlice';
+import { ICollection, IItem, ICategory } from '../../../types/collection';
 
-interface ICollectionData {
-  type: "waste" | "scrap";
-  districtId: string;
-  serviceAreaId: string;
-  address: object;
-  items: {
-    categoryId: string;
-    name: string;
-    rate: number;
-    qty: number;
-  }[];
-  estimatedCost: number;
-  preferredDate: string;
-  instructions?: string;
-}
+// interface ICollectionData {
+//   type: "waste" | "scrap";
+//   districtId: string;
+//   serviceAreaId: string;
+//   address: object;
+//   items: {
+//     categoryId: string;
+//     name: string;
+//     rate: number;
+//     qty: number;
+//   }[];
+//   estimatedCost: number;
+//   preferredDate: string;
+//   instructions?: string;
+// }
 
-interface ICategory {
-  _id: string;
-  name: string;
-  type: "waste" | "scrap";
-  description: string;
-  rate: number;
-}
+// interface ICategory {
+//   _id: string;
+//   name: string;
+//   type: "waste" | "scrap";
+//   description: string;
+//   rate: number;
+// }
 
 interface IAreaNames {
   district: string;
@@ -42,9 +44,11 @@ const Review = () => {
   const pickupRequest = useSelector((state: any) => state.pickup.pickupRequest);
   const pickupType = pickupRequest.type;
   const address = pickupRequest.address;
-  const details = pickupRequest.details;
+  const details: { items: IItem[], preferredDate: string, instructions: string } = pickupRequest.details;
   const districtId = pickupRequest.district;
   const serviceAreaId = pickupRequest.serviceArea;
+
+  console.log("details", details);
 
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -53,7 +57,7 @@ const Review = () => {
     serviceArea: ''
   });
 
-  const [collectionData, setCollectionData] = useState<ICollectionData>({
+  const [collectionData, setCollectionData] = useState<Partial<ICollection>>({
     "type": pickupType,
     "districtId": districtId,
     "serviceAreaId": serviceAreaId,
@@ -87,8 +91,8 @@ const Review = () => {
     try {
       setIsLoading(true);
       console.log("request.items :", collectionData.items);
-      const response = await calculatePickupCost(collectionData.items);
-      console.log("response", response);
+      const response = await calculatePickupCost(collectionData.items as IItem[]);
+      console.log("pickup cost response :", response);
       if (response.success) {
         setCollectionData({ ...collectionData, estimatedCost: response.data });
       } else {
@@ -135,7 +139,7 @@ const Review = () => {
   }
 
   const handleConfirm = async () => {
-    dispatch(setCost({ cost: collectionData.estimatedCost }));
+    dispatch(setCost({ cost: collectionData.estimatedCost as number }));
     dispatch(setStep({ step: 5 }));
     navigate('/pickup/payment', {
       state: {

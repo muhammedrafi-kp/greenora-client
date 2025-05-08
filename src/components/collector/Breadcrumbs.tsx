@@ -8,8 +8,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({title}) => {
     return (
         <>
             <div className='flex items-center justify-start px-6 py-4'>
-                <p className='text-md md:text-2xl font-bold text-gray-800'>{title}</p>
-                {/* <p className='text-md md:text-lg text-gray-700'>breadcrumbs</p> */}
+                <p className='text-md md:text-xl font-bold text-gray-800'>{title}</p>
             </div>
         </>
     )

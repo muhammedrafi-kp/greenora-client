@@ -1,18 +1,19 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom';
 
+import UserProtectedRoute from '../ProtectedRoutes/UserProtectedRoute';
+import Layout from '../components/user/Layout';
+
 import UserHome from '../pages/user/UserHome';
 import UserResetPassword from '../pages/user/UserResetPassword';
 import UserPricing from '../pages/user/UserPricing';
 import UserCollectionDetails from '../pages/user/UserCollectionDetails';
 import UserTrackingCollector from '../pages/user/UserTrackingCollector';
-import GeoLocationTracker from '../components/user/GeoLocationTracker';
 
 import UserAccount from '../pages/user/UserAccount';
 import UserActivity from '../pages/user/UserActivity';
 import UserProfile from '../pages/user/UserProfile';
 import UserWasteCollectionHistory from '../pages/user/UserWasteCollectionHistory';
-import UserAddressess from '../pages/user/UserAddress';
 import UserCharges from '../pages/user/UserCharges';
 import UserWallet from '../pages/user/UserWallet';
 import UserNotifications from '../pages/user/UserNotifications';
@@ -25,26 +26,25 @@ import UserPickupReview from '../pages/user/UserPickupReview';
 import UserPickupPayment from '../pages/user/UserPickupPayment';
 import UserPickupSuccess from '../pages/user/UserPickupSuccess';
 import UserPickupFailure from '../pages/user/UserPickupFailure';
-import UserProtectedRoute from '../ProtectedRoutes/UserProtectedRoute';
-import Layout from '../components/user/Layout';
+
+
+import Error404 from '../components/common/Error404';
+
+
 const UserRoutes: React.FC = () => {
     return (
         <>
             <Routes>
                 <Route element={<Layout />}>
+
                     <Route path='/' element={<UserHome />} />
                     <Route path='/reset-password' element={<UserResetPassword />} />
                     <Route element={<UserProtectedRoute />}>
-
-
-
                         <Route path='/account' element={<UserAccount />} >
                             {/* <Route index element={<UserActivity />} /> */}
                             <Route index element={<UserProfile />} />
-
                             {/* <Route  path='profile' element={<UserProfile />} /> */}
                             <Route path='collections' element={<UserWasteCollectionHistory />} />
-                            <Route path='address' element={<UserAddressess />} />
                             <Route path='charges' element={<UserCharges />} />
                             <Route path='wallet' element={<UserWallet />} />
                             <Route path='notifications' element={<UserNotifications />} />
@@ -53,7 +53,6 @@ const UserRoutes: React.FC = () => {
                         <Route path='/pricing' element={<UserPricing />} />
                         <Route path='/collection/details' element={<UserCollectionDetails />} />
                         <Route path='/collection/track-collector' element={<UserTrackingCollector />} />
-                        <Route path='/location' element={<GeoLocationTracker />} />
                         <Route path='/pickup' element={<UserPickupLayout />}>
                             <Route index element={<UserPickupType />} />
                             <Route path="address" element={<UserPickupAddress />} />
@@ -66,6 +65,7 @@ const UserRoutes: React.FC = () => {
 
                     </Route>
                 </Route>
+                <Route path="*" element={<Error404 role='user' />} />
             </Routes>
 
         </>

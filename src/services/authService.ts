@@ -1,4 +1,4 @@
-import { IUserSignUpData, ICollectorSignUpData } from "../interfaces/interfaces";
+import { IUserSignUpData, ICollectorSignUpData } from "../types/user";
 import { publicApiClient } from "../apis/api";
 import { apiClient } from "../apis/api";
 
@@ -126,6 +126,7 @@ export const googleCallbackCollector = async (credential: string) => {
         throw error;
     }
 };
+
 
 //common auth apis
 export const changePassword = async (role: string, currentPassword: string, newPassword: string) => {

@@ -1,5 +1,5 @@
 import { apiClient } from "../apis/api";
-
+import { IItem } from "../types/collection";
 
 export const addCategory = async (categoryData: object) => {
   try {
@@ -11,7 +11,7 @@ export const addCategory = async (categoryData: object) => {
   }
 }
 
-export const getCategories = async (type: string) => {
+export const getCategories = async (type?: string) => {
   try {
     const response = await apiClient.get(`/request-service/category/categories?type=${type}`);
     return response.data;
@@ -20,6 +20,7 @@ export const getCategories = async (type: string) => {
     throw new Error('Failed to fetch waste categories.');
   }
 }
+
 
 export const updateCategory = async (categoryId: string, categoryData: object) => {
   try {
@@ -42,8 +43,27 @@ export const deleteCategory = async (categoryId: string) => {
 }
 
 
+export const calculatePickupCost = async (items: IItem[]) => {
+  try {
+      console.log("items:", items);
+      const response = await apiClient.post('/request-service/category/total-cost', { items });
+      return response.data;
+  } catch (error) {
+      console.error("Error calculating pickup cost:", error);
+      throw error;
+  }
+}
 
 
+export const completeCollection = async (collectionId: string, formData: FormData) => {
+  try {
+      const response = await apiClient.patch(`/request-service/collection/${collectionId}`, formData);
+      return response.data;
+  } catch (error) {
+      console.error("Error processing payment:", error);
+      throw error;
+  }
+}
 
 export const scheduleCollection = async (collectionId: string, collectorId: string, userId: string, preferredDate: string) => {
   try {
@@ -96,7 +116,6 @@ export const getCollectionRequests = async (params: object) => {
   }
 }
 
-
 export const getRevenueData = async (params: object) => {
   try {
     const response = await apiClient.get('/request-service/collection/revenue', { params });
@@ -106,7 +125,6 @@ export const getRevenueData = async (params: object) => {
     throw error;
   }
 }
-
 
 export const getAssignedCollections = async (params: { 
   status?: string;

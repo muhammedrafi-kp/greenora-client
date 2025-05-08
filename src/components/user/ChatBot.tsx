@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IoMdClose } from "react-icons/io";
 import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { FaRobot, FaUser } from "react-icons/fa";
 import { BiMessageRoundedDots, BiCopy } from "react-icons/bi";
@@ -9,8 +8,10 @@ import io from 'socket.io-client';
 import { getUserData, getAdminData } from '../../services/userService';
 import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
 import ReactMarkdown from 'react-markdown';
-import { IUserData } from '../../interfaces/interfaces';
+import { IUser } from '../../types/user';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { IMessage } from '../../types/chat';
+
 import "../../styles/scrollbar.css";
 
 const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
@@ -18,18 +19,7 @@ const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
     withCredentials: true,
 });
 
-// Interface for database messages
-interface IMessage {
-    _id: string;
-    chatId: string;
-    message: string;
-    timestamp: Date;
-    senderId: string;
-    receiverId: string;
-    isRead?: boolean;
-}
 
-// Define quickRepliesMap type before using it in IBotMessage
 const quickRepliesMap = {
     initial: [
         "How can I recycle?",
@@ -81,7 +71,7 @@ const ChatBot: React.FC = () => {
     const [botMessages, setBotMessages] = useState<IBotMessage[]>([]);
     const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [chatMode, setChatMode] = useState<'bot' | 'admin'>('bot');
-    const [user, setUser] = useState<IUserData | null>(null);
+    const [user, setUser] = useState<IUser| null>(null);
     const [adminId, setAdminId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
@@ -98,7 +88,6 @@ const ChatBot: React.FC = () => {
         }
     }, [botMessages, chatMessages]);
 
-    // Add new useEffect for chat mode changes
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });

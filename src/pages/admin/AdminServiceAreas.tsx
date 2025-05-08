@@ -11,4 +11,4 @@ const AdminServiceAreas: React.FC = () => {
     )
 }
 
-export default AdminServiceAreas
+export default AdminServiceAreas;

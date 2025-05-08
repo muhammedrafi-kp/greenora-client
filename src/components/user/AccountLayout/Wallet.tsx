@@ -4,24 +4,10 @@ import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
 import Modal from '../../common/Modal';
 import WalletSkeleton from '../skeltons/WalletSkelton';
-import { getWalletData, initiateAddMoney, verifyAddMoney, withdrawMoney } from '../../../services/userService';
+import { getWalletData, initiateAddMoney, verifyAddMoney, withdrawMoney } from '../../../services/paymentService';
 import { toast } from 'react-hot-toast';
+import { IWallet } from '../../../types/payment';
 
-export interface ITransaction {
-  _id: string;
-  type: "debit" | "credit" | "refund";
-  amount: number;
-  timestamp: Date;
-  status: "pending" | "completed" | "failed";
-  serviceType: string;
-}
-
-interface IWallet {
-  userId: string;
-  balance: number;
-  transactions: ITransaction[];
-  status: "active" | "suspended" | "closed";
-}
 
 const Wallet: React.FC = () => {
   const [walletData, setWalletData] = useState<IWallet | null>(null);
@@ -53,6 +39,7 @@ const Wallet: React.FC = () => {
     setLoading(true);
     try {
       const response = await getWalletData();
+      console.log("wallet data:", response);
       if (response.success) {
         setWalletData(response.data);
       }
@@ -70,7 +57,6 @@ const Wallet: React.FC = () => {
   const filterTransactions = () => {
     if (!walletData?.transactions) return [];
 
-    // Sort by timestamp descending (latest first)
     const sorted = [...walletData.transactions].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
@@ -102,7 +88,6 @@ const Wallet: React.FC = () => {
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isWithdrawal = false) => {
     const value = e.target.value;
 
-    // Allow only numbers
     if (!/^\d*$/.test(value)) {
       setError("Please enter numbers only");
       return;
@@ -193,7 +178,7 @@ const Wallet: React.FC = () => {
       <div>
         <div className="flex items-center gap-2 text-green-800">
           <TbCoinRupeeFilled className="text-xl" />
-          <h3 className="font-semibold text-lg">Balance</h3>
+          <h3 className="font-bold text-lg">Balance</h3>
         </div>
         <div className="text-2xl font-bold text-green-900 mt-2">
           ₹{walletData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
@@ -202,13 +187,13 @@ const Wallet: React.FC = () => {
       <div className="flex space-x-4">
         <button
           onClick={handleWithdraw}
-          className="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition-colors"
+          className="bg-red-800 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-900 transition-colors"
         >
           Withdraw
         </button>
         <button
           onClick={handleAddMoney}
-          className="bg-green-800 text-white px-4 py-2 rounded-lg hover:bg-green-900 transition-colors"
+          className="bg-green-800 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-900 transition-colors"
         >
           Add Money
         </button>
@@ -249,7 +234,10 @@ const Wallet: React.FC = () => {
                   {new Date(transaction.timestamp).toLocaleDateString('en-US', {
                     day: 'numeric',
                     month: 'long',
-                    year: 'numeric'
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
                   })}
                 </p>
               </div>
@@ -269,7 +257,7 @@ const Wallet: React.FC = () => {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="lg:text-lg xs:text-base text-sm font-semibold flex items-center gap-2">
+        <h2 className="lg:text-xl xs:text-base text-sm font-bold flex items-center gap-2">
           {/* <FaWallet /> */}
           My Wallet
         </h2>
@@ -291,7 +279,7 @@ const Wallet: React.FC = () => {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="px-3 pr-8 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none bg-white"
+                    className="px-3 pr-8 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none bg-white"
                   >
                     <option value="all">All</option>
                     <option value="credit">Credit</option>

@@ -6,33 +6,27 @@ import { TbCoinRupeeFilled } from "react-icons/tb";
 // import { VscGraph } from "react-icons/vsc";
 import { Camera, CircleUserRound } from 'lucide-react';
 import { getUserData, uploadProfileImage } from "../../../services/userService";
-import { IUserData } from '../../../interfaces/interfaces';
+import { IUser } from '../../../types/user';
 import SidebarSkeleton from '../skeltons/SidebarSkeleton';
 import { Logout } from "../../../redux/authSlice";
 import { NavLink } from 'react-router-dom';
 
 const navLinks = [
   // { icon: <VscGraph />, label: 'Activity', path: '/account/', end: true },
-  // { icon: <FaUser />, label: 'Profile', path: '/account/profile',end: true },
   { icon: <FaUser />, label: 'Profile', path: '/account/',end: true },
   { icon: <FaClipboardList />, label: 'Collection History', path: '/account/collections' },
   { icon: <FaWallet />, label: 'Wallet', path: '/account/wallet' },
   { icon: <TbCoinRupeeFilled />, label: 'Charges', path: '/account/charges' },
   { icon: <FaBell />, label: 'Notifications', path: '/account/notifications' },
-  // { icon: <FaLock />, label: 'Security', path: '/account/security' },
 ];
 
 const Sidebar: React.FC = () => {
-  const [userData, setUserData] = useState<IUserData | null>(null);
+  const [userData, setUserData] = useState<IUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isUploadingToServer, setIsUploadingToServer] = useState<boolean>(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
   const dispatch = useDispatch();
-  // const navigate = useNavigate();
-  // const location = useLocation();
-
-  // const activeTab = location.pathname;
 
   useEffect(() => {
     const handleResize = () => {
@@ -154,7 +148,7 @@ const Sidebar: React.FC = () => {
             <h2 className="mt-4 xs:text-base text-sm font-semibold">
               {userData?.name}
             </h2>
-            <p className="text-sm text-gray-500">{userData?.email}</p>
+            <p className=" text-gray-600">{userData?.email}</p>
           </div>
         )}
 
@@ -165,7 +159,7 @@ const Sidebar: React.FC = () => {
               to={item.path}
               end={item.end}
               className={({ isActive }) => `
-                                flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm text-gray-800 rounded-lg transition-colors
+                                flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm font-medium text-gray-800 rounded-lg transition-colors
                                 ${isLargeScreen && isActive ? 'bg-green-100 text-green-800' : 'hover:bg-gray-100'}
                             `}
             >
@@ -174,7 +168,7 @@ const Sidebar: React.FC = () => {
           ))}
           <button
             onClick={() => dispatch(Logout())}
-            className="flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+            className="flex items-center gap-3 w-full sm:p-3 p-2 sm:text-base text-sm font-medium rounded-lg text-red-600 hover:bg-red-100 transition-colors"
           >
             <FaSignOutAlt /> Logout
           </button>

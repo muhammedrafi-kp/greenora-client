@@ -81,7 +81,6 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
     };
 
     const handleResendOTP = async () => {
-
         const response = await resendOtpUser(email);
         console.log(response);
         setOtp(['', '', '', '']);

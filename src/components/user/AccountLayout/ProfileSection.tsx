@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, Phone, Lock, Camera } from 'lucide-react';
+import { User, Mail, Phone, Lock, Camera } from 'lucide-react';
 import { getUserData, updateUserData } from "../../../services/userService";
-import { IUserData } from '../../../interfaces/interfaces';
+import { IUser } from '../../../types/user';
 import ProfileSkeleton from '../skeltons/ProfileSkeleton';
 import { ChangePassword } from '../../common/ChangePassword';
 import toast from 'react-hot-toast';
-
 
 
 interface FormErrors {
@@ -13,9 +12,8 @@ interface FormErrors {
     phone?: string;
 }
 
-    const ProfileSection: React.FC = () => {
-
-    const [userData, setUserData] = useState<IUserData | null>(null);
+const ProfileSection: React.FC = () => {
+    const [userData, setUserData] = useState<IUser | null>(null);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -31,7 +29,7 @@ interface FormErrors {
         setIsLoading(true);
         try {
             const response = await getUserData();
-            if(response.success){
+            if (response.success) {
                 setUserData(response.data);
                 console.log(response.data);
             }
@@ -175,7 +173,7 @@ interface FormErrors {
     return (
         <div>
             <div className="mb-6">
-                <h2 className="lg:text-lg xs:text-base text-sm sm:text-left text-center font-semibold">Profile Details</h2>
+                <h2 className="lg:text-xl xs:text-base text-sm sm:text-left text-center font-bold">Profile Details</h2>
             </div>
             <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="lg:hidden flex flex-col sm:items-start items-center mb-6">
@@ -205,7 +203,11 @@ interface FormErrors {
 
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                     <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                        <label className="block xs:text-base text-sm font-medium text-gray-700 mb-1">
+                            <span className="flex items-center gap-2">
+                                <User className="w-4 h-4" /> Full Name
+                            </span>
+                        </label>
                         <input
                             type="text"
                             name="name"
@@ -213,7 +215,7 @@ interface FormErrors {
                             disabled={!isEditing}
                             onChange={handleInputChange}
                             onBlur={handleBlur}
-                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
+                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-medium border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
                         />
                         {errors.name && (
                             <p className="mt-1 text-xs text-red-700">{errors.name}</p>
@@ -223,7 +225,7 @@ interface FormErrors {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                        <label className="block xs:text-base text-sm font-medium text-gray-700 mb-1">
                             <span className="flex items-center gap-2">
                                 <Mail className="w-4 h-4" /> Email Address
                             </span>
@@ -232,11 +234,11 @@ interface FormErrors {
                             type="email"
                             value={userData?.email}
                             disabled={true}
-                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                            className="w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-medium border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
                         />
                     </div>
                     <div>
-                        <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
+                        <label className="block xs:text-base text-sm font-medium text-gray-700 mb-1">
                             <span className="flex items-center gap-2">
                                 <Phone className="w-4 h-4" /> Phone Number
                             </span>
@@ -248,7 +250,7 @@ interface FormErrors {
                             disabled={!isEditing}
                             onChange={handleInputChange}
                             onBlur={handleBlur}
-                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border ${errors.phone ? 'border-red-700' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
+                            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-medium border ${errors.phone ? 'border-red-700' : 'border-gray-300'} rounded-lg focus:border-transparent ${!isEditing ? 'bg-gray-50' : ''}`}
                         />
                         {errors.phone && (
                             <p className="mt-1 text-xs text-red-700">{errors.phone}</p>
@@ -260,12 +262,12 @@ interface FormErrors {
                     <button
                         type="button"
                         onClick={() => setShowChangePassword(true)}
-                        className="flex items-center gap-2 px-4 xs:py-2 py-1 xs:text-base text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                        className="flex items-center gap-2 px-4 xs:py-2 py-1 xs:text-base text-xs font-semibold bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                     >
                         <Lock className="xs:w-4 xs:h-4 w-3 h-3" />
                         Change Password
                     </button>
-                </div> 
+                </div>
                 <div className="flex justify-end gap-4 pt-6">
                     {isEditing ? (
                         <>
@@ -289,7 +291,7 @@ interface FormErrors {
                         <button
                             type="button"
                             onClick={() => setIsEditing(true)}
-                            className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors"
+                            className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs font-semibold bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors"
                         >
                             Edit Profile
                         </button>
@@ -298,10 +300,10 @@ interface FormErrors {
             </form>
 
             {showChangePassword && (
-                <ChangePassword 
+                <ChangePassword
                     isOpen={showChangePassword}
-                    onClose={() => setShowChangePassword(false)} 
-                    role="user" 
+                    onClose={() => setShowChangePassword(false)}
+                    role="user"
                 />
             )}
         </div>

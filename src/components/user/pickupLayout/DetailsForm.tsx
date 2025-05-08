@@ -5,23 +5,19 @@ import { toast } from 'react-hot-toast';
 import { ChevronUp, ChevronDown, X } from 'lucide-react';
 import { setStep, setDetails } from '../../../redux/pickupSlice';
 import PriceTable from '../PriceTable';
-import { getCategories } from '../../../services/userService';
+import { getCategories } from '../../../services/collectionService';
+import { ICategory, IItem } from '../../../types/collection';
 
-export interface ICategory {
-  _id: string;
-  name: string;
-  type: "waste" | "scrap";
-  description: string;
-  rate: number;
-}
+// export interface ICategory {
+//   _id: string;
+//   name: string;
+//   type: "waste" | "scrap";
+//   description: string;
+//   rate: number;
+// }
 
 interface IFormData {
-  items: {
-    categoryId: string;
-    name: string;
-    rate: number;
-    qty: number;
-  }[];
+    items: IItem[];
   preferredDate: string;
   instructions: string;
 }
@@ -34,10 +30,8 @@ const DetailsForm = () => {
   const pickupType = useSelector((state: any) => state.pickup.pickupRequest.type);
   const details = useSelector((state: any) => state.pickup.pickupRequest.details);
 
-  // console.log("pickupType", pickupType);
   console.log("details", details);
-  // console.log(typeof details);
-  // States
+ 
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPriceTable, setShowPriceTable] = useState(false);
@@ -113,7 +107,7 @@ const DetailsForm = () => {
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const response = await getCategories();
+      const response = await getCategories(pickupType);
       console.log("response", response);
       if (response.success) {
         console.log(response.data);

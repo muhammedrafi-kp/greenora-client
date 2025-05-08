@@ -22,7 +22,7 @@ const Contact: React.FC = () => {
             </p>
             <button 
               onClick={() => navigate('/collector/chat')}
-              className="bg-green-900 text-white text-sm sm:text-base py-1.5 sm:py-2 px-4 sm:px-6 rounded-full hover:bg-green-800 transition-colors"
+              className="bg-green-900 text-white text-sm sm:text-base font-medium py-1.5 sm:py-2 px-4 sm:px-6 rounded-full hover:bg-green-800 transition-colors"
             >
               Start Chat
             </button>
@@ -41,7 +41,7 @@ const Contact: React.FC = () => {
             </p>
             <a 
               href="tel:+1234567890"
-              className="bg-green-900 text-white text-sm sm:text-base py-1.5 sm:py-2 px-4 sm:px-6 rounded-full hover:bg-green-800 transition-colors"
+              className="bg-green-900 text-white text-sm sm:text-base font-medium py-1.5 sm:py-2 px-4 sm:px-6 rounded-full hover:bg-green-800 transition-colors"
             >
               Call
             </a>

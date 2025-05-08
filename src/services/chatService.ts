@@ -1,5 +1,5 @@
 import { apiClient } from "../apis/api";
-import { IChat } from "../interfaces/interfaces";
+import { IChat } from "../types/chat";
 
 
 export const initiateChat = async (chatData: IChat) => {
@@ -22,3 +22,12 @@ export const getGreenoBotResponse = async (prompt: string) => {
     }
 }
 
+export const getChats = async () => {
+    try {
+        const response = await apiClient.get(`/chat-service/chats`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching chat messages:', error);
+        throw new Error('Failed to fetch chat messages.');
+    }
+}

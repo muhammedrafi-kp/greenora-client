@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Check, X } from "lucide-react"
-import { getPricingPlans } from "../../services/userService";
+import { getPricingPlans } from "../../services/subscriptionService";
 
 export interface ISubscriptionPlan {
     _id: string;

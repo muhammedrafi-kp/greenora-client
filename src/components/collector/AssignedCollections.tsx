@@ -4,6 +4,7 @@ import { MapPin, Calendar, Package, Clock, Phone, User, Filter, ChevronDown } fr
 import { getAssignedCollections } from '../../services/collectionService';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import '../../styles/scrollbar.css';
 
 interface ICollection {
   _id: string;
@@ -177,18 +178,18 @@ const AssignedCollections: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-900"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-800 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <main className="flex-1 overflow-x-hidden overflow-y-auto">
-      <div className="md:p-6 xs:p-4 p-3 max-w-7xl mx-auto">
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-            <div className="flex gap-2 flex-wrap">
+    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 custom-scrollbar">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-2">
               {[
                 { value: 'all', label: 'All' },
                 { value: 'scheduled', label: 'Scheduled' },
@@ -197,10 +198,11 @@ const AssignedCollections: React.FC = () => {
               ].map((status) => (
                 <button
                   key={status.value}
-                  className={`px-3 py-1 rounded-lg text-sm font-medium ${activeFilter === status.value
-                    ? 'bg-green-800 text-white'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                    }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    activeFilter === status.value
+                      ? 'bg-green-800 text-white shadow-md'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  }`}
                   onClick={() => handleFilterClick(status.value)}
                 >
                   {status.label}
@@ -209,12 +211,12 @@ const AssignedCollections: React.FC = () => {
             </div>
 
             <div className="relative">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="relative">
                   <select
                     value={dateFilterType}
                     onChange={(e) => handleDateFilterChange(e.target.value)}
-                    className="appearance-none px-4 py-2 rounded-lg text-sm border bg-white border-gray-300 pr-8"
+                    className="appearance-none px-4 py-2 rounded-lg text-sm border bg-white border-gray-300 pr-8 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-transparent"
                   >
                     <option value="all">All Dates</option>
                     <option value="today">Today</option>
@@ -228,7 +230,7 @@ const AssignedCollections: React.FC = () => {
                 {(dateFilterType === 'custom' || dateFilterType === 'range') && (
                   <div className="flex items-center gap-2">
                     <button
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border bg-white border-gray-300"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border bg-white border-gray-300 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-transparent"
                       onClick={() => {
                         if (dateFilterType === 'custom') {
                           setIsDatePickerOpen(!isDatePickerOpen);
@@ -251,7 +253,7 @@ const AssignedCollections: React.FC = () => {
 
                     {(selectedDate || endDate) && (
                       <button
-                        className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                        className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                         onClick={clearDateFilter}
                       >
                         Clear
@@ -262,7 +264,7 @@ const AssignedCollections: React.FC = () => {
               </div>
 
               {isDatePickerOpen && (
-                <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-lg border border-gray-200">
+                <div className="absolute z-10 mt-2 bg-white shadow-xl rounded-lg border border-gray-200">
                   <DatePicker
                     selected={selectedDate}
                     onChange={(date: Date | null) => {
@@ -276,7 +278,7 @@ const AssignedCollections: React.FC = () => {
               )}
 
               {isDateRangePickerOpen && (
-                <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-lg border border-gray-200">
+                <div className="absolute z-10 mt-2 bg-white shadow-xl rounded-lg border border-gray-200">
                   <DatePicker
                     selected={selectedDate}
                     onChange={(dates: [Date | null, Date | null]) => {
@@ -299,7 +301,7 @@ const AssignedCollections: React.FC = () => {
           </div>
 
           {(dateFilterType !== 'all') && (
-            <div className="mb-4 text-sm text-gray-600">
+            <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
               Showing collections for: <span className="font-medium">
                 {dateFilterType === 'today' && 'Today'}
                 {dateFilterType === 'yesterday' && 'Yesterday'}
@@ -312,56 +314,57 @@ const AssignedCollections: React.FC = () => {
         </div>
 
         {collections.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No collections found for the selected filters.
+          <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+            <div className="text-gray-500 text-lg">No collections found for the selected filters.</div>
+            <p className="text-gray-400 mt-2">Try adjusting your filters to see more results.</p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {collections.map((collection) => (
-              <div key={collection._id} className="bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow">
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-4">
+              <div key={collection._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">#{collection.collectionId.toUpperCase()}</h3>
-                      <p className="text-sm text-gray-600">{collection.type === 'waste' ? 'Waste Collection' : 'Scrap Collection'}</p>
+                      <h3 className="text-xl font-semibold text-gray-900">#{collection.collectionId.toUpperCase()}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{collection.type === 'waste' ? 'Waste Collection' : 'Scrap Collection'}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(collection.status)}`}>
+                    <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(collection.status)}`}>
                       {collection.status.charAt(0).toUpperCase() + collection.status.slice(1)}
                     </span>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <User className="w-4 h-4" />
-                        <span>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <User className="w-5 h-5 mt-0.5 text-gray-400" />
+                        <span className="flex-1">
                           {collection.user.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Phone className="w-4 h-4" />
-                        <span>
+                      <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <Phone className="w-5 h-5 mt-0.5 text-gray-400" />
+                        <span className="flex-1">
                           {collection.user.phone}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span>{collection.address.name}, {collection.address.addressLine}, {collection.address.locality}, {collection.address.pinCode}, {collection.address.mobile}</span>
+                      <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <MapPin className="w-5 h-5 mt-0.5 text-gray-400" />
+                        <span className="flex-1">{collection.address.name}, {collection.address.addressLine}, {collection.address.locality}, {collection.address.pinCode}, {collection.address.mobile}</span>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(collection.preferredDate).toLocaleDateString()}</span>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <Calendar className="w-5 h-5 mt-0.5 text-gray-400" />
+                        <span className="flex-1">{new Date(collection.preferredDate).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span>{collection.preferredTime}</span>
+                      <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <Clock className="w-5 h-5 mt-0.5 text-gray-400" />
+                        <span className="flex-1">{collection.preferredTime}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Package className="w-4 h-4" />
-                        <span>
+                      <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <Package className="w-5 h-5 mt-0.5 text-gray-400" />
+                        <span className="flex-1">
                           {collection.items.reduce((total, item) => total + item.qty, 0)}
                           {collection.type === 'waste' ? ' bags' : ' kg'}
                         </span>
@@ -369,14 +372,17 @@ const AssignedCollections: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className="mt-6 flex flex-wrap justify-end gap-3">
                     {collection.status === 'scheduled' &&
                       new Date(collection.preferredDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && (
-                        <button className="px-4 py-2 text-sm bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors">
+                        <button className="px-6 py-2.5 text-sm font-medium bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors focus:outline-none focus:ring-2 focus:ring-green-800 focus:ring-offset-2">
                           Start Collection
                         </button>
                       )}
-                    <button onClick={() => navigate(`/collector/collection-details`, { state: { collection } })} className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <button 
+                      onClick={() => navigate(`/collector/collection-details`, { state: { collection } })} 
+                      className="px-6 py-2.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    >
                       View Details
                     </button>
                   </div>

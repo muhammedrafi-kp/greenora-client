@@ -5,8 +5,8 @@ interface ModalProps {
   onClose: () => void;
   title: string | React.ReactNode;
   description: string;
-  confirmLabel: string| React.ReactNode;
-  cancelLabel?: string;
+  confirmLabel: string | React.ReactNode;
+  cancelLabel?: string | React.ReactNode;
   onConfirm: () => void;
   confirmButtonClass?: string;
   children?: React.ReactNode;
@@ -68,14 +68,14 @@ const Modal: React.FC<ModalProps> = ({
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
             >
               {cancelLabel}
             </button>
             <button
               onClick={onConfirm}
               disabled={isDisabled}
-              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"}
+              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-600 font-medium hover:bg-blue-700 transition-colors"}
             >
               {confirmLabel}
             </button>
