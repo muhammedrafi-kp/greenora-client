@@ -4,6 +4,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { resetPassword } from '../../services/authService';
 import { validatePassword } from '../../utils/validations';
 import toast from 'react-hot-toast';
+import { ApiResponse } from '../../types/common';
 
 interface FormErrors {
     password?: string;
@@ -67,9 +68,9 @@ const ResetPassword: React.FC = () => {
 
         setIsLoading(true);
         try {
-            const response = await resetPassword("user", token!, formData.password);
-            console.log("response :",response);
-            if (response.success) {
+            const res:ApiResponse<null> = await resetPassword("user", token!, formData.password);
+            console.log("response :",res);
+            if (res.success) {
                 toast.success('Password updated');
                 navigate('/');
             }

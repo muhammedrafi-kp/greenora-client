@@ -6,31 +6,10 @@ import { MapPin, Package } from 'lucide-react';
 import { getDistrictAndServiceArea } from '../../../services/locationService';
 import { getCategories, calculatePickupCost } from "../../../services/collectionService";
 import { setStep, setCost } from '../../../redux/pickupSlice';
+import { ApiResponse } from '../../../types/common';
+import { IDistrict, IServiceArea } from '../../../types/location';
 import { ICollection, IItem, ICategory } from '../../../types/collection';
 
-// interface ICollectionData {
-//   type: "waste" | "scrap";
-//   districtId: string;
-//   serviceAreaId: string;
-//   address: object;
-//   items: {
-//     categoryId: string;
-//     name: string;
-//     rate: number;
-//     qty: number;
-//   }[];
-//   estimatedCost: number;
-//   preferredDate: string;
-//   instructions?: string;
-// }
-
-// interface ICategory {
-//   _id: string;
-//   name: string;
-//   type: "waste" | "scrap";
-//   description: string;
-//   rate: number;
-// }
 
 interface IAreaNames {
   district: string;
@@ -71,10 +50,10 @@ const Review = () => {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await getCategories();
-      console.log("response :", response);
-      if (response.success) {
-        setCategories(response.data);
+      const res: ApiResponse<ICategory[]> = await getCategories(pickupType);
+      console.log("categories :", res);
+      if (res.success) {
+        setCategories(res.data);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -111,12 +90,12 @@ const Review = () => {
 
   const fetchDistrictAndServiceArea = async () => {
     try {
-      const response = await getDistrictAndServiceArea(districtId, serviceAreaId);
-      console.log("response :", response)
-      if (response.success) {
+      const res: ApiResponse<IDistrict & IServiceArea> = await getDistrictAndServiceArea(districtId, serviceAreaId);
+      console.log("response :", res)
+      if (res.success) {
         setAreaNames({
-          district: response.district.name,
-          serviceArea: response.serviceArea.name
+          district: res.data.name,
+          serviceArea: res.data.name
         });
       }
     } catch (error) {
@@ -169,30 +148,32 @@ const Review = () => {
           <div className="flex items-start gap-3 pb-4 border-b border-gray-100">
             <MapPin className="w-5 h-5 text-gray-500 mt-1" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Pickup Address</p>
-              <p className="text-sm text-gray-800 mt-1 font-semibold">{address.name}</p>
-              <p className="text-sm text-gray-600 mt-1">{address.addressLine}, {address.locality}</p>
-              <p className="text-sm text-gray-600 mt-1">PIN : {address.pinCode}, Mobile : {address.mobile}</p>
-              <p className="text-sm text-gray-600 mt-1">District : {areaNames.district}</p>
-              <p className="text-sm text-gray-600 mt-1">Service Area : {areaNames.serviceArea}</p>
+              <p className="text-base font-medium text-gray-700">Pickup Address</p>
+              <div className="mt-1 space-y-1 bg-gray-100 px-3 py-1.5 rounded-lg">
+                <p className="text-sm text-gray-800 mt-1 font-semibold">{address.name}</p>
+                <p className="text-sm text-gray-600 mt-1">{address.addressLine}, {address.locality}</p>
+                <p className="text-sm text-gray-600 mt-1">PIN : {address.pinCode}, Mobile : {address.mobile}</p>
+                <p className="text-sm text-gray-600 mt-1">District : {areaNames.district}</p>
+                <p className="text-sm text-gray-600 mt-1">Service Area : {areaNames.serviceArea}</p>
+              </div>
             </div>
           </div>
 
           <div className="flex items-start gap-3 pb-4 border-b border-gray-100">
             <Package className="w-5 h-5 text-gray-500 mt-1" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Pickup Details</p>
+              <p className="text-base font-medium text-gray-700">Pickup Details</p>
               <div className="mt-1 space-y-1">
                 <p className="text-sm text-gray-800 font-semibold capitalize">Type : {pickupType}</p>
-                <p className="text-sm text-gray-600">Items :</p>
+                <p className="text-sm font-medium text-gray-600">Items :</p>
                 <ul className="ml-4">
                   {details.items.map((item: any, index: number) => (
-                    <li key={index} className="text-sm text-green-600">
-                      {getCategoryName(item.categoryId)} - {item.qty} {pickupType === 'waste' ? 'bags' : 'kg'}
+                    <li key={index} className="text-sm bg-green-100 px-3 py-1.5 rounded-lg mt-1">
+                      {getCategoryName(item.categoryId)} - {item.qty} {pickupType === 'waste' ? 'bags' : 'kg'} ( ₹{item.qty * item.rate} )
                     </li>
                   ))}
                 </ul>
-                <p className="text-sm text-gray-600">Preferred Date : {collectionData.preferredDate}</p>
+                <p className="text-sm font-medium text-gray-600">Preferred Date : {collectionData.preferredDate}</p>
                 {collectionData.instructions && (
                   <p className="text-sm text-gray-600">
                     Instructions : {collectionData.instructions}
@@ -220,7 +201,7 @@ const Review = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <p className="text-xs text-blue-700">
+              <p className="text-sm text-blue-700">
                 Only advance payment is required now. Final payment will be calculated based on actual weight/quantity after pickup.
               </p>
             </div>
@@ -232,7 +213,7 @@ const Review = () => {
         <button
           type="button"
           onClick={handleBack}
-          className="w-1/2 border border-gray-300 text-gray-700 py-3 rounded-lg text-sm font-medium"
+          className="w-1/2 border border-gray-300 text-gray-700 py-3 rounded-lg text-md font-medium"
         >
           Back
         </button>
@@ -240,7 +221,7 @@ const Review = () => {
           type="button"
           onClick={handleConfirm}
           disabled={isLoading}
-          className={`w-1/2 bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-sm font-medium
+          className={`w-1/2 bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-md font-medium
             ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           Make advance Payment

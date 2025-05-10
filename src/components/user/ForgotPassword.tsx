@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HiOutlineMail } from "react-icons/hi";
 import toast from 'react-hot-toast';
 import { sendResetLink } from '../../services/authService';
+import { ApiResponse } from '../../types/common';
 
 interface ForgotPasswordProps {
     closeModal: () => void;
@@ -29,9 +30,9 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ closeModal }) => {
         setEmailError(''); 
         setIsLoading(true);
         try {
-            const response = await sendResetLink('user', email);
-            console.log('response :',response);
-            if (response.success) {
+            const res: ApiResponse<null> = await sendResetLink('user', email);
+            console.log('response :',res);
+            if (res.success) {
                 setCurrentStep('success');
             }
         } catch (error: any) {

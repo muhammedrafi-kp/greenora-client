@@ -5,16 +5,9 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt } from "react-icons/fa";
 import { getDistricts, getServiceAreas } from '../../services/locationService';
 import { getRevenueData } from '../../services/collectionService';
+import { ApiResponse } from '../../types/common';
+import { IDistrict, IServiceArea } from '../../types/location';
 
-interface IDistrict {
-  _id: string;
-  name: string;
-}
-
-interface IServiceArea {
-  _id: string;
-  name: string;
-}
 
 interface IRevenueData {
   date: string;
@@ -113,9 +106,9 @@ const AdminDashboard:React.FC = () => {
 
   const fetchDistricts = async () => {
     try {
-      const response = await getDistricts();
-      if (response.success) {
-        setDistricts(response.data);
+      const res: ApiResponse<IDistrict[]> = await getDistricts();
+      if (res.success) {
+        setDistricts(res.data);
       }
     } catch (error) {
       console.log('Failed to fetch districts:',error);
@@ -124,9 +117,9 @@ const AdminDashboard:React.FC = () => {
 
   const fetchServiceAreas = async (district: string) => {
     try {
-      const response = await getServiceAreas(district);
-      if (response.success) {
-        setServiceAreas(response.data);
+      const res: ApiResponse<IServiceArea[]> = await getServiceAreas(district);
+      if (res.success) {
+        setServiceAreas(res.data);
       }
     } catch (error) {
       console.log('Failed to fetch service areas:',error);

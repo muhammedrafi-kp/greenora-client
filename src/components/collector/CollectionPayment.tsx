@@ -3,43 +3,39 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaMoneyBillWave, FaCreditCard, FaCheck } from 'react-icons/fa';
 import { completeCollection } from '../../services/collectionService';
-import { sendPaymentRequest } from '../../services/paymentService';
+import { sendPaymentRequest } from '../../services/collectionService';
+import { ApiResponse } from '../../types/common';
+import { ICollection, IItem } from '../../types/collection';
 
-interface Item {
-    categoryId: string;
-    name: string;
-    rate: number;
-    qty: number;
-}
 
 interface IFormData {
-    items: Item[];
+    items: IItem[];
     proofs: string[];
     notes: string;
 }
 
-interface ICollection {
-    _id: string;
-    collectionId: string;
-    paymentId: string;
-    type: 'waste' | 'scrap';
-    items: Item[];
-    status: string;
-    preferredDate: string;
-    preferredTime: string;
-    address: {
-        name: string;
-        mobile: string;
-        pinCode: string;
-        locality: string;
-        addressLine: string;
-    };
-    proofs: string[];
-    notes?: string;
-    payment?: {
-        advanceAmount: number;
-    };
-}
+// interface ICollection {
+//     _id: string;
+//     collectionId: string;
+//     paymentId: string;
+//     type: 'waste' | 'scrap';
+//     items: IItem[];
+//     status: string;
+//     preferredDate: string;
+//     preferredTime: string;
+//     address: {
+//         name: string;
+//         mobile: string;
+//         pinCode: string;
+//         locality: string;
+//         addressLine: string;
+//     };
+//     proofs: string[];
+//     notes?: string;
+//     payment?: {
+//         advanceAmount: number;
+//     };
+// }
 
 
 const CollectionPayment: React.FC = () => {
@@ -87,8 +83,8 @@ const CollectionPayment: React.FC = () => {
 
     // Calculate remaining amount based on collection type
     const remainingAmount = collection.type === 'scrap'
-        ? totalAmount + advanceAmount  
-        : totalAmount - advanceAmount; 
+        ? totalAmount + advanceAmount
+        : totalAmount - advanceAmount;
 
     const handlePaymentMethodSelect = (method: 'digital' | 'cash') => {
         setSelectedPayment(method);
@@ -97,12 +93,11 @@ const CollectionPayment: React.FC = () => {
     const handleSendPaymentRequest = async () => {
         setIsSendingRequest(true);
         try {
-
             const collectionData = {
                 collectionId: collection.collectionId,
                 items: formData.items,
                 notes: formData.notes,
-                paymentId: collection.paymentId,
+                paymentId: collection.payment?.paymentId,
             } as Partial<ICollection>;
 
             const formDataToSend = new FormData();
@@ -113,9 +108,9 @@ const CollectionPayment: React.FC = () => {
                 formDataToSend.append('collectionProofs', proof);
             });
 
-            const response = await sendPaymentRequest(formDataToSend);
+            const res: ApiResponse<null> = await sendPaymentRequest(formDataToSend);
 
-            console.log("response", response);
+            console.log("response", res);
 
             toast.success('Payment request sent');
         } catch (error) {
@@ -146,14 +141,14 @@ const CollectionPayment: React.FC = () => {
 
             console.log("formDataToSend", formDataToSend)
 
-            const response = await completeCollection(
+            const res: ApiResponse<null> = await completeCollection(
                 collection.collectionId,
                 formDataToSend
             );
 
-            console.log("response :", response);
+            console.log("response :", res);
 
-            if (response.success) {
+            if (res.success) {
                 toast.success('Collection completed');
                 navigate('/collector/tasks');
             }

@@ -5,24 +5,8 @@ import { keralaDistricts } from "../../data/districts";
 import { addDistrict, getDistrictsWithServiceAreas, updateDistrict, deleteDistrict, addServiceArea } from '../../services/locationService';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-
-
-interface IServiceArea {
-  _id: string;
-  name: string;
-  center: { type: string; coordinates: [number, number] };
-  location: string;
-  postalCodes: string[];
-  capacity: number;
-  serviceDays: string[];
-  collectors: string[];
-}
-
-interface IDistrict {
-  _id: string;
-  name: string;
-  serviceAreas: IServiceArea[];
-}
+import { ApiResponse } from '../../types/common';
+import { IDistrict, IServiceArea } from '../../types/location';
 
 interface ILocationSuggestion {
   display_name: string;
@@ -89,10 +73,10 @@ const ServiceAreas: React.FC = () => {
   const fetchDistricts = async () => {
     try {
       setLoading(true);
-      const response = await getDistrictsWithServiceAreas();
-      console.log("response :", response);
-      if (response.success) {
-        setDistricts(response.data);
+      const res: ApiResponse<IDistrict[]> = await getDistrictsWithServiceAreas();
+      console.log("response :", res);
+      if (res.success) {
+        setDistricts(res.data);
       }
     } catch (error) {
       setError('Failed to fetch districts. Please try again later.');
@@ -217,38 +201,38 @@ const ServiceAreas: React.FC = () => {
 
     if (modalType === 'add-district') {
       console.log("district :", district);
-      const response = await addDistrict(district);
-      if (response.success) {
-        setDistricts([...districts, response.data]);
+      const res:ApiResponse<IDistrict> = await addDistrict(district);
+      if (res.success) {
+        setDistricts([...districts, res.data]);
         console.log("districts :", districts);
         toast.success('New District added.');
       }
     }
     else if (modalType === 'edit-district') {
       console.log("selectedDistrict :", selectedDistrict);
-      const response = await updateDistrict(selectedDistrict._id, district);
-      console.log("response :", response);
-      if (response.success) {
+      const res: ApiResponse<IDistrict> = await updateDistrict(selectedDistrict._id, district);
+      console.log("response :", res);
+      if (res.success) {
         await fetchDistricts();
         toast.success('District updated.');
       } else {
-        toast.error(response.message);
+        toast.error(res.message);
       }
       setDistrict('');
     }
     else if (modalType === 'delete-district') {
       console.log("selectedDistrict :", selectedDistrict);
-      const response = await deleteDistrict(selectedDistrict._id);
-      if (response.success) {
+      const res: ApiResponse<null> = await deleteDistrict(selectedDistrict._id);
+      if (res.success) {
         await fetchDistricts();
         toast.success('District deleted.');
       }
     }
     else if (modalType === 'add-area') {
       console.log("formInput :", formInput);
-      const response = await addServiceArea(formInput);
-      if (response.success) {
-        console.log("response :", response);
+      const res: ApiResponse<IServiceArea> = await addServiceArea(formInput);
+      if (res.success) {
+        console.log("response :", res);
         await fetchDistricts();
         toast.success('New Service Area added.');
       }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { resetPassword } from '../../services/authService';
 import toast from 'react-hot-toast';
+import { ApiResponse } from '../../types/common';
 
 const ResetPassword: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -22,8 +23,8 @@ const ResetPassword: React.FC = () => {
 
         setIsLoading(true);
         try {
-            const response = await resetPassword("collector", token!, password);
-            if (response.success) {
+            const res:ApiResponse<null> = await resetPassword("collector", token!, password);
+            if (res.success) {
                 toast.success('Password reset successful');
                 navigate('/login');
             }

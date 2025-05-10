@@ -353,7 +353,8 @@ const AddressSelection = () => {
       console.error('Error checking pin code:', error);
       toast.error('Failed to check pin code');
     }
-
+    
+    dispatch(setServiceArea({ serviceArea: selectedServiceArea }));
     dispatch(setStep({ step: 3 }));
     navigate('/pickup/details');
   };
@@ -362,7 +363,7 @@ const AddressSelection = () => {
     <div className="space-y-6">
       <div className="bg-white border border-gray-200 px-6 py-4 rounded-xl shadow-sm">
         <h3 className="text-md font-semibold text-gray-800 mb-4">
-          Select Service Area
+          Select Your Service Area
         </h3>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -373,11 +374,11 @@ const AddressSelection = () => {
             <select
               value={selectedDistrict}
               onChange={handleDistrictChange}
-              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm font-medium"
             >
-              <option value="" className='text-gray-400' disabled selected>--Select a district--</option>
+              <option value="" className='text-gray-400' disabled>--Select a district--</option>
               {districts.map((district) => (
-                <option key={district._id} value={district._id}>
+                <option key={district._id} value={district._id} className='text-sm font-medium'>
                   {district.name}
                 </option>
               ))}
@@ -391,12 +392,12 @@ const AddressSelection = () => {
             <select
               value={selectedServiceArea}
               onChange={handleServiceAreaChange}
-              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm font-medium"
               disabled={!selectedDistrict}
             >
-              <option value="" className='text-gray-400' disabled selected>--Select a service area--</option>
+              <option value="" className='text-gray-400' disabled>--Select a service area--</option>
               {serviceAreas.map((area) => (
-                <option key={area._id} value={area._id}>
+                <option key={area._id} value={area._id} className='text-sm font-medium'>
                   {area.name}
                 </option>
               ))}
@@ -424,7 +425,7 @@ const AddressSelection = () => {
                     <div className="flex gap-3">
                       <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
                       <div className="flex flex-col gap-1">
-                        <p className="text-base font-normal text-gray-800">{addr.name}</p>
+                        <p className="text-base font-medium text-gray-800">{addr.name}</p>
                         <p className="text-sm text-gray-600">
                           {addr.addressLine}, {addr.locality}
                         </p>

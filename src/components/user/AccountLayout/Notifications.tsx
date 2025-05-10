@@ -5,12 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUnreadCount } from '../../../redux/notificationSlice';
 import { INotification } from '../../../types/notification';
-
-
-const socket = io('http://localhost:3006', {
+import { ApiResponse } from '../../../types/common';
+const socket = io(import.meta.env.VITE_NOTIFICATION_SERVICE_URL, {
     withCredentials: true,
     transports: ['websocket'],
 });
+
+console
 
 const Notifications: React.FC = () => {
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -25,16 +26,15 @@ const Notifications: React.FC = () => {
     const fetchNotifications = async (pageNum: number = 1) => {
         try {
             setIsLoading(true);
-            const response = await getNotifications(pageNum);
-            
-            if(response.success){
+            const res:ApiResponse<INotification[]> = await getNotifications(pageNum);
+            if(res.success){
                 const existingIds = new Set(notifications.map(n => n._id));
-                const newNotifications = response.data.filter(
+                const newNotifications = res.data.filter(
                     (notification: INotification) => !existingIds.has(notification._id)
                 );
 
                 if (pageNum === 1) {
-                    setNotifications(response.data);
+                    setNotifications(res.data);
                 } else {
                     setNotifications(prev => [...prev, ...newNotifications]);
                 }
@@ -54,7 +54,6 @@ const Notifications: React.FC = () => {
 
         socket.connect();
         socket.emit("join-room", "67bddc928b682fd63bb7bdb2");
-
         // Listen for new notifications
         socket.on("receive-notification", (notification: INotification) => {
             console.log("notification:", notification);
@@ -76,8 +75,8 @@ const Notifications: React.FC = () => {
 
     const handleNotificationClick = async (notificationId: string, url: string) => {
         try {
-            const response = await markNotificationAsRead(notificationId);
-            if (response.success) {
+            const res:ApiResponse<null> = await markNotificationAsRead(notificationId);
+            if (res.success) {
                 setNotifications(prev => 
                     prev.map(notif => 
                         notif._id === notificationId 
@@ -87,7 +86,6 @@ const Notifications: React.FC = () => {
                 );
                 dispatch(setUnreadCount(Math.max(0, unreadCount - 1)));
                 
-                // Navigate to the notification URL
                 if (url) {
                     navigate(url);
                 }
@@ -99,8 +97,8 @@ const Notifications: React.FC = () => {
 
     const handleMarkAllAsRead = async () => {
         try {
-            const response = await markAllNotificationsAsRead();
-            if (response.success) {
+            const res:ApiResponse<null> = await markAllNotificationsAsRead();
+            if (res.success) {
                 setNotifications(prev => 
                     prev.map(notif => ({ ...notif, isRead: true }))
                 );

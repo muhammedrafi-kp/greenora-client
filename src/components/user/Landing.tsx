@@ -13,22 +13,22 @@ import subscription from '../../assets/subsciption.png';
 import wasteManagmnetIndia from '../../assets/waste-managment-india.jpg';
 import AuthModal from './AuthModal';
 
-const Landing = () => {
+const Landing: React.FC = () => {
     const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
     const navigate = useNavigate();
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
+    // const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            const currentScrollPos = window.scrollY;
-            const visible = currentScrollPos > 100;
-            setIsVisible(visible);
-        };
+    // useEffect(() => {
+    //     const handleScroll = () => {
+    //         const currentScrollPos = window.scrollY;
+    //         const visible = currentScrollPos > 100;
+    //         setIsVisible(visible);
+    //     };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    //     window.addEventListener('scroll', handleScroll);
+    //     return () => window.removeEventListener('scroll', handleScroll);
+    // }, []);
 
     const handleSchedulePickup = () => {
         if (isLoggedIn) {
@@ -117,10 +117,11 @@ const Landing = () => {
                             variants={fadeInUp}
                         >
                             <h2 className="text-green-900 text-xl sm:text-2xl md:text-3xl font-bold mb-4">Who we are?</h2>
-                            <p className="text-gray-800 text-xs md:text-sm lg:text-base leading-relaxed">
+                            <p className="text-gray-800 text-xs md:text-sm lg:text-base font-medium leading-relaxed">
                                 <strong>At Greenora,</strong> we are on a mission to revolutionize waste management by making sustainability accessible to everyone. Our innovative platform empowers individuals, communities, and businesses to take control of their waste by promoting responsible disposal, recycling, and eco-friendly practices.
                             </p>
-                            <p className="mt-4 text-gray-800 text-xs md:text-sm lg:text-base leading-relaxed">
+
+                            <p className="mt-4  text-xs md:text-sm lg:text-base text-gray-800 font-medium leading-relaxed">
                                 Driven by a vision of a cleaner, greener planet, Greenora combines technology and community engagement to transform how waste is managed, turning challenges into opportunities for a sustainable future. Together, let’s reduce, reuse, and rethink waste for a better tomorrow.
                             </p>
                         </motion.div>
@@ -167,7 +168,8 @@ const Landing = () => {
                                     <img src={service.icon} alt="" className="w-full h-full object-contain" />
                                 </div>
                                 <h6 className="text-base md:text-lg lg:text-xl font-semibold">{service.title}</h6>
-                                <p className="text-gray-700 mt-2 text-xs md:text-sm lg:text-base">{service.description}</p>
+
+                                <p className="text-gray-700 mt-2 text-xs md:text-sm lg:text-base font-medium">{service.description}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -194,7 +196,7 @@ const Landing = () => {
                             variants={fadeInUp}
                         >
                             <h2 className="text-green-900 text-xl sm:text-2xl md:text-3xl font-bold mb-4">Did you Know?</h2>
-                            <p className="text-gray-800 text-xs md:text-sm lg:text-base leading-relaxed">
+                            <p className="text-gray-800 text-xs md:text-sm lg:text-base font-medium leading-relaxed">
                                 <strong>India</strong> generates approximately <strong>170,338 tonnes</strong> of solid waste every day, but only <strong>53%</strong>  of it is treated. By <strong>2030</strong>, urban waste generation is projected to reach a staggering <strong>165 million tonnes</strong>, making efficient waste management more critical than ever. To address this, the government has implemented <strong>Extended Producer Responsibility (EPR)</strong> regulations for plastics, batteries, e-waste, and other materials, promoting recycling and a circular economy.
                                 <br />
                                 <strong>At Greenora</strong>, we're dedicated to being part of the solution. One collection at a time, we aim to transform waste into a valuable resource for a sustainable future. Join us in creating a cleaner, greener tomorrow!

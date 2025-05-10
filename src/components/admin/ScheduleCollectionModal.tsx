@@ -3,12 +3,7 @@ import Modal from '../common/Modal';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Calendar } from 'lucide-react';
-
-interface ICollector {
-  _id: string;
-  name: string;
-  taskCount: number;
-}
+import { ICollector } from '../../types/user';
 
 interface ScheduleCollectionModalProps {
   isOpen: boolean;
@@ -145,7 +140,7 @@ const ScheduleCollectionModal: React.FC<ScheduleCollectionModalProps> = ({
             </option>
             {availableCollectors.map((collector) => (
               <option key={collector._id} value={collector._id}>
-                {collector.name} ({collector.taskCount} tasks)
+                {collector.name} ({collector.taskCount ?? 0} tasks)
               </option>
             ))}
           </select>

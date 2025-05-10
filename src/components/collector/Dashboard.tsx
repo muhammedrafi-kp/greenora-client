@@ -34,7 +34,7 @@ const DashboardCard = ({ title, icon, children }: {
   </div>
 );
 
-const CollectorDashboard = () => {
+const Dashboard: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
   const [dateFilter, setDateFilter] = useState('today');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -614,4 +614,4 @@ const CollectorDashboard = () => {
   );
 };
 
-export default CollectorDashboard;
+export default Dashboard;

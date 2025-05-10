@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg';
-import { IoIosNotifications, IoIosPricetags } from "react-icons/io";
-import { FaUserCircle, FaUserPlus, FaList, FaClipboardCheck, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
+import { IoIosNotifications } from "react-icons/io";
+import { FaUserCircle, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
 import { BiChevronDown } from 'react-icons/bi';
 import { MdLogin, MdLogout } from "react-icons/md";
 import { GrServices, GrContact } from "react-icons/gr";
@@ -11,11 +11,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Logout } from '../../redux/authSlice';
 import notificationAlert from '../../assets/notification-alert.mp3';
 import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '../../services/notificationService';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { io } from 'socket.io-client';
-import { JwtPayload } from 'jwt-decode';
 import { setUnreadCount, incrementUnreadCount } from '../../redux/notificationSlice';
 import { TbCoinRupeeFilled } from 'react-icons/tb';
+import { ApiResponse } from '../../types/common';
 import { INotification } from '../../types/notification';
 
 const socket = io(import.meta.env.VITE_NOTIFICATION_SERVICE_URL, {
@@ -51,20 +51,20 @@ const NavBar: React.FC = () => {
     const fetchNotifications = async (page: number = 1) => {
         try {
             setIsLoading(true);
-            const response = await getNotifications(page);
-            console.log("Notifications response:", response);
+            const res: ApiResponse<INotification[]> = await getNotifications(page);
+            console.log("Notifications response:", res);
 
-            if (response.success) {
+            if (res.success) {
                 // Create a Set of existing notification IDs
                 const existingIds = new Set(notifications.map(n => n._id));
 
                 // Filter out any duplicates from the new data
-                const newNotifications = response.data.filter(
+                const newNotifications = res.data.filter(
                     (notification: INotification) => !existingIds.has(notification._id)
                 );
 
                 if (page === 1) {
-                    setNotifications(response.data);
+                    setNotifications(res.data);
                 } else {
                     setNotifications(prev => [...prev, ...newNotifications]);
                 }
@@ -82,9 +82,9 @@ const NavBar: React.FC = () => {
 
     const fetchUnreadNotificationCount = async () => {
         try {
-            const response = await getUnreadNotificationCount();
-            if (response.success) {
-                dispatch(setUnreadCount(response.data));
+            const res: ApiResponse<number> = await getUnreadNotificationCount();
+            if (res.success) {
+                dispatch(setUnreadCount(res.data));
                 console.log("unread:", unreadCount)
             }
         } catch (error) {
@@ -192,8 +192,8 @@ const NavBar: React.FC = () => {
     // Function to mark notification as read
     const handleNotificationClick = async (notificationId: string, url: string) => {
         try {
-            const response = await markNotificationAsRead(notificationId);
-            if (response.success) {
+            const res: ApiResponse<null> = await markNotificationAsRead(notificationId);
+            if (res.success) {
                 setNotifications(prev =>
                     prev.map(notif =>
                         notif._id === notificationId

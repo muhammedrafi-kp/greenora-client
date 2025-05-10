@@ -5,6 +5,8 @@ import { getCollectionRequests } from '../../services/collectionService';
 import { getDistricts, getServiceAreas } from '../../services/locationService';
 import { useNavigate } from 'react-router-dom';
 import { exportTableData } from '../../utils/exportUtils';
+import { ApiResponse } from '../../types/common';
+import { IDistrict, IServiceArea } from '../../types/location';
 
 interface ICollection {
   _id: string;
@@ -36,15 +38,6 @@ interface ICollection {
   };
 }
 
-interface IDistrict {
-  _id: string;
-  name: string;
-}
-
-interface IServiceArea {
-  _id: string;
-  name: string;
-}
 
 const Requests: React.FC = () => {
   const [collections, setCollections] = useState<ICollection[]>([]);
@@ -87,9 +80,9 @@ const Requests: React.FC = () => {
 
   const fetchDistricts = async () => {
     try {
-      const response = await getDistricts();
-      if (response.success) {
-        setDistricts(response.data);
+      const res: ApiResponse<IDistrict[]> = await getDistricts();
+      if (res.success) {
+        setDistricts(res.data);
       }
     } catch (error) {
       toast.error('Failed to fetch districts');
@@ -98,9 +91,9 @@ const Requests: React.FC = () => {
 
   const fetchServiceAreas = async (district: string) => {
     try {
-      const response = await getServiceAreas(district);
-      if (response.success) {
-        setServiceAreas(response.data);
+      const res: ApiResponse<IServiceArea[]> = await getServiceAreas(district);
+      if (res.success) {
+        setServiceAreas(res.data);
       }
     } catch (error) {
       toast.error('Failed to fetch service areas');
@@ -123,11 +116,11 @@ const Requests: React.FC = () => {
         limit: collectionsPerPage
       };
       console.log("params ", params)
-      const response = await getCollectionRequests(params);
-      console.log(response);
-      if (response.success) {
-        setCollections(response.collections || []);
-        setTotalCollections(response.totalItems || 0);
+      const res:ApiResponse<{collections:ICollection[],totalItems:number}> = await getCollectionRequests(params);
+      console.log(res);
+      if (res.success) {
+        setCollections(res.data.collections || []);
+        setTotalCollections(res.data.totalItems || 0);
       }
     } catch (error) {
       console.log(error);

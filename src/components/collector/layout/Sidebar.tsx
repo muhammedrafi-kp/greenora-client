@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
                 {/* Logo */}
                 <div className="md:p-4 xs:p-3 p-2 border-b border-white/10">
-                    <h1 className="md:text-2xl xs:text-xl text-lg font-bold text-white">Greenora Agent</h1>
+                    <h1 className="md:text-2xl xs:text-xl text-lg font-bold text-white">Greenora Collector</h1>
                 </div>
 
                 {/* Sidebar Menu */}
@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                             return (
                                 <li key={index}>
                                     <div 
-                                        className={`flex items-center space-x-3 text-white font-semibold md:p-4 xs:p-3 p-1 rounded-lg cursor-pointer transition-colors duration-200
+                                        className={`flex items-center space-x-3 text-white font-semibold md:p-4 xs:p-3 p-2 rounded-lg cursor-pointer transition-colors duration-200
                                             ${isActive ? 'bg-green-900 font-medium' : 'hover:bg-green-900'}`}
                                         onClick={() => navigate(item.path)}
                                     >

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Package, Clock, Phone, User, Filter, ChevronDown } from 'lucide-react';
+import { MapPin, Calendar, Package, Clock, Phone, User, ChevronDown } from 'lucide-react';
 import { getAssignedCollections } from '../../services/collectionService';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import '../../styles/scrollbar.css';
+import { ApiResponse } from '@/types/common';
 
 interface ICollection {
   _id: string;
@@ -98,16 +99,16 @@ const AssignedCollections: React.FC = () => {
         limit,
       }
       console.log("params ", params)
-      const response = await getAssignedCollections(params);
+      const res:ApiResponse<ICollection[]> = await getAssignedCollections(params);
 
-      console.log("collections ", response)
-      if (response.success) {
+      console.log("collections ", res)
+      if (res.success) {
         if (pageNum === 1) {
-          setCollections(response.collections);
+          setCollections(res.data);
         } else {
-          setCollections(prev => [...prev, ...response.collections]);
+          setCollections(prev => [...prev, ...res.data]);
         }
-        setHasMore(response.collections.length === limit);
+        setHasMore(res.data.length === limit);
       }
     } catch (error) {
       console.error('Error fetching collections:', error);

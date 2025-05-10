@@ -1,32 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Info } from "lucide-react";
 import { getCategories } from '../../../services/collectionService';
-
-export interface IWasteCategory {
-  _id: string;
-  name: string;
-  type: "waste" | "scrap";
-  description: string;
-  rate: number;
-}
+import { ApiResponse } from '../../../types/common';
+import { ICategory } from '../../../types/collection';
 
 const Charges: React.FC = () => {
   const [showWaste, setShowWaste] = useState(true);
-  const [categories, setCategories] = useState<IWasteCategory[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await getCategories(showWaste ? "waste" : "scrap");
-      console.log("response", response);
-      if (response.success) {
-        console.log(response.data);
-        setCategories(response.data);
+      const res:ApiResponse<ICategory[]> = await getCategories(showWaste ? "waste" : "scrap");
+      console.log("response", res);
+      if (res.success) {
+        console.log(res.data);
+        setCategories(res.data);
       }
     };
     fetchCategories();
   }, [showWaste]);
 
-  // Filter categories based on type
   const filteredCategories = categories.filter(category =>
     showWaste ? category.type === "waste" : category.type === "scrap"
   );
@@ -37,7 +30,6 @@ const Charges: React.FC = () => {
     <div>
       <div className="mb-6">
         <h2 className="lg:text-xl xs:text-base text-sm sm:text-left flex items-center gap-2 text-center font-bold">
-          {/* <TbCoinRupeeFilled /> */}
           Collection Charges
         </h2>
       </div>

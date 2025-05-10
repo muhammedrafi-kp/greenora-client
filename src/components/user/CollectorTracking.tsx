@@ -59,7 +59,7 @@ const CollectorTracking: React.FC = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [distance, setDistance] = useState<number | null>(null);
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true);
+    // const [isLoading, setIsLoading] = useState(true);
     // Fixed point in Ramanattukara
     const fixedPoint = {
         longitude: 75.8498312,

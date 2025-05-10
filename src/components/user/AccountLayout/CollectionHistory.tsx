@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
-import { getCollectionHistory } from '../../../services/collectionService';
-import { getWalletData, paywithRazorpay, paywithWallet } from '../../../services/paymentService';
+import { getCollectionHistory, paywithRazorpay, paywithWallet } from '../../../services/collectionService';
+import { getWalletData } from '../../../services/paymentService';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, CreditCard, Lock } from 'lucide-react';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
 import toast from 'react-hot-toast';
 import { ICollection } from '../../../types/collection';
+import { ApiResponse } from '../../../types/common';
 
 
 const CollectionHistory: React.FC = () => {
@@ -55,20 +56,20 @@ const CollectionHistory: React.FC = () => {
         limit: 10
       };
 
-      const response = await getCollectionHistory(filters);
-      console.log("collections:", response.data);
+      const res: ApiResponse<ICollection[]> = await getCollectionHistory(filters);
+      console.log("collections:", res.data);
 
-      if (response.success) {
+      if (res.success) {
         if (isNewFilter) {
-          setCollections(response.data);
+          setCollections(res.data);
         } else {
           const existingIds = new Set(collections.map(c => c._id));
-          const newCollections = response.data.filter(
+          const newCollections = res.data.filter(
             (collection: ICollection) => !existingIds.has(collection._id)
           );
           setCollections(prev => [...prev, ...newCollections]);
         }
-        setHasMore(response.data.length > 0);
+        setHasMore(res.data.length > 0);
       }
     } catch (error) {
       console.error('Error fetching collection histories:', error);
@@ -209,7 +210,6 @@ const CollectionHistory: React.FC = () => {
           toast.error('Payment failed.');
         }
 
-        // Handle wallet payment
         setShowPaymentModal(false);
         setSelectedMethod(null);
         setSelectedCollection(null);

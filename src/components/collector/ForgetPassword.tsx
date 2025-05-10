@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HiOutlineMail } from "react-icons/hi";
 import { sendResetLink } from '../../services/authService';
 import toast from 'react-hot-toast';
+import { ApiResponse } from '../../types/common';
 
 const ForgetPassword: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -22,9 +23,9 @@ const ForgetPassword: React.FC = () => {
         setError('');
 
         try {
-            const response = await sendResetLink('collector', email);
-            console.log('response :', response);
-            if (response.success) {
+            const res: ApiResponse<null> = await sendResetLink('collector', email);
+            console.log('response :', res);
+            if (res.success) {
                 setSuccess(true);
             }
         } catch (error: any) {

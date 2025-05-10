@@ -1,30 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { User, X, Check, ArrowLeft } from 'lucide-react';
+import { User, X, ArrowLeft } from 'lucide-react';
 import { getVerificationRequests, updateVerificationStatus } from "../../services/userService";
 import toast from 'react-hot-toast';
 import Modal from '../common/Modal';
+import { ApiResponse } from '../../types/common';
+import { IDistrict, IServiceArea } from '../../types/location';
 
-interface IVerificationRequest {
+
+export interface ICollector {
     _id: string;
     name: string;
     email: string;
     phone: string;
-    serviceArea: string;
-    district: string;
+    district: IDistrict
+    serviceArea: IServiceArea
     gender: string;
-    idProofType: string;
+    verificationStatus: string;
+    isVerified: boolean;
+    isBlocked: boolean;
     profileUrl?: string;
+    idProofType: string;
     idProofFrontUrl?: string;
     idProofBackUrl?: string;
-    verificationStatus: 'pending' | 'approved' | 'rejected';
 }
 
 const VerificationRequests: React.FC = () => {
-    const [collectors, setCollectors] = useState<IVerificationRequest[]>([]);
+    const [collectors, setCollectors] = useState<ICollector[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
-    const [selectedRequest, setSelectedRequest] = useState<IVerificationRequest | null>(null);
+    const [selectedRequest, setSelectedRequest] = useState<ICollector | null>(null);
     const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
@@ -35,11 +40,12 @@ const VerificationRequests: React.FC = () => {
     const fetchRequests = async () => {
         try {
             setLoading(true);
-            const response = await getVerificationRequests();
-            if (response.success) {
-                setCollectors(response.data);
+            const res: ApiResponse<ICollector[]> = await getVerificationRequests();
+            console.log("response :", res);
+            if (res.success) {
+                setCollectors(res.data);
             } else {
-                setError(response.message);
+                setError(res.message || 'An error occurred');
             }
         } catch (err) {
             setError('Failed to fetch verification requests');
@@ -49,7 +55,7 @@ const VerificationRequests: React.FC = () => {
         }
     };
 
-    const handleStatusUpdate = (request: IVerificationRequest, type: 'approve' | 'reject') => {
+    const handleStatusUpdate = (request: ICollector, type: 'approve' | 'reject') => {
         setSelectedRequest(request);
         setActionType(type);
         setShowModal(true);
@@ -60,16 +66,16 @@ const VerificationRequests: React.FC = () => {
         console.log("selectedRequest :", selectedRequest, actionType);
         try {
             setLoading(true);
-            const response = await updateVerificationStatus(selectedRequest._id, actionType);
+            const res: ApiResponse<null> = await updateVerificationStatus(selectedRequest._id, actionType);
 
-            if (response.success) {
+            if (res.success) {
                 fetchRequests();
-                toast.success(response.message);
+                toast.success(`Verification ${actionType === 'approve' ? 'approved' : 'rejected'}`);
             } else {
-                toast.error(response.message);
+                toast.error(res.message);
             }
         } catch (error) {
-            toast.error('Failed to update verification status');
+            toast.error('Failed to verify collector');
             console.error('Error updating status:', error);
         } finally {
             setLoading(false);
@@ -79,7 +85,7 @@ const VerificationRequests: React.FC = () => {
         }
     };
 
-    const handleViewDetails = (request: IVerificationRequest) => {
+    const handleViewDetails = (request: ICollector) => {
         setSelectedRequest(request);
         setShowDetailsModal(true);
     };
@@ -177,8 +183,7 @@ const VerificationRequests: React.FC = () => {
                                             <div className="text-sm text-gray-900">{collector.phone}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{collector.serviceArea || 'N/A'}</div>
-                                            <div className="text-sm text-gray-500">{collector.district || 'N/A'}</div>
+                                            <div className="text-sm text-gray-900">{collector.serviceArea.name || 'N/A'}, {collector.district.name || 'N/A'}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm text-gray-900">{collector.idProofType}</div>
@@ -223,8 +228,8 @@ const VerificationRequests: React.FC = () => {
                     confirmLabel={actionType === 'approve' ? 'Approve' : 'Reject'}
                     onConfirm={confirmStatusUpdate}
                     confirmButtonClass={`px-4 py-2 rounded-lg text-white ${actionType === 'approve'
-                            ? 'bg-green-600 hover:bg-green-700'
-                            : 'bg-red-600 hover:bg-red-700'
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-red-600 hover:bg-red-700'
                         } transition-colors`}
                 />
             )}
@@ -258,11 +263,11 @@ const VerificationRequests: React.FC = () => {
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500">Service Area</p>
-                                    <p className="text-gray-900">{selectedRequest.serviceArea || 'N/A'}</p>
+                                    <p className="text-gray-900">{selectedRequest.serviceArea.name || 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500">District</p>
-                                    <p className="text-gray-900">{selectedRequest.district || 'N/A'}</p>
+                                    <p className="text-gray-900">{selectedRequest.district.name || 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500">Gender</p>
@@ -309,7 +314,7 @@ const VerificationRequests: React.FC = () => {
                                     setShowDetailsModal(false);
                                     handleStatusUpdate(selectedRequest, 'reject');
                                 }}
-                                className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50"
+                                className="px-4 py-2 text-red-600 font-medium border border-red-600 rounded-lg hover:bg-red-50"
                             >
                                 Reject
                             </button>
@@ -318,7 +323,7 @@ const VerificationRequests: React.FC = () => {
                                     setShowDetailsModal(false);
                                     handleStatusUpdate(selectedRequest, 'approve');
                                 }}
-                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700"
                             >
                                 Approve
                             </button>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { MapPin, Shield, Camera, X } from 'lucide-react';
-import { ICollectorData } from '../../interfaces/interfaces';
+import { ICollector } from '../../types/user';
 
 interface VerificationDetailsProps {
   isEditing: boolean;
-  collectorData: ICollectorData | null;
+  collectorData: ICollector | null;
   districts: Array<{ _id: string; name: string }>;
   serviceAreas: Array<{ _id: string; name: string }>;
   errors: { district?: string; serviceArea?: string };

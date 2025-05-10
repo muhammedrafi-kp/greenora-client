@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaWallet, FaCoins, FaMoneyBillWave, FaHistory } from 'react-icons/fa';
+import { FaCoins, FaMoneyBillWave, FaHistory } from 'react-icons/fa';
 import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
 import Modal from '../../common/Modal';
 import WalletSkeleton from '../skeltons/WalletSkelton';
 import { getWalletData, initiateAddMoney, verifyAddMoney, withdrawMoney } from '../../../services/paymentService';
 import { toast } from 'react-hot-toast';
+import { ApiResponse } from '../../../types/common';
 import { IWallet } from '../../../types/payment';
 
 
@@ -38,10 +39,10 @@ const Wallet: React.FC = () => {
   const fetchWalletData = async () => {
     setLoading(true);
     try {
-      const response = await getWalletData();
-      console.log("wallet data:", response);
-      if (response.success) {
-        setWalletData(response.data);
+      const res:ApiResponse<IWallet> = await getWalletData();
+      console.log("wallet data:", res);
+      if (res.success) {
+        setWalletData(res.data);
       }
     } catch (error) {
       console.error("Error fetching wallet data:", error);
@@ -113,22 +114,27 @@ const Wallet: React.FC = () => {
       setError(null);
 
       // Add money to the wallet
-      const response = await initiateAddMoney(amount);
-      console.log("initiatePayment response:", response);
-      if (response.success) {
+      const res:ApiResponse<{ amount: number; orderId: string; }> = await initiateAddMoney(amount);
+      console.log("initiatePayment response:", res);
+      if (res.success) {
         const options: RazorpayOrderOptions = {
-          key: "rzp_test_b0szQvJZ7F009R", // Razorpay Key ID from .env
-          amount: response.amount,
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: res.data.amount,
           currency: "INR",
           name: "Greenora",
-          order_id: response.orderId,
+          order_id: res.data.orderId,
+          description: "Wallet Topup",
+          theme: {
+            color: "#10B981"
+          },
           handler: async (response: any) => {
             try {
               console.log("resposne2 :", response)
-              const verifyResponse = await verifyAddMoney(response);
+              const verifyResponse:ApiResponse<null> = await verifyAddMoney(response);
 
               if (verifyResponse.success) {
                 console.log("verifyResponse:", verifyResponse);
+                toast.success("Money added successfully");
                 setIsAddMoneyModalOpen(false);
                 setAmount(null);
                 setError(null);
@@ -160,12 +166,11 @@ const Wallet: React.FC = () => {
       setAmount(null);
       setError(null);
 
-      const response = await withdrawMoney(amount);
-      if (response.success) {
+      const res:ApiResponse<null> = await withdrawMoney(amount);
+      if (res.success) {
+        toast.success("Money withdrawn successfully");
         fetchWalletData();
       }
-
-      console.log("withdrawMoney response:", response);
     }
   };
 

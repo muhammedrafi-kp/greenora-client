@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { verifyOtpCollector, resendOtpCollector } from '../../services/authService';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../redux/authSlice';
+import { ApiResponse } from '../../types/common';
+import { ICollector } from '../../types/user';
 
 const OtpVerification: React.FC = () => {
     const [otp, setOtp] = useState(['', '', '', '']);
@@ -73,10 +75,10 @@ const OtpVerification: React.FC = () => {
         setError('');
 
         try {
-            const response = await verifyOtpCollector(email, otpString);
-            console.log("response :", response);
-            if (response.success) {
-                dispatch(loginSuccess({ token: response.token, role: 'collector' }));
+            const res:ApiResponse<{token:string,role:string,collector:ICollector}> = await verifyOtpCollector(email, otpString);
+            console.log("response :", res);
+            if (res.success) {
+                dispatch(loginSuccess({ token: res.data.token, role: 'collector' }));
             }
         } catch (error: any) {
             setError('Invalid OTP. Please try again.');
@@ -86,8 +88,8 @@ const OtpVerification: React.FC = () => {
     };
 
     const handleResendOtp = async () => {
-        const response = await resendOtpCollector(email);
-        console.log(response);
+        const res:ApiResponse<null> = await resendOtpCollector(email);
+        console.log(res);
         setOtp(['', '', '', '']);
         setTimer(30);
         setError('');
@@ -129,7 +131,7 @@ const OtpVerification: React.FC = () => {
                                     onChange={(e) => handleChange(e.target, index)}
                                     onKeyDown={(e) => handleBackspace(e, index)}
                                     className={`w-full h-full text-center text-xl font-semibold border rounded-lg 
-                                        md:h-12 h-10
+                                        md:h-12 
                                         focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none
                                         ${error ? 'border-red-700' : 'border-gray-300'}`}
                                 />

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-// import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { FaUser, FaClipboardList, FaWallet, FaAddressCard, FaBell, FaSignOutAlt, FaComments } from 'react-icons/fa';
+import { FaUser, FaClipboardList, FaWallet, FaBell, FaSignOutAlt } from 'react-icons/fa';
 import { TbCoinRupeeFilled } from "react-icons/tb";
 // import { VscGraph } from "react-icons/vsc";
 import { Camera, CircleUserRound } from 'lucide-react';
@@ -10,7 +9,7 @@ import { IUser } from '../../../types/user';
 import SidebarSkeleton from '../skeltons/SidebarSkeleton';
 import { Logout } from "../../../redux/authSlice";
 import { NavLink } from 'react-router-dom';
-
+import { ApiResponse } from '../../../types/common';
 const navLinks = [
   // { icon: <VscGraph />, label: 'Activity', path: '/account/', end: true },
   { icon: <FaUser />, label: 'Profile', path: '/account/',end: true },
@@ -44,10 +43,10 @@ const Sidebar: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await getUserData();
-      console.log("response :",response);
-      if (response.success) {
-        setUserData(response.data);
+      const res:ApiResponse<IUser> = await getUserData();
+      console.log("response :",res);
+      if (res.success) {
+        setUserData(res.data);
       }
     } catch (error) {
       console.log("Failed to fetch user data:", error);
@@ -77,9 +76,9 @@ const Sidebar: React.FC = () => {
           .then((blob) => new File([blob], 'profile.jpg', { type: 'image/jpeg' }));
         const formData = new FormData();
         formData.append('profileImage', imageFile);
-        const response = await uploadProfileImage(formData);
-        if (response.success) {
-          setUserData((prev) => (prev ? { ...prev, profileUrl: response.data.profileUrl } : null));
+        const res:ApiResponse<string> = await uploadProfileImage(formData);
+        if (res.success) {
+          setUserData((prev) => (prev ? { ...prev, profileUrl: res.data } : null));
           setUploadedImage(null);
         }
       } catch (error) {

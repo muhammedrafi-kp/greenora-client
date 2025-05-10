@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { verifyOtpUser, resendOtpUser } from "../../services/authService";
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from "../../redux/authSlice";
+import { ApiResponse } from '../../types/common';
+import { IUser } from '../../types/user';
 
 interface OtpVerificationProps {
     closeModal: () => void;
@@ -67,9 +69,9 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
         setError('');
 
         try {
-            const response = await verifyOtpUser(email, otpString);
-            if (response.success) {
-                dispatch(loginSuccess({ token: response.token, role: response.role }));
+            const res:ApiResponse<{token:string,role:string,user:IUser}> = await verifyOtpUser(email, otpString);
+            if (res.success) {
+                dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
                 closeModal();
             }
         } catch (error: any) {
@@ -81,18 +83,15 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
     };
 
     const handleResendOTP = async () => {
-        const response = await resendOtpUser(email);
-        console.log(response);
+        const res:ApiResponse<null> = await resendOtpUser(email);
+        console.log(res);
         setOtp(['', '', '', '']);
         setTimer(30);
         setError('');
     };
 
     return (
-        <div
-            className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-all duration-300 ${showModal ? 'opacity-100' : 'opacity-0'}`}
-        // onClick={closeModal}
-        >
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-all duration-300 ${showModal ? 'opacity-100' : 'opacity-0'}`}>
             <div
                 className={`relative bg-white p-8 rounded-xl shadow-lg max-w-md w-full transform transition-all duration-300 ${isLoading ? 'opacity-50' : ''}`}
                 onClick={(e) => e.stopPropagation()}

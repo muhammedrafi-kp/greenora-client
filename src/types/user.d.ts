@@ -6,12 +6,19 @@ export interface IUserSignUpData {
     confirmPassword?: string;
 }
 
+export interface IAdmin {
+    _id: string;
+    name: string;
+    email: string;
+}
+
 export interface IUser {
-    id: string;
+    _id: string;
     name: string;
     email: string;
     phone: string;
     profileUrl?: string; 
+    isBlocked: boolean;
 }
 
 export interface IUserUpdateData {
@@ -42,7 +49,9 @@ export interface ICollector{
     idProofFrontUrl?: string;
     idProofBackUrl?: string;
     profileUrl?: string; 
+    taskCount?: number;
     verificationStatus?: string;
+    isBlocked?: boolean;
     isVerified?: boolean;
     editAccess?:boolean;
 }

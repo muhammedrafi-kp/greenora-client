@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { User, Mail, Phone, Lock, Camera } from 'lucide-react';
+import { User, Mail, Phone, Lock, Camera, Edit } from 'lucide-react';
 import { getUserData, updateUserData } from "../../../services/userService";
 import { IUser } from '../../../types/user';
 import ProfileSkeleton from '../skeltons/ProfileSkeleton';
 import { ChangePassword } from '../../common/ChangePassword';
 import toast from 'react-hot-toast';
-
+import { ApiResponse } from '../../../types/common';
 
 interface FormErrors {
     name?: string;
@@ -28,10 +28,10 @@ const ProfileSection: React.FC = () => {
     const fetchUserData = async () => {
         setIsLoading(true);
         try {
-            const response = await getUserData();
-            if (response.success) {
-                setUserData(response.data);
-                console.log(response.data);
+            const res:ApiResponse<IUser> = await getUserData();
+            if (res.success) {
+                setUserData(res.data);
+                console.log(res.data);
             }
         } catch (error) {
             console.error("Failed to fetch user data", error);
@@ -145,15 +145,15 @@ const ProfileSection: React.FC = () => {
         }
 
         try {
-            const response = await updateUserData(formData);
-            if (response.success) {
-                toast.success("Profile updated.");
+            const res:ApiResponse<IUser> = await updateUserData(formData);
+            if (res.success) {
+                toast.success(res.message);
                 setIsEditing(false);
                 await fetchUserData();
             }
         } catch (error) {
             console.error("Error while updating userdata:", error);
-            toast.error('Something went wrong. Please try again.');
+            toast.error(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
         } finally {
             setIsSaving(false);
         }
@@ -275,14 +275,14 @@ const ProfileSection: React.FC = () => {
                                 type="button"
                                 onClick={handleCancelEdit}
                                 disabled={isSaving}
-                                className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs font-semibold border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors disabled:opacity-50"
+                                className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs bg-green-800 text-white font-semibold rounded-lg hover:bg-green-900 transition-colors disabled:opacity-50"
                             >
                                 {isSaving ? 'Saving...' : 'Save Changes'}
                             </button>
@@ -291,8 +291,9 @@ const ProfileSection: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => setIsEditing(true)}
-                            className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs font-semibold bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors"
+                            className="xs:px-4 xs:py-2 px-2 py-1 xs:text-sm text-xs font-semibold bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors flex items-center gap-2"
                         >
+                            <Edit className="xs:w-4 xs:h-4 w-3 h-3" />
                             Edit Profile
                         </button>
                     )}

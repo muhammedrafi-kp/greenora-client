@@ -3,8 +3,8 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { loginAdmin } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; 
-// import { adminLogin } from "../../redux/adminAuthSlice"; 
 import { loginSuccess } from "../../redux/authSlice";
+import { ApiResponse } from "../../types/common";
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,10 +26,10 @@ const Login: React.FC = () => {
     try {
       console.log(email, password);
 
-      const response = await loginAdmin(email, password);
-      console.log("Login successful:", response);
+      const res:ApiResponse<{token:string,role:string}> = await loginAdmin(email, password);
+      console.log("Login successful:", res);
 
-      dispatch(loginSuccess({ token: response.token, role: response.role }));
+      dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
 
       navigate("/admin/dashboard");
     } catch (err) {

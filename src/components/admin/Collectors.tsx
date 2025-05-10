@@ -6,30 +6,17 @@ import { getCollectors, updateCollectorStatus } from "../../services/userService
 import { getDistricts, getServiceAreas } from '../../services/locationService';
 import toast from 'react-hot-toast';
 import { exportTableData } from '../../utils/exportUtils';
+import { ApiResponse } from '../../types/common';
+import { IDistrict, IServiceArea } from '../../types/location';
 
-interface IDistrict {
-    _id: string;
-    name: string;
-}
 
-interface IServiceArea {
-    _id: string;
-    name: string;
-}
-
-interface ICollector {
+export interface ICollector {
     _id: string;
     name: string;
     email: string;
     phone: string;
-    district: {
-        _id: string;
-        name: string;
-    };
-    serviceArea: {
-        _id: string;
-        name: string;
-    };
+    district: IDistrict
+    serviceArea: IServiceArea
     gender: string;
     verificationStatus: string;
     isVerified: boolean;
@@ -80,9 +67,9 @@ const Collectors: React.FC = () => {
 
     const fetchDistricts = async () => {
         try {
-            const response = await getDistricts();
-            if (response.success) {
-                setDistricts(response.data);
+            const res: ApiResponse<IDistrict[]> = await getDistricts();
+            if (res.success) {
+                setDistricts(res.data);
             }
         } catch (error) {
             console.error('Error fetching districts:', error);
@@ -91,9 +78,9 @@ const Collectors: React.FC = () => {
 
     const fetchServiceAreas = async (districtId: string) => {
         try {
-            const response = await getServiceAreas(districtId);
-            if (response.success) {
-                setServiceAreas(response.data);
+            const res: ApiResponse<IServiceArea[]> = await getServiceAreas(districtId);
+            if (res.success) {
+                setServiceAreas(res.data);
             }
         } catch (error) {
             console.error('Error fetching service areas:', error);
@@ -103,7 +90,7 @@ const Collectors: React.FC = () => {
     const fetchCollectors = async () => {
         try {
             setLoading(true);
-            const response = await getCollectors({
+            const res: ApiResponse<{ collectors: ICollector[], totalItems: number, totalPages: number, currentPage: number }> = await getCollectors({
                 search: searchTerm,
                 status: selectedStatus,
                 verificationStatus: selectedVerification,
@@ -115,14 +102,14 @@ const Collectors: React.FC = () => {
                 limit: collectorsPerPage
             });
 
-            if (response.success) {
-                console.log("response :", response);
-                setCollectors(response.collectors);
-                setTotalItems(response.totalItems);
-                setTotalPages(response.totalPages);
+            if (res.success) {
+                console.log("response :", res);
+                setCollectors(res.data.collectors);
+                setTotalItems(res.data.totalItems);
+                setTotalPages(res.data.totalPages);
                 setError(null);
             } else {
-                setError(response.message);
+                setError(res.message || 'An error occurred');
             }
         } catch (err) {
             setError('Failed to fetch collectors. Please try again later.');
@@ -182,9 +169,9 @@ const Collectors: React.FC = () => {
 
         try {
             setLoading(true);
-            const response = await updateCollectorStatus(selectedCollector._id);
+            const res:ApiResponse<null> = await updateCollectorStatus(selectedCollector._id);
 
-            if (response.success) {
+            if (res.success) {
                 setCollectors(prevCollectors =>
                     prevCollectors.map(collector =>
                         collector._id === selectedCollector._id
@@ -192,15 +179,14 @@ const Collectors: React.FC = () => {
                             : collector
                     )
                 );
-                toast.success(response.message);
+                toast.success(res.message);
             } else {
-                toast.error(response.message || 'Failed to update collector status');
+                toast.error(res.message);
             }
             setSelectedCollector(null);
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to update collector status';
-            console.error('Error updating collector status:', error);
-            toast.error(errorMessage);
+            console.error('Error to updating collector status:', error);
+            toast.error(`Failed to ${!selectedCollector.isBlocked ? 'block' : 'unblock'} collector`);
         } finally {
             setLoading(false);
             setShowModal(false);

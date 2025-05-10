@@ -1,8 +1,5 @@
-import { useState } from "react"
-import { ChevronUp, ChevronDown,Info  } from "lucide-react";
+import { Info  } from "lucide-react";
 import { ICategory } from "../../types/collection";
-
-
 
 
 interface PriceTableProps {
@@ -10,14 +7,8 @@ interface PriceTableProps {
   categories: ICategory[]
 }
 
-
-
 const PriceTable: React.FC<PriceTableProps> = ({ categories, type }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  // const [sortField, setSortField] = useState<"name" | "price">("name")
-  // const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  // const [selectedRow, setSelectedRow] = useState<number | null>(null)
-
+  
   const filteredCategories = categories.filter(category => category.type === type);
 
   return (
@@ -46,9 +37,7 @@ const PriceTable: React.FC<PriceTableProps> = ({ categories, type }) => {
           {filteredCategories.map((item, index) => (
             <tr
               key={item.name}
-              className={`border-t transition-colors hover:bg-gray-50 cursor-pointer`}
-              // onClick={() => setSelectedRow(index)}
-            >
+              className={`border-t transition-colors hover:bg-gray-50 cursor-pointer`}>
               <td className="py-3 px-4 text-sm text-gray-600">{index + 1}</td>
               <td className="py-3 px-4 text-sm text-gray-900 font-medium">{item.name}</td>
               <td className="py-3 px-4 text-sm text-gray-600">{item.rate}</td>

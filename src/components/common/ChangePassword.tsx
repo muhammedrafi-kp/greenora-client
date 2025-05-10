@@ -3,6 +3,7 @@ import { Lock, Eye, EyeOff } from 'lucide-react';
 import { changePassword } from '../../services/authService';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
+import { ApiResponse } from '../../types/common';
 
 interface ChangePasswordProps {
   isOpen: boolean;
@@ -150,8 +151,8 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
 
     setIsLoading(true);
     try {
-      const response = await changePassword(role, passwords.currentPassword, passwords.newPassword);
-      if (response.success) {
+      const res:ApiResponse<null> = await changePassword(role, passwords.currentPassword, passwords.newPassword);
+      if (res.success) {
         toast.success("Password changed", {
           style: { background: "#222", color: "#fff" },
           iconTheme: { primary: "#4CAF50", secondary: "#fff" }, // Green success icon
@@ -185,7 +186,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
             value={passwords.currentPassword}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border rounded-lg focus:ring-green-500 focus:border-green-500
+            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-semibold text-gray-700 border rounded-lg focus:ring-green-500 focus:border-green-500
               ${touched.currentPassword && formErrors.currentPassword ? 'border-red-500' : 'border-gray-300'}`}
           />
           <button
@@ -216,7 +217,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
             value={passwords.newPassword}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border rounded-lg focus:ring-green-500 focus:border-green-500
+            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-semibold text-gray-700 border rounded-lg focus:ring-green-500 focus:border-green-500
               ${touched.newPassword && formErrors.newPassword ? 'border-red-500' : 'border-gray-300'}`}
           />
           <button
@@ -247,7 +248,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
             value={passwords.confirmPassword}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs border rounded-lg focus:ring-green-500 focus:border-green-500
+            className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-semibold text-gray-700 border rounded-lg focus:ring-green-500 focus:border-green-500
               ${touched.confirmPassword && formErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
           />
           <button
@@ -275,7 +276,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
       title={
         <div className="flex items-center gap-2">
           <Lock className="w-5 h-5" />
-          <span className=" font-semibold">Change Password</span>
+          <span className=" font-semibold text-gray-800">Change Password</span>
         </div>
       }
       description=""

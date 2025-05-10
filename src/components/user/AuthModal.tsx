@@ -10,7 +10,7 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"
 import toast from 'react-hot-toast';
 import { googleCallbackUser } from "../../services/authService";
 import { loginUser, signUpUser } from "../../services/authService";
-
+import { ApiResponse } from '../../types/common';
 interface AuthModalProps {
     closeModal: () => void;
     initialMode?: 'login' | 'signup';
@@ -56,17 +56,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
             setIsLoading(true);
             try {
                 if (isLogin) {
-                    const response = await loginUser(formData.email, formData.password);
-                    console.log(response)
-                    if (response.success) {
+                    const res:ApiResponse<{token:string,role:string}> = await loginUser(formData.email, formData.password);
+                    console.log(res)
+                    if (res.success) {
                         // Dispatch user login action with user data
-                        dispatch(loginSuccess({ token: response.token, role: response.role }));
+                        dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
                         closeModal();
                         toast.success("Login successful!");
                     }
                 } else {
-                    const response = await signUpUser(formData);
-                    if (response.success) {
+                    const res:ApiResponse<null> = await signUpUser(formData);
+                    if (res.success) {
                         setShowOtpVerification(true); // Show OTP verification for signup
                     }
                 }
@@ -92,10 +92,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
         try {
             console.log("credentialResponse", credentialResponse)
 
-            const response = await googleCallbackUser(credentialResponse.credential);
-            console.log("response", response)
-            if (response.success) {
-                dispatch(loginSuccess({ token: response.token, role: response.role }));
+            const res:ApiResponse<{token:string,role:string}> = await googleCallbackUser(credentialResponse.credential);
+            console.log("response", res)
+            if (res.success) {
+                dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
                 closeModal();
                 toast.success("Login successful!");
             }

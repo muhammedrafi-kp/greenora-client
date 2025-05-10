@@ -1,8 +1,9 @@
 import { apiClient } from "../apis/api";
 import { IChat } from "../types/chat";
+import { ApiResponse } from "../types/common";
 
 
-export const initiateChat = async (chatData: IChat) => {
+export const initiateChat = async (chatData: IChat):Promise<ApiResponse<IChat>> => {
     try {
         const response = await apiClient.post('/chat-service/chat', chatData);
         return response.data;
@@ -12,7 +13,7 @@ export const initiateChat = async (chatData: IChat) => {
     }
 }
 
-export const getGreenoBotResponse = async (prompt: string) => {
+export const getGreenoBotResponse = async (prompt: string):Promise<ApiResponse<string>> => {
     try {
         const response = await apiClient.post('/chat-service/chatbot', { prompt });
         return response.data;
@@ -22,7 +23,7 @@ export const getGreenoBotResponse = async (prompt: string) => {
     }
 }
 
-export const getChats = async () => {
+export const getChats = async ():Promise<ApiResponse<IChat[]>> => {
     try {
         const response = await apiClient.get(`/chat-service/chats`);
         return response.data;

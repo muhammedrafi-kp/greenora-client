@@ -1,41 +1,41 @@
 import { apiClient } from "../apis/api";
-import { IItem } from "../types/collection";
+import { ICategory, IItem, ICollection } from "../types/collection";
+import { ApiResponse } from "../types/common";
 
-export const addCategory = async (categoryData: object) => {
+export const addCategory = async (categoryData: object):Promise<ApiResponse<ICategory>> => {
   try {
-    const response = await apiClient.post("/request-service/category", categoryData);
-    return response.data;
+    const res = await apiClient.post("/request-service/category", categoryData);
+    return res.data;
   } catch (error) {
     console.error('Error adding waste category:', error);
     throw new Error('Failed to add waste category.');
   }
 }
 
-export const getCategories = async (type?: string) => {
+export const getCategories = async (type?: string):Promise<ApiResponse<ICategory[]>> => {
   try {
-    const response = await apiClient.get(`/request-service/category/categories?type=${type}`);
-    return response.data;
+    const res = await apiClient.get(`/request-service/category/categories?type=${type}`);
+    return res.data;
   } catch (error) {
     console.error('Error fetching waste categories:', error);
     throw new Error('Failed to fetch waste categories.');
   }
 }
 
-
-export const updateCategory = async (categoryId: string, categoryData: object) => {
+export const updateCategory = async (categoryId: string, categoryData: object):Promise<ApiResponse<ICategory>> => {
   try {
-    const response = await apiClient.put(`/request-service/category/${categoryId}`, categoryData);
-    return response.data;
+    const res = await apiClient.put(`/request-service/category/${categoryId}`, categoryData);
+    return res.data;
   } catch (error) {
     console.error('Error updating waste category:', error);
     throw new Error('Failed to update waste category.');
   }
 }
 
-export const deleteCategory = async (categoryId: string) => {
+export const deleteCategory = async (categoryId: string):Promise<ApiResponse<ICategory>> => {
   try {
-    const response = await apiClient.delete(`/request-service/category/${categoryId}`);
-    return response.data;
+    const res = await apiClient.delete(`/request-service/category/${categoryId}`);
+    return res.data;
   } catch (error) {
     console.error('Error deleting waste category:', error);
     throw new Error('Failed to delete waste category.');
@@ -43,11 +43,11 @@ export const deleteCategory = async (categoryId: string) => {
 }
 
 
-export const calculatePickupCost = async (items: IItem[]) => {
+export const calculatePickupCost = async (items: IItem[]):Promise<ApiResponse<number>> => {
   try {
       console.log("items:", items);
-      const response = await apiClient.post('/request-service/category/total-cost', { items });
-      return response.data;
+      const res = await apiClient.post('/request-service/category/total-cost', { items });
+      return res.data;
   } catch (error) {
       console.error("Error calculating pickup cost:", error);
       throw error;
@@ -55,34 +55,105 @@ export const calculatePickupCost = async (items: IItem[]) => {
 }
 
 
-export const completeCollection = async (collectionId: string, formData: FormData) => {
+
+
+export const sendPaymentRequest = async (formData: FormData):Promise<ApiResponse<null>> => {
   try {
-      const response = await apiClient.patch(`/request-service/collection/${collectionId}`, formData);
+      const response = await apiClient.post('/request-service/collection/payment-request', formData, {
+          headers: {
+              'Content-Type': 'multipart/form-data'
+          }
+      });
       return response.data;
+  } catch (error) {
+      console.error("Error sending payment request:", error);
+      throw error;
+  }
+}
+
+export const initiateRazorpayAdvance = async (collectionData: any) => {
+  try {
+      const response = await apiClient.post('/request-service/collection/payment/advance/razorpay/initiate', collectionData);
+      return response.data;
+  } catch (error) {
+      console.error("Error creating payment order:", error);
+      throw error;
+  }
+}
+
+export const verifyRazorpayAdvance = async (paymentData: any) => {
+  try {
+      const response = await apiClient.post('/request-service/collection/payment/advance/razorpay/verify', paymentData);
+      return response.data;
+  } catch (error) {
+      console.error("Error verifying payment:", error);
+      throw error;
+  }
+}
+
+export const payAdvanceWithWallet = async (collectionData: any) => {
+  try {
+      const response = await apiClient.post('/request-service/collection/payment/advance/wallet', collectionData);
+      return response.data;
+  } catch (error) {
+      console.error("Error creating payment order:", error);
+      throw error;
+  }
+}
+
+
+export const paywithRazorpay = async (collectionId: string, razorpayVerificationData: any) => {
+  try {
+      const response = await apiClient.post('/request-service/collection/payment/razorpay/verify', { collectionId, razorpayVerificationData });
+      return response.data;
+  } catch (error) {
+      console.error("Error verifying payment:", error);
+      throw error;
+  }
+}
+
+export const paywithWallet = async (collectionId: string) => {
+  try {
+      const response = await apiClient.post('/request-service/collection/payment/wallet', { collectionId });
+      return response.data;
+  } catch (error) {
+      console.error("Error verifying payment:", error);
+      throw error;
+  }
+}
+
+
+
+
+
+export const completeCollection = async (collectionId: string, formData: FormData):Promise<ApiResponse<null>> => {
+  try {
+      const res = await apiClient.patch(`/request-service/collection/${collectionId}`, formData);
+      return res.data;
   } catch (error) {
       console.error("Error processing payment:", error);
       throw error;
   }
 }
 
-export const scheduleCollection = async (collectionId: string, collectorId: string, userId: string, preferredDate: string) => {
+export const scheduleCollection = async (collectionId: string, collectorId: string, userId: string, preferredDate: string):Promise<ApiResponse<null>> => {
   try {
-    const response = await apiClient.post(`/request-service/collection/schedule/${collectionId}`, {
+    const res = await apiClient.post(`/request-service/collection/schedule/${collectionId}`, {
       collectorId,
       userId,
       preferredDate
     });
-    return response.data;
+    return res.data;
   } catch (error) {
     console.error("Error scheduling collection:", error);
     throw error;
   }
 }
 
-export const cancelCollection = async (collectionId: string, reason: string) => {
+export const cancelCollection = async (collectionId: string, reason: string):Promise<ApiResponse<null>> => {
   try {
-      const response = await apiClient.put('/request-service/collection/cancel', { collectionId, reason });
-      return response.data
+      const res = await apiClient.put('/request-service/collection/cancel', { collectionId, reason });
+      return res.data
   } catch (error) {
       console.error("Error while cancelling collection:", error);
       throw error;
@@ -96,20 +167,21 @@ export const getCollectionHistory = async (params?: {
   type?: string;
   page?: number;
   limit?: number;
-}) => {
+}):Promise<ApiResponse<ICollection[]>> => {
     try {
-        const response = await apiClient.get('/request-service/collection', { params });
-        return response.data;
+        const res = await apiClient.get('/request-service/collection', { params });
+        return res.data;
     } catch (error) {
         console.error("Error fetching collection histories:", error);
         throw error;
     }
 }
 
+// export const getCollectionRequests = async (params: object):Promise<ApiResponse<{collections:ICollection[],totalItems:number}>> => {
 export const getCollectionRequests = async (params: object) => {
   try {
-    const response = await apiClient.get('/request-service/collection/collections', { params });
-    return response.data;
+    const res = await apiClient.get('/request-service/collection/collections', { params });
+    return res.data;
   } catch (error) {
     console.error("Error fetching collection histories:", error);
     throw error;
@@ -134,8 +206,8 @@ export const getAssignedCollections = async (params: {
   limit?: number; 
 }) => {
   try {
-      const response = await apiClient.get('/request-service/collection/collector/assigned-collections', { params });
-      return response.data;
+      const res = await apiClient.get('/request-service/collection/collector/assigned-collections', { params });
+      return res.data;
   } catch (error) {
       throw error;
   }

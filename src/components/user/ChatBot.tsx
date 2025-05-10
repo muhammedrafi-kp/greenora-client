@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { FaRobot, FaUser } from "react-icons/fa";
 import { BiMessageRoundedDots, BiCopy } from "react-icons/bi";
@@ -8,11 +9,13 @@ import io from 'socket.io-client';
 import { getUserData, getAdminData } from '../../services/userService';
 import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
 import ReactMarkdown from 'react-markdown';
-import { IUser } from '../../types/user';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { IMessage } from '../../types/chat';
-
 import "../../styles/scrollbar.css";
+import { ApiResponse } from '../../types/common';
+import { IAdmin, IUser } from '../../types/user';
+import { IChat } from '../../types/chat';
 
 const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
     transports: ["websocket", "polling"],
@@ -36,6 +39,10 @@ const quickRepliesMap = {
         "Back to main menu"
     ]
 };
+
+interface DecodedToken extends JwtPayload {
+    userId: string;
+}
 
 // Interface for bot messages (not stored in database)
 interface IBotMessage {
@@ -71,16 +78,21 @@ const ChatBot: React.FC = () => {
     const [botMessages, setBotMessages] = useState<IBotMessage[]>([]);
     const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [chatMode, setChatMode] = useState<'bot' | 'admin'>('bot');
-    const [user, setUser] = useState<IUser| null>(null);
+    const [user, setUser] = useState<IUser | null>(null);
     const [adminId, setAdminId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
-    const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
     const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout>();
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
+
+    const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
+
+    // console.log("isLoggedIn:", isLoggedIn);
+    // console.log("role:", role);
+    // console.log("token:", token);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -95,10 +107,16 @@ const ChatBot: React.FC = () => {
     }, [chatMode]);
 
     useEffect(() => {
-        socket.connect();
 
-        socket.emit("user_connected", user?.id);
+        if (isLoggedIn && role === 'user' && token) {
+            const decodedToken = jwtDecode<DecodedToken>(token);
+            console.log("decodedToken:", decodedToken);
 
+
+            socket.connect();
+
+            socket.emit("user_connected", decodedToken.userId);
+        }
         if (chatMode === 'bot') {
             // Only show welcome message if there are no existing bot messages
             if (botMessages.length === 0) {
@@ -116,23 +134,23 @@ const ChatBot: React.FC = () => {
             setIsLoading(true);
 
             const fetchUserData = async () => {
-                const response = await getUserData();
-                console.log("user response:", response);
-                if (response.success) {
-                    setUser(response.data);
-                    console.log("user id:", response.data.id);
-                    return response.data;
+                const res: ApiResponse<IUser> = await getUserData();
+                console.log("user response:", res);
+                if (res.success) {
+                    setUser(res.data);
+                    console.log("user id:", res.data._id);
+                    return res.data;
                 }
                 return null;
             };
 
             const fetchAdminData = async () => {
-                const response = await getAdminData();
-                console.log("admin response:", response);
-                if (response.success) {
-                    setAdminId(response.data._id);
-                    console.log("admin id:", response.data._id);
-                    return response.data._id;
+                const res: ApiResponse<IAdmin> = await getAdminData();
+                console.log("admin response:", res);
+                if (res.success) {
+                    setAdminId(res.data._id);
+                    console.log("admin id:", res.data._id);
+                    return res.data._id;
                 }
                 return null;
             };
@@ -141,19 +159,19 @@ const ChatBot: React.FC = () => {
                 console.log("user data:", userData);
                 console.log("admin id:", adminId);
 
-                if (!userData?.id || !adminId) {
+                if (!userData?._id || !adminId) {
                     console.log("user or admin id not found");
                     setIsLoading(false);
                     return;
                 }
 
-                socket.emit('user_online', userData.id);
+                socket.emit('user_online', userData._id);
 
                 try {
                     // Try to get existing chat or create a new one
-                    const chatResponse = await initiateChat({
+                    const chatResponse: ApiResponse<IChat> = await initiateChat({
                         participant1: adminId,
-                        participant2: userData.id,
+                        participant2: userData._id,
                         participant2Name: userData.name,
                         participant2ProfileUrl: userData.profileUrl,
                         participant1Role: 'admin',
@@ -164,10 +182,9 @@ const ChatBot: React.FC = () => {
 
                     if (chatResponse.success && chatResponse.data) {
                         setIsLoading(false);
-                        // Existing chat found
                         const chatId = chatResponse.data._id;
                         console.log("Existing chat found:", chatId);
-                        socket.emit("join_room", { chatId, userId: userData.id });
+                        socket.emit("join_room", { chatId, userId: userData._id });
                         socket.emit("get_chat_history", { chatId: chatId });
                         socket.emit("get_admin_online_status");
                     }
@@ -340,7 +357,7 @@ const ChatBot: React.FC = () => {
             // Send message to admin via socket
             socket.emit('send_message', {
                 message: messageText,
-                senderId: user?.id,
+                senderId: user?._id,
                 receiverId: adminId,
                 timestamp: new Date()
             });
@@ -384,11 +401,11 @@ const ChatBot: React.FC = () => {
         try {
             setIsTyping(true);
 
-            const response = await getGreenoBotResponse(prompt);
-            console.log("GreenoBotResponse:", response);
+            const res: ApiResponse<string> = await getGreenoBotResponse(prompt);
+            console.log("GreenoBotResponse:", res);
 
             const botMessage: IBotMessage = {
-                message: response.data,
+                message: res.data,
                 isBot: true,
                 timestamp: new Date(),
                 status: 'read',
@@ -419,24 +436,24 @@ const ChatBot: React.FC = () => {
     const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setMessage(e.target.value);
 
-        if (chatMode === 'admin' && user?.id) {
+        if (chatMode === 'admin' && user?._id) {
             // Clear any existing timeout
             if (typingTimeoutRef.current) {
                 clearTimeout(typingTimeoutRef.current);
             }
 
-            console.log("chatId:", chatMessages[0]?.chatId);
+            console.log("chatId in handleMessageChange:", chatMessages[0]?.chatId);
 
             // Emit typing event
             socket.emit('typing', {
-                userId: user.id,
+                userId: user?._id,
                 chatId: chatMessages[0]?.chatId
             });
 
             // Set timeout to emit stop typing after 1 second of no typing
             typingTimeoutRef.current = setTimeout(() => {
                 socket.emit('stop_typing', {
-                    userId: user.id,
+                    userId: user._id,
                     chatId: chatMessages[0]?.chatId
                 });
             }, 1000);
@@ -570,20 +587,20 @@ const ChatBot: React.FC = () => {
                         <div key={index}>
                             <div
                                 className={`flex ${(isBotMessage(msg) && msg.isBot) ||
-                                    (isDatabaseMessage(msg) && msg.senderId !== user?.id)
+                                    (isDatabaseMessage(msg) && msg.senderId !== user?._id)
                                     ? 'justify-start'
                                     : 'justify-end'
                                     }`}
                             >
                                 <div
                                     className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-2xl ${(isBotMessage(msg) && msg.isBot) ||
-                                        (isDatabaseMessage(msg) && msg.senderId !== user?.id)
+                                        (isDatabaseMessage(msg) && msg.senderId !== user?._id)
                                         ? 'bg-white text-gray-800 shadow-md border'
                                         : 'bg-green-900 text-white'
                                         } relative group`}
                                 >
                                     <div className="flex flex-col">
-                                        <div className="text-xs sm:text-sm mr-5">
+                                        <div className="text-xs sm:text-sm font-medium mr-5">
                                             {isDatabaseMessage(msg) ? msg.message : (typeof msg.message === 'string' ?
                                                 <ReactMarkdown>{msg.message}</ReactMarkdown> :
                                                 JSON.stringify(msg.message))}
@@ -619,7 +636,7 @@ const ChatBot: React.FC = () => {
                                         <button
                                             key={idx}
                                             onClick={() => handleSubmit(reply)}
-                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-100 text-green-950 border rounded-full text-xs sm:text-sm hover:bg-green-200 transition-colors"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-100 text-green-950 border rounded-full text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors"
                                         >
                                             {reply}
                                         </button>

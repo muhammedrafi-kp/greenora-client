@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { X } from 'lucide-react';
 import { getCategories } from '../../services/collectionService';
+import { ApiResponse } from '../../types/common';
+import { ICategory } from '../../types/collection';
 
 interface ICollection {
     _id: string;
@@ -39,13 +41,6 @@ interface ICollection {
     notes?: string;
 }
 
-interface ICategory {
-    _id: string;
-    name: string;
-    type: "waste" | "scrap";
-    description: string;
-    rate: number;
-}
 
 interface IFormData {
     items: {
@@ -99,9 +94,9 @@ const AddCollectionDetails: React.FC = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getCategories(collection.type);
-                if (response.success) {
-                    setCategories(response.data);
+                const res: ApiResponse<ICategory[]> = await getCategories(collection.type);
+                if (res.success) {
+                    setCategories(res.data);
                 }
             } catch (error) {
                 console.error("Error fetching categories:", error);

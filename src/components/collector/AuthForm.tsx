@@ -4,10 +4,11 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from "../../redux/authSlice";
 import { validateField, validateForm } from "../../validations/userValidation";
-import { IUserSignUpData, IFormErrors } from "../../interfaces/interfaces";
+import { IUserSignUpData, IFormErrors } from "../../types/user";
 import { loginCollector, signUpCollector,googleCallbackCollector } from "../../services/authService";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import toast from 'react-hot-toast';
+import { ApiResponse } from "../../types/common";
 
 interface AuthFormProps {
     initialMode?: 'login' | 'signup';
@@ -74,15 +75,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
             try {
                 if (isLogin) {
                     // Add your collector login API call here
-                    const response = await loginCollector(formData.email, formData.password);
-                    console.log("response :", response);
-                    if (response.success) {
-                        dispatch(loginSuccess({ token: response.token, role: response.role }));
+                    const res:ApiResponse<{token:string,role:string}> = await loginCollector(formData.email, formData.password);
+                    console.log("response :", res);
+                    if (res.success) {
+                        dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
                     }
                 } else {
                     // Add your collector signup API call here
-                    const response = await signUpCollector(formData);
-                    if (response.success) {
+                    const res:ApiResponse<null> = await signUpCollector(formData);
+                    if (res.success) {
                         navigate('/collector/verify-otp', {
                             state: {
                                 email: formData.email,
@@ -125,9 +126,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
     const handleGoogleSuccess = async (credentialResponse: any) => {
         setIsLoading(true);
         try {
-            const response = await googleCallbackCollector(credentialResponse.credential);
-            if (response.success) {
-                dispatch(loginSuccess({ token: response.token, role: response.role }));
+            const res:ApiResponse<{token:string,role:string}> = await googleCallbackCollector(credentialResponse.credential);
+            if (res.success) {
+                dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
                 navigate('/collector');
                 toast.success("Login successful!");
             }

@@ -1,69 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaArrowCircleLeft, FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock, FaCreditCard, FaMoneyBill, FaMapMarkerAlt, FaPhoneAlt, FaUser, FaMapMarkedAlt, FaRegCircle, FaClipboard } from 'react-icons/fa';
+import { FaArrowCircleLeft, FaCheckCircle, FaTimesCircle, FaClock, FaCreditCard, FaMoneyBill, FaMapMarkerAlt, FaPhoneAlt, FaUser, FaMapMarkedAlt, FaRegCircle, FaClipboard } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import toast from 'react-hot-toast';
 import { ICollection } from '../../types/collection';
-import {ICollector} from "../../types/user";
+import { ICollector } from "../../types/user";
 import { getCollectorData } from '../../services/userService';
 import { cancelCollection } from '../../services/collectionService';
-
-// Define the interfaces
-// interface ICategory {
-//     _id: string;
-//     name: string;
-// }
-
-// interface ICollector {
-//     _id: string;
-//     name: string;
-//     email: string;
-//     phone: string;
-//     profileUrl: string;
-// }
-
-
-// interface Item {
-//     categoryId: ICategory;
-//     name: string;
-//     rate: number;
-//     qty: number;
-// }
-
-// interface IAddress {
-//     name: string;
-//     mobile: string;
-//     pinCode: string;
-//     locality: string;
-//     addressLine: string;
-// }
-
-// interface ICollection {
-//     _id: string;
-//     collectionId: string;
-//     collectorId?: string;
-//     districtId: string;
-//     serviceAreaId: string;
-//     type: string;
-//     status: 'completed' | 'scheduled' | 'in progress' | 'cancelled' | 'pending';
-//     paymentStatus: 'paid' | 'pending' | 'failed';
-//     payment: {
-//         paymentId: string;
-//         amount: number;
-//         advanceAmount: number;
-//         advancePaymentStatus: "success" | "pending" | "failed" | "refunded";
-//         status: "pending" | "success" | "failed" | "requested";
-//         method: "online" | "wallet" | "cash";
-//         orderId: string;
-//         paidAt: Date;
-//     };
-//     items: Item[];
-//     estimatedCost: number;
-//     preferredDate: string;
-//     createdAt: string;
-//     address: IAddress;
-//     collector?: ICollector;
-// }
+import { ApiResponse } from "../../types/common";
 
 const LoadingSpinner = () => (
     <div className="flex justify-center items-center h-64">
@@ -107,7 +51,7 @@ const CollectionDetails: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'service' | 'collector'>('service');
     const [hoverRating, setHoverRating] = useState<number>(0);
 
-    const predefinedReasons: {id: string, reason: string}[] = [
+    const predefinedReasons: { id: string, reason: string }[] = [
         { id: '1', reason: 'Changed my mind' },
         { id: '2', reason: 'Found better rates elsewhere' },
         { id: '3', reason: 'Scheduling conflict' },
@@ -121,14 +65,14 @@ const CollectionDetails: React.FC = () => {
 
             setIsLoading(true);
             try {
-                const response = await getCollectorData("user",collectionDetails.collectorId);
-                console.log("collector response:", response);
-                if (response.success) {
-                    setCollector(response.data);
+                const res: ApiResponse<ICollector> = await getCollectorData("user", collectionDetails.collectorId);
+                console.log("collector response:", res);
+                if (res.success) {
+                    setCollector(res.data);
                 }
             } catch (error) {
                 console.error("Error fetching collector data:", error);
-            }finally{
+            } finally {
                 setIsLoading(false);
             }
         };
@@ -152,7 +96,7 @@ const CollectionDetails: React.FC = () => {
         }
     };
 
-    const getPaymentStatusIconAndColor = (status:  "pending" | "success" | "failed"|"requested") => {
+    const getPaymentStatusIconAndColor = (status: "pending" | "success" | "failed" | "requested") => {
         switch (status) {
             case 'success':
                 return { icon: <FaCreditCard />, color: 'bg-green-100 text-green-600' };
@@ -188,11 +132,11 @@ const CollectionDetails: React.FC = () => {
 
         setIsLoading(true);
         try {
-            const response = await cancelCollection(collectionDetails.collectionId, finalReason);
+            const res: ApiResponse<null> = await cancelCollection(collectionDetails.collectionId, finalReason);
 
-            console.log("cancellation resposne:", response);
+            console.log("cancellation resposne:", res);
 
-            if (response.success) {
+            if (res.success) {
                 toast.success("collection cancelled");
                 navigate("/account/collections")
             }
@@ -284,7 +228,7 @@ const CollectionDetails: React.FC = () => {
                                             >
                                                 {step.number}
                                             </div>
-                                            <span className={`mt-2 text-xs font-medium
+                                            <span className={`mt-2 text-sm font-medium
                                                 ${step.status === 'completed' ? 'text-green-600' : 'text-gray-500'}`}
                                             >
                                                 {step.name}
@@ -299,13 +243,13 @@ const CollectionDetails: React.FC = () => {
                     {/* Collection ID and Action Buttons in same row */}
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                         <h2 className="text-lg font-semibold bg-green-900 text-white px-3 py-1 rounded-md">
-                            Collection ID : {collectionDetails.collectionId.toLocaleUpperCase()}
+                            Collection ID : #{collectionDetails.collectionId.toLocaleUpperCase()}
                         </h2>
 
                         <div className="flex gap-4">
                             {collectionDetails.status !== 'cancelled' && collectionDetails.status !== 'completed' && (
                                 <button
-                                    className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-red-800 text-white font-semibold rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
                                     onClick={handleCancelClick}
                                 >
                                     Cancel Collection
@@ -408,10 +352,10 @@ const CollectionDetails: React.FC = () => {
                                     </div>
 
                                     <div className="mt-4 space-y-4">
-                                        <button onClick={() => window.open(`tel:${collector.phone}`, '_blank')} className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors flex items-center justify-center gap-2">
+                                        <button onClick={() => window.open(`tel:${collector.phone}`, '_blank')} className="w-full py-2 bg-green-800 text-white font-medium rounded-lg hover:bg-green-900 transition-colors flex items-center justify-center gap-2">
                                             <FaPhoneAlt /> Call Collector
                                         </button>
-                                        <button onClick={() => navigate('/collection/track-collector')} className="w-full py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors flex items-center justify-center gap-2">
+                                        <button onClick={() => navigate('/collection/track-collector')} className="w-full py-2 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-colors flex items-center justify-center gap-2">
                                             <FaMapMarkedAlt /> Track Collector
                                         </button>
                                     </div>
@@ -466,7 +410,7 @@ const CollectionDetails: React.FC = () => {
                             {/* Pickup Instructions - without card */}
                             <div className="mt-8">
                                 <h3 className="text-sm sm:text-md md:text-lg font-semibold text-gray-900 mb-4">Pickup Instructions:</h3>
-                                <ul className="text-sm sm:text-md md:text-md space-y-3 text-gray-800 list-disc pl-5">
+                                <ul className="text-sm sm:text-md md:text-md font-medium space-y-3 text-gray-800 list-disc pl-5">
                                     <li>
                                         Ensure that all {collectionDetails.type}s are ready for collection on the scheduled pickup day.
                                     </li>
@@ -491,8 +435,8 @@ const CollectionDetails: React.FC = () => {
                                 <button
                                     onClick={() => setActiveTab('service')}
                                     className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'service'
-                                            ? 'bg-white text-green-800 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-800'
+                                        ? 'bg-white text-green-800 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-800'
                                         }`}
                                 >
                                     Rate Service
@@ -501,8 +445,8 @@ const CollectionDetails: React.FC = () => {
                                     <button
                                         onClick={() => setActiveTab('collector')}
                                         className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'collector'
-                                                ? 'bg-white text-green-800 shadow-sm'
-                                                : 'text-gray-600 hover:text-gray-800'
+                                            ? 'bg-white text-green-800 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-800'
                                             }`}
                                     >
                                         Rate Collector
@@ -520,9 +464,9 @@ const CollectionDetails: React.FC = () => {
                                             onMouseEnter={() => setHoverRating(star)}
                                             onMouseLeave={() => setHoverRating(0)}
                                             className={`text-3xl transition-transform hover:scale-110 ${star <= (activeTab === 'service' ? serviceRating : collectorRating) ||
-                                                    star <= hoverRating
-                                                    ? 'text-yellow-400'
-                                                    : 'text-gray-300'
+                                                star <= hoverRating
+                                                ? 'text-yellow-400'
+                                                : 'text-gray-300'
                                                 }`}
                                         >
                                             ★
@@ -553,8 +497,8 @@ const CollectionDetails: React.FC = () => {
                                 onClick={handleSubmitFeedback}
                                 disabled={isSubmittingFeedback || (!serviceRating && !collectorRating)}
                                 className={`w-full py-2 px-4 rounded-lg text-white font-medium ${isSubmittingFeedback || (!serviceRating && !collectorRating)
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-green-800 hover:bg-green-900'
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-green-800 hover:bg-green-900'
                                     }`}
                             >
                                 {isSubmittingFeedback ? 'Submitting...' : 'Submit'}
@@ -571,7 +515,7 @@ const CollectionDetails: React.FC = () => {
                 title="Cancel Collection"
                 description="Please select a reason for cancellation:"
                 confirmLabel="Confirm Cancellation"
-                confirmButtonClass="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors"
+                confirmButtonClass="px-4 py-2 bg-red-800 text-white font-medium rounded-lg hover:bg-red-900 transition-colors"
                 onConfirm={handleConfirmCancel}
                 isDisabled={!selectedReason && !customReason}
             >

@@ -258,11 +258,11 @@ const DetailsForm = () => {
                   }
                   setErrors(prev => ({ ...prev, category: '' }));
                 }}
-                className={`w-full p-2.5 border rounded-lg bg-white text-sm ${errors.category ? 'border-red-500' : 'border-gray-200'}`}
+                className={`w-full p-2.5 border rounded-lg bg-white text-sm font-medium text-gray-800 ${errors.category ? 'border-red-500' : 'border-gray-200'}`}
               >
                 <option value="" className='text-gray-400' disabled>--Select category--</option>
                 {availableCategories.map((category) => (
-                  <option key={category._id} value={category._id}>
+                  <option key={category._id} value={category._id} className='text-sm font-medium text-gray-800'>
                     {category.name}
                   </option>
                 ))}
@@ -273,7 +273,7 @@ const DetailsForm = () => {
             </div>
             <div className="col-span-2">
               <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Quantity ({pickupType === 'waste' ? 'Bags' : 'kg'})
+                Qty ({pickupType === 'waste' ? 'Bags' : 'kg'})
               </label>
               <input
                 type="number"
@@ -284,7 +284,7 @@ const DetailsForm = () => {
                   setNewItem(prev => ({ ...prev, qty: Number(e.target.value) }));
                   setErrors(prev => ({ ...prev, qty: '' }));
                 }}
-                className={`w-full p-2.5 border rounded-lg text-sm ${errors.qty ? 'border-red-500' : 'border-gray-200'
+                className={`w-full p-2.5 border rounded-lg text-sm font-medium text-gray-800 ${errors.qty ? 'border-red-500' : 'border-gray-200'
                   }`}
               />
               {errors.qty && (
@@ -295,7 +295,7 @@ const DetailsForm = () => {
               <button
                 type="button"
                 onClick={handleAddItemClick}
-                className="w-full px-4 py-2.5 bg-green-800 hover:bg-green-900 text-white rounded-lg transition-colors"
+                className="w-full px-4 py-2.5 bg-green-800 hover:bg-green-900 text-white font-medium rounded-lg transition-colors"
               >
                 Add
               </button>
@@ -312,7 +312,7 @@ const DetailsForm = () => {
                 key={index}
                 className="flex items-center gap-2 bg-green-100 px-3 py-1.5 rounded-lg"
               >
-                <span className="text-sm">
+                <span className="text-sm font-medium text-gray-800">
                   {getCategoryName(item.categoryId)} - {item.qty} {pickupType === 'waste' ? 'bag(s)' : 'kg'}
                 </span>
                 <button
@@ -328,7 +328,7 @@ const DetailsForm = () => {
 
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Preferred Date</label>
+              <label className="text-sm font-medium text-gray-800 mb-1 block">Preferred Date</label>
               <input
                 type="date"
                 name="preferredDate"
@@ -339,7 +339,7 @@ const DetailsForm = () => {
                   handleChange(e);
                   setErrors(prev => ({ ...prev, preferredDate: '' }));
                 }}
-                className={`w-full p-2.5 border rounded-lg text-sm ${errors.preferredDate ? 'border-red-500' : 'border-gray-200'
+                className={`w-full p-2.5 border rounded-lg text-sm font-medium text-gray-800 ${errors.preferredDate ? 'border-red-500' : 'border-gray-200'
                   }`}
               />
               {errors.preferredDate && (
@@ -349,13 +349,13 @@ const DetailsForm = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Instructions (optional)</label>
+            <label className="text-sm font-medium text-gray-800 mb-1 block">Instructions (optional)</label>
             <textarea
               name="instructions"
               value={formData.instructions}
               onChange={handleChange}
               placeholder="Add any special instructions..."
-              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm h-20 resize-none"
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 h-20 resize-none"
             />
           </div>
         </div>
@@ -374,14 +374,14 @@ const DetailsForm = () => {
               dispatch(setStep({ step: 2 }));
               navigate('/pickup/address');
             }}
-            className="w-1/2 border border-gray-300 text-gray-700 py-3 rounded-lg text-sm font-medium"
+            className="w-1/2 border border-gray-300 text-gray-700 py-3 rounded-lg text-md font-medium"
           >
             Back
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-1/2 bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-sm font-medium
+            className={`w-1/2 bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-md font-medium
               ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Continue

@@ -1,28 +1,16 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { FaCheck, FaArrowLeft } from 'react-icons/fa';
+import { IItem } from '../../types/collection';
+import { IAddress } from '../../types/location';
 
-interface Item {
-  categoryId: string;
-  name: string;
-  rate: number;
-  qty: number;
-}
 
 interface IFormData {
-  items: Item[];
+  items: IItem[];
   proofs: File[];
   notes: string;
 }
 
-interface IAddress {
-  name: string;
-  mobile: string;
-  pinCode: string;
-  locality: string;
-  addressLine: string;
-}
 
 interface ICollection {
   _id: string;

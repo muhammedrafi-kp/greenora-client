@@ -6,10 +6,11 @@ import io from 'socket.io-client';
 import { getChats } from '../../services/chatService';
 import { IoPersonCircleOutline } from 'react-icons/io5';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { ApiResponse } from '../../types/common';
 import { IChat } from '../../types/chat';
 import '../../styles/scrollbar.css';
 
-// Initialize socket connection for admin
+
 const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
     transports: ["websocket", "polling"],
     withCredentials: true,
@@ -77,15 +78,15 @@ const AdminChat: React.FC = () => {
         const fetchChats = async () => {
             setIsLoading(true);
             try {
-                const response = await getChats();
-                console.log("chats response:", response);
-                if (response.success) {
-                    setChats(response.data);
-                    setFilteredChats(response.data);
+                const res: ApiResponse<IChat[]> = await getChats();
+                console.log("chats response:", res);
+                if (res.success) {
+                    setChats(res.data);
+                    setFilteredChats(res.data);
                     // Fetch online users after chats are loaded
                     socket.emit("get_online_users");
                 } else {
-                    console.error('Error fetching chats:', response.message);
+                    console.error('Error fetching chats:', res.message);
                 }
             } catch (error) {
                 console.error('Error fetching chats:', error);
@@ -305,8 +306,8 @@ const AdminChat: React.FC = () => {
         );
 
         return () => {
-            socket.off('chat_history', handleChatHistory);
-            socket.off('receive_message', handleIncomingMessage);
+            socket.off('chat_history');
+            socket.off('receive_message');
             socket.emit('leave_room', { chatId: currentChat._id, userId: currentChat.participant2 });
         };
     }, [currentChat?._id]); // Only depend on chat ID

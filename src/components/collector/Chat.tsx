@@ -39,7 +39,7 @@ const Chat: React.FC = () => {
         // Get user data
         const userResponse = await getUserData();
         if (userResponse.success) {
-          setUserId(userResponse.data.id);
+          setUserId(userResponse.data._id);
           
           // Get admin data
           const adminResponse = await getAdminData();
@@ -48,15 +48,15 @@ const Chat: React.FC = () => {
             
             // Initialize chat
             const chatResponse = await initiateChat({
-              participant1: userResponse.data.id,
-              participant2: adminResponse.data._id,
-              participant1Role: 'user',
-              participant2Role: 'admin'
+              // participant1: userResponse.data.id,
+              // participant2: adminResponse.data._id,
+              // participant1Role: 'user',
+              // participant2Role: 'admin'
             });
 
             if (chatResponse.success && chatResponse.data) {
               const chatId = chatResponse.data._id;
-              socket.emit("join-room", { chatId, userId: userResponse.data.id });
+              socket.emit("join-room", { chatId, userId: userResponse.data._id });
               socket.emit("get-chat-history", { chatId });
             }
           }

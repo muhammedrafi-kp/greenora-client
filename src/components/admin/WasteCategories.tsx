@@ -3,17 +3,9 @@ import { Search, Plus, Pencil, Trash2 } from 'lucide-react';
 import Modal from '../common/Modal';
 import { getCategories, addCategory, updateCategory, deleteCategory } from '../../services/collectionService';
 import { toast } from 'react-hot-toast';
+import { ApiResponse } from '../../types/common';
+import { ICategory } from '../../types/collection';
 
-export interface IWasteCategory {
-  _id: string;
-  name: string;
-  type: 'waste';
-  description: string;
-  rate: number;
-  isActive: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
 
 export interface IWasteCategoryForm {
   name: string;
@@ -29,13 +21,13 @@ interface FormErrors {
 }
 
 const WasteCategories: React.FC = () => {
-  const [wastes, setWastes] = useState<IWasteCategory[]>([]);
+  const [wastes, setWastes] = useState<ICategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<'add' | 'edit' | 'delete'>('add');
-  const [selectedItem, setSelectedItem] = useState<IWasteCategory | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ICategory | null>(null);
   const [formInput, setFormInput] = useState<IWasteCategoryForm>({
     name: '',
     type: 'waste',
@@ -52,10 +44,10 @@ const WasteCategories: React.FC = () => {
   const fetchWasteCategories = async () => {
     try {
       setLoading(true);
-      const response = await getCategories('waste');
-      if (response.success) {
-        setWastes(response.data);
-        console.log("response", response.data);
+      const res: ApiResponse<ICategory[]> = await getCategories('waste');
+      if (res.success) {
+        setWastes(res.data);
+        console.log("response", res.data);
         setError(null);
       }
     } catch (error) {
@@ -158,7 +150,7 @@ const WasteCategories: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleEdit = (item: IWasteCategory) => {
+  const handleEdit = (item: ICategory) => {
     setModalType('edit');
     setSelectedItem(item);
     setFormInput({
@@ -170,7 +162,7 @@ const WasteCategories: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (item: IWasteCategory) => {
+  const handleDelete = (item: ICategory) => {
     setModalType('delete');
     setSelectedItem(item);
     setShowModal(true);
@@ -181,8 +173,8 @@ const WasteCategories: React.FC = () => {
       // Skip validation for delete operations
       if (modalType === 'delete') {
         if (selectedItem) {
-          const response = await deleteCategory(selectedItem._id);
-          if (response.success) {
+          const res: ApiResponse<ICategory> = await deleteCategory(selectedItem._id);
+          if (res.success) {
             await fetchWasteCategories();
           }
         }
@@ -193,13 +185,13 @@ const WasteCategories: React.FC = () => {
         }
 
         if (modalType === 'add') {
-          const response = await addCategory(formInput);
-          if (response.success) {
+          const res: ApiResponse<ICategory> = await addCategory(formInput);
+          if (res.success) {
             await fetchWasteCategories();
           }
         } else if (modalType === 'edit' && selectedItem) {
-          const response = await updateCategory(selectedItem._id, formInput);
-          if (response.success) {
+          const res: ApiResponse<ICategory> = await updateCategory(selectedItem._id, formInput);
+          if (res.success) {
             await fetchWasteCategories();
           }
         }

@@ -4,15 +4,9 @@ import Modal from '../common/Modal';
 import { getUsers, updateUserStatus } from "../../services/userService";
 import toast from 'react-hot-toast';
 import { exportTableData } from '../../utils/exportUtils';
+import { ApiResponse } from '../../types/common';
+import { IUser } from '../../types/user';
 
-interface IUser {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  profileUrl?: string;
-  isBlocked: boolean;
-}
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<IUser[]>([]);
@@ -40,7 +34,7 @@ const Users: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await getUsers({
+      const res:ApiResponse<{users:IUser[],totalItems:number,totalPages:number,currentPage:number}> = await getUsers({
         search: searchTerm,
         status: selectedStatus,
         sortField,
@@ -49,13 +43,13 @@ const Users: React.FC = () => {
         limit: usersPerPage
       });
       
-      if (response.success) {
-        setUsers(response.users);
-        setTotalItems(response.totalItems);
-        setTotalPages(response.totalPages);
+      if (res.success) {
+        setUsers(res.data.users);
+        setTotalItems(res.data.totalItems);
+        setTotalPages(res.data.totalPages);
         setError(null);
       } else {
-        setError(response.message);
+        setError(res.message || 'An error occurred');
       }
     } catch (err) {
       setError('Failed to fetch users. Please try again later.');
@@ -124,9 +118,9 @@ const Users: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await updateUserStatus(selectedUser._id);
-      console.log(response)
-      if (response.success) {
+      const res:ApiResponse<null> = await updateUserStatus(selectedUser._id);
+      console.log(res)
+      if (res.success) {
         setUsers(prevUsers =>
           prevUsers.map(user =>
             user._id === selectedUser._id
@@ -135,9 +129,9 @@ const Users: React.FC = () => {
           )
         );
 
-        toast.success(response.message);
+        toast.success(res.message);
       } else {
-        toast.error(response.message || 'Failed to update user status');
+        toast.error(res.message || `Failed to ${!selectedUser.isBlocked ? 'block' : 'unblock'} user`);
       }
       setSelectedUser(null);
     } catch (error) {

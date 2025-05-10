@@ -49,7 +49,7 @@ const PickupLayout = () => {
                         {step.number}
                       </div>
                       <span
-                        className={`mt-2 text-xs font-medium
+                        className={`mt-2 text-sm font-medium
                           ${step.number <= currentStep ? "text-green-600" : "text-gray-500"}`}
                       >
                         {step.name}

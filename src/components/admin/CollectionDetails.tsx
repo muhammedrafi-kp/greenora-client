@@ -8,6 +8,8 @@ import { getDistrictAndServiceArea } from '../../services/locationService';
 import { toast } from 'react-hot-toast';
 import ScheduleCollectionModal from './ScheduleCollectionModal';
 import CancelCollectionModal from './CancelCollectionModal';
+import { ApiResponse } from '../../types/common';
+import { ICollector } from '../../types/user';
 
 interface ICollection {
   _id: string;
@@ -52,11 +54,6 @@ interface ICollection {
   }[];
 }
 
-interface ICollector {
-  _id: string;
-  name: string;
-  taskCount: number;
-}
 
 interface ICancellationReason {
   id: string;
@@ -111,10 +108,10 @@ const CollectionDetailsPage: React.FC = () => {
       setLoading(true);
       try {
         if (!collection.collectorId) return;
-        const response = await getCollectorData("admin", collection.collectorId);
-        console.log("collector response:", response);
-        if (response.success) {
-          setCollector(response.data);
+        const res: ApiResponse<ICollector> = await getCollectorData("admin", collection.collectorId);
+        console.log("collector response:", res);
+        if (res.success) {
+          setCollector(res.data);
         }
       } catch (error) {
         console.error("Error fetching collector data:", error);
@@ -170,10 +167,10 @@ const CollectionDetailsPage: React.FC = () => {
         setLoading(true);
         // Format the date as YYYY-MM-DD to avoid timezone issues
         const formattedDate = date.toISOString().split('T')[0];
-        const response = await getAvailableCollectors(collection.serviceAreaId, formattedDate);
-        console.log("available collectors response:", response);
-        if (response.success) {
-          setAvailableCollectors(response.collectors);
+        const res:ApiResponse<ICollector[]> = await getAvailableCollectors(collection.serviceAreaId, formattedDate);
+        console.log("available collectors response:", res);
+        if (res.success) {
+          setAvailableCollectors(res.data);
         }
       } catch (error) {
         console.error("Error fetching available collectors:", error);
@@ -195,20 +192,20 @@ const CollectionDetailsPage: React.FC = () => {
       }
 
       const formattedDate = selectedDate.toISOString().split('T')[0];
-      const response = await scheduleCollection(
+      const res: ApiResponse<null> = await scheduleCollection(
         collection.collectionId,
         selectedCollector,
         collection.user.userId,
         formattedDate
       );
-      console.log("schedule collection response:", response);
-      if (response.success) {
+      console.log("schedule collection response:", res);
+      if (res.success) {
         toast.success('Collection scheduled successfully');
         setShowScheduleModal(false);
         // navigate('/admin/collections');
         window.location.reload();
       } else {
-        toast.error(response.message || 'Failed to schedule collection');
+        toast.error(res.message || 'Failed to schedule collection');
       }
     } catch (error) {
       console.error('Error scheduling collection:', error);
@@ -228,18 +225,18 @@ const CollectionDetailsPage: React.FC = () => {
       setLoading(true);
 
       console.log("selected reason:",collection.collectionId,typeof selectedReason);
-      const response = await cancelCollection(
+      const res: ApiResponse<null> = await cancelCollection(
         collection.collectionId,
         selectedReason
       );
 
-      console.log("cancel collection response:", response);
-      if (response.success) {
+      console.log("cancel collection response:", res);
+      if (res.success) {
         toast.success('Collection cancelled successfully');
         setShowCancelModal(false);
         navigate('/admin/collections');
       } else {
-        toast.error(response.message || 'Failed to cancel collection');
+        toast.error(res.message || 'Failed to cancel collection');
       }
     } catch (error) {
       console.error('Error cancelling collection:', error);
@@ -276,7 +273,8 @@ const CollectionDetailsPage: React.FC = () => {
             {collection.status === 'pending' && (
               <button
                 onClick={() => setShowScheduleModal(true)}
-                className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+
+                className="px-5 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -287,7 +285,7 @@ const CollectionDetailsPage: React.FC = () => {
             {(collection.status === 'pending' || collection.status === 'scheduled') && (
               <button
                 onClick={() => setShowCancelModal(true)}
-                className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                className="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -318,7 +316,7 @@ const CollectionDetailsPage: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Payment Status</span>
                 <span className={`px-3 py-1 rounded-md text-xs font-medium bg-gray-100`}>
-                  {collection.payment.status}
+                  {collection.payment?.status}
                 </span>
               </div>
               <div className="flex justify-between items-center">

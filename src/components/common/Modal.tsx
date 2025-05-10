@@ -75,7 +75,7 @@ const Modal: React.FC<ModalProps> = ({
             <button
               onClick={onConfirm}
               disabled={isDisabled}
-              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-600 font-medium hover:bg-blue-700 transition-colors"}
+              className={confirmButtonClass || "px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition-colors"}
             >
               {confirmLabel}
             </button>

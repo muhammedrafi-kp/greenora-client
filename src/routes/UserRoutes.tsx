@@ -53,6 +53,7 @@ const UserRoutes: React.FC = () => {
                         <Route path='/pricing' element={<UserPricing />} />
                         <Route path='/collection/details' element={<UserCollectionDetails />} />
                         <Route path='/collection/track-collector' element={<UserTrackingCollector />} />
+                        
                         <Route path='/pickup' element={<UserPickupLayout />}>
                             <Route index element={<UserPickupType />} />
                             <Route path="address" element={<UserPickupAddress />} />

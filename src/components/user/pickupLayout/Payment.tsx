@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Lock, Wallet, CreditCard } from 'lucide-react';
-import { initiateRazorpayAdvance, payAdvanceWithWallet, verifyRazorpayAdvance, getWalletData } from '../../../services/paymentService';
+import { initiateRazorpayAdvance, payAdvanceWithWallet, verifyRazorpayAdvance } from "../../../services/collectionService"
+import { getWalletData } from '../../../services/paymentService';
 import { useDispatch } from 'react-redux';
 import { setStep, resetPickup } from '../../../redux/pickupSlice';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
@@ -109,6 +110,9 @@ const Payment: React.FC = () => {
             name: "Greenora",
             description: "Collection Advance Payment",
             order_id: response.data.orderId,
+            theme: {
+              color: "#10B981"
+            },
             handler: async (response: any) => {
               try {
                 console.log("razorpay response :", response)
@@ -116,9 +120,9 @@ const Payment: React.FC = () => {
 
                 console.log("verify payment response:", verifyResponse);
                 if (verifyResponse.success) {
-                  // dispatch(setStep({ step: 1 }));
-                  // dispatch(resetPickup());
-                  // navigate('/pickup/success');
+                  dispatch(setStep({ step: 1 }));
+                  dispatch(resetPickup());
+                  navigate('/pickup/success');
                 } else {
                   navigate('/pickup/failure', {
                     state: {
@@ -142,9 +146,6 @@ const Payment: React.FC = () => {
               contact: "9999999999",
             },
             notes: "Razorpay Corporate Office",
-            theme: {
-              color: "#3399cc",
-            },
             modal: {
               ondismiss: function () {
                 navigate('/pickup/failure', {
@@ -190,7 +191,7 @@ const Payment: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-800">
             Payment Details
           </h3>
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm font-medium text-gray-600">
             <Lock className="w-4 h-4 mr-1" />
             Secure Payment
           </div>
@@ -221,7 +222,7 @@ const Payment: React.FC = () => {
                 <Wallet className="w-5 h-5 text-gray-600" />
                 <div className="text-left">
                   <p className="text-sm font-medium text-gray-800">Pay with Wallet</p>
-                  <p className="text-xs text-gray-500">Balance: ₹{walletBalance}</p>
+                  <p className="text-xs font-medium text-gray-500">Balance: ₹{walletBalance}</p>
                 </div>
               </div>
               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'wallet' ? 'border-green-500' : 'border-gray-300'
@@ -244,7 +245,7 @@ const Payment: React.FC = () => {
                 <CreditCard className="w-5 h-5 text-gray-600" />
                 <div className="text-left">
                   <p className="text-sm font-medium text-gray-800">Online Payment</p>
-                  <p className="text-xs text-gray-500">UPI, Card, Net Banking</p>
+                  <p className="text-xs font-medium text-gray-500">UPI, Card, Net Banking</p>
                 </div>
               </div>
               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'online' ? 'border-green-500' : 'border-gray-300'
@@ -268,7 +269,7 @@ const Payment: React.FC = () => {
             <button
               type="button"
               onClick={handleBack}
-              className="w-1/2 border border-gray-300 text-gray-700 py-3 rounded-lg text-sm font-medium"
+              className="w-1/2 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium"
             >
               Back
             </button>
@@ -277,7 +278,7 @@ const Payment: React.FC = () => {
             type="button"
             onClick={handlePaymentClick}
             disabled={loading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance < 50)}
-            className={`${loading ? 'w-full' : 'w-1/2'} bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-sm font-medium
+            className={`${loading ? 'w-full' : 'w-1/2'} bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-md font-medium
               ${loading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance < 50)
                 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
