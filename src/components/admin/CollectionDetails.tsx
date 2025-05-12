@@ -55,10 +55,10 @@ interface ICollection {
 }
 
 
-interface ICancellationReason {
-  id: string;
-  reason: string;
-}
+// interface ICancellationReason {
+//   id: string;
+//   reason: string;
+// }
 
 
 const CollectionDetailsPage: React.FC = () => {

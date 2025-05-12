@@ -72,7 +72,7 @@ const AdminChat: React.FC = () => {
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef<HTMLDivElement>(null);
-    const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+    const [imageErrors] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchChats = async () => {

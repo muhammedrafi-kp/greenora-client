@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { FaMoneyBillWave, FaCreditCard, FaCheck } from 'react-icons/fa';
+import { FaMoneyBillWave, FaCreditCard } from 'react-icons/fa';
 import { completeCollection } from '../../services/collectionService';
 import { sendPaymentRequest } from '../../services/collectionService';
 import { ApiResponse } from '../../types/common';
