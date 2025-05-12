@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Table, File, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Table, File } from 'lucide-react';
 
 interface Column {
     header: string;

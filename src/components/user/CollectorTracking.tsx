@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import Map, { Marker, NavigationControl, FullscreenControl, Source, Layer, Popup } from 'react-map-gl/mapbox';
-import type { MapRef, MarkerDragEvent, LngLat } from 'react-map-gl/mapbox';
+import Map, { Marker, NavigationControl, FullscreenControl, Source, Layer } from 'react-map-gl/mapbox';
+import type { MapRef } from 'react-map-gl/mapbox';
 import mapboxgl from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { FiNavigation, FiMapPin, FiUser, FiPlay, FiStopCircle, FiInfo } from 'react-icons/fi';
+import { FiNavigation, FiUser, FiPlay, FiStopCircle, FiInfo } from 'react-icons/fi';
 import { MdSpeed, MdGpsFixed, MdLocationPin } from 'react-icons/md';
 import { FaArrowLeft, FaTruck } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";

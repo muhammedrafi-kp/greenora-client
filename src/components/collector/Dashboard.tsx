@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import {
-  Calendar,
   Clock,
   MapPin,
   Package,
-  TrendingUp,
   Truck,
   Star,
-  Award,
-  BarChart as BarChartIcon,
   CircleUser,
   ClipboardList,
   DollarSign,
-  Target,
   CheckCircle
 } from 'lucide-react';
+
+// import {
+//   Calendar,
+//   TrendingUp,
+
+//   Award,
+//   BarChart as BarChartIcon,
+//   Target,
+// } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -399,7 +403,7 @@ const Dashboard: React.FC = () => {
                       dataKey="value"
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
-                      {collectionTypeData.map((entry, index) => (
+                      {collectionTypeData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

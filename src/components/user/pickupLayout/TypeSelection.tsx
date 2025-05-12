@@ -6,7 +6,7 @@ import { setType, setStep } from '../../../redux/pickupSlice';
 
 const TypeSelection = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const dispatch = useDispatch();
 
   const handlePickupTypeSelect = async (type: 'waste' | 'scrap') => {

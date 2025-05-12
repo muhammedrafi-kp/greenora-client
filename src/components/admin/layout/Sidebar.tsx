@@ -10,7 +10,6 @@ import {
     FaChevronUp
 } from 'react-icons/fa';
 import { FaPeopleGroup ,FaLocationDot} from "react-icons/fa6";
-import { IoPricetags } from "react-icons/io5";
 import { BiSolidCategory } from "react-icons/bi";
 
 interface SidebarProps {

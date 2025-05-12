@@ -55,10 +55,10 @@ interface ICollection {
 }
 
 
-interface ICancellationReason {
-  id: string;
-  reason: string;
-}
+// interface ICancellationReason {
+//   id: string;
+//   reason: string;
+// }
 
 
 const CollectionDetailsPage: React.FC = () => {
@@ -79,13 +79,13 @@ const CollectionDetailsPage: React.FC = () => {
 
   console.log("collection:", collection);
 
-  const cancellationReasons: ICancellationReason[] = [
-    { id: '1', reason: 'Customer requested cancellation' },
-    { id: '2', reason: 'No collector available' },
-    { id: '3', reason: 'Invalid address' },
-    { id: '4', reason: 'Customer not reachable' },
-    { id: '5', reason: 'Other' }
-  ];
+  // const cancellationReasons: ICancellationReason[] = [
+  //   { id: '1', reason: 'Customer requested cancellation' },
+  //   { id: '2', reason: 'No collector available' },
+  //   { id: '3', reason: 'Invalid address' },
+  //   { id: '4', reason: 'Customer not reachable' },
+  //   { id: '5', reason: 'Other' }
+  // ];
 
   useEffect(() => {
     if (!collection) {

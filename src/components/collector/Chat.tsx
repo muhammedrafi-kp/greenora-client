@@ -28,7 +28,7 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string>('');
   const [adminId, setAdminId] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   const [adminStatus, setAdminStatus] = useState<'online' | 'offline'>('offline');
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const Chat: React.FC = () => {
     });
 
     socket.on('chat-history', (data: { messages: IMessage[] }) => {
-      setIsLoading(false);
+      // setIsLoading(false);
       if (data.messages) {
         const formattedMessages = data.messages.map(msg => ({
           ...msg,

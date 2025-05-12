@@ -72,7 +72,7 @@ const AdminChat: React.FC = () => {
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef<HTMLDivElement>(null);
-    const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+    const [imageErrors] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -390,9 +390,9 @@ const AdminChat: React.FC = () => {
         });
     };
 
-    const handleImageError = (chatId: string) => {
-        setImageErrors(prev => ({ ...prev, [chatId]: true }));
-    };
+    // const handleImageError = (chatId: string) => {
+    //     setImageErrors(prev => ({ ...prev, [chatId]: true }));
+    // };
 
     return (
         <div className="flex min-h-screen bg-gray-50 ">
