@@ -33,7 +33,7 @@ interface FormErrors {
 const Pricing: React.FC = () => {
   const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<'add' | 'edit' | 'delete'>('add');

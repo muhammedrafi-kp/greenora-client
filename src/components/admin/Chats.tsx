@@ -390,9 +390,9 @@ const AdminChat: React.FC = () => {
         });
     };
 
-    const handleImageError = (chatId: string) => {
-        setImageErrors(prev => ({ ...prev, [chatId]: true }));
-    };
+    // const handleImageError = (chatId: string) => {
+    //     setImageErrors(prev => ({ ...prev, [chatId]: true }));
+    // };
 
     return (
         <div className="flex min-h-screen bg-gray-50 ">

@@ -20,7 +20,7 @@ const CollectionHistory: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<'wallet' | 'online' | null>(null);
   const [walletBalance, setWalletBalance] = useState(0);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [onlinePaymentLoading, setOnlinePaymentLoading] = useState(false);
+  const [onlinePaymentLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [showWaste, setShowWaste] = useState<boolean | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);

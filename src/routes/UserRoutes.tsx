@@ -11,7 +11,7 @@ import UserCollectionDetails from '../pages/user/UserCollectionDetails';
 import UserTrackingCollector from '../pages/user/UserTrackingCollector';
 
 import UserAccount from '../pages/user/UserAccount';
-import UserActivity from '../pages/user/UserActivity';
+// import UserActivity from '../paer/UserActivity';
 import UserProfile from '../pages/user/UserProfile';
 import UserWasteCollectionHistory from '../pages/user/UserWasteCollectionHistory';
 import UserCharges from '../pages/user/UserCharges';

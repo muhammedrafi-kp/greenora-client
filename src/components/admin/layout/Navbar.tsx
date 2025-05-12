@@ -1,17 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-    FaSearch,
     FaBars,
     FaUserCircle,
-    FaRegUserCircle,
 } from 'react-icons/fa';
-import { IoMdNotificationsOutline } from "react-icons/io";
+// import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdChatBubbleOutline } from "react-icons/md";
-import { CiChat1 } from "react-icons/ci";
+// import { CiChat1 } from "react-icons/ci";
 import { useNavigate } from 'react-router-dom';
 import { MdOutlineLogout } from 'react-icons/md';
-import { BiMessageRoundedDots } from "react-icons/bi";
-import { useDispatch, useSelector } from 'react-redux';
+// import { BiMessageRoundedDots } from "react-icons/bi";
+import { useDispatch } from 'react-redux';
 import { Logout } from "../../../redux/authSlice";
 
 interface NavbarProps {
@@ -20,7 +18,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+    // const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -75,9 +73,9 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                             >
                                 <MdChatBubbleOutline className="w-6 h-6 text-[#0E2A39]" />
                             </button>
-                            {hasUnreadMessages && (
+                            {/* {hasUnreadMessages && (
                                 <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                            )}
+                            )} */}
                         </div>
 
                         {/* Profile Dropdown */}

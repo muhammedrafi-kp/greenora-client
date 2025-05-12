@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Save, AlertTriangle, Power, Edit, X } from 'lucide-react';
+import {  Save, AlertTriangle, Power, Edit, X } from 'lucide-react';
+// import {  SettingsIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Modal from '../common/Modal';
 
