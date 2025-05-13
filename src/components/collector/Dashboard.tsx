@@ -157,7 +157,7 @@ const Dashboard: React.FC = () => {
       <div className="md:p-6 xs:p-4 p-3 max-w-7xl mx-auto">
        
 
-        {/* Collector Profile Summary */}
+        {/* Collector Profile Summary
         <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-blue-100 rounded-full">
@@ -191,7 +191,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-
+ */}
         {/* Navigation Tabs */}
         <div className="mb-6 flex border-b">
           <button
@@ -229,24 +229,24 @@ const Dashboard: React.FC = () => {
             {/* Key Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <DashboardCard title="Today's Pickups" icon={<Truck className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-emerald-600" />}>
-                <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">12</div>
-                <p className="md:text-sm xs:text-xs text-xxs text-emerald-600 font-medium">4 completed</p>
+                <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">5</div>
+                <p className="md:text-sm xs:text-xs text-xxs text-emerald-600 font-medium">2 completed</p>
               </DashboardCard>
 
               <DashboardCard title="Total Weight" icon={<Package className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-blue-600" />}>
-                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">85 kg</div>
-                <p className="md:text-sm xs:text-xs text-xxs text-blue-600 font-medium">+15% from yesterday</p>
+                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">12 kg</div>
+                {/* <p className="md:text-sm xs:text-xs text-xxs text-blue-600 font-medium">+15% from yesterday</p> */}
               </DashboardCard>
 
               <DashboardCard title="Weekly Earnings" icon={<DollarSign className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-purple-600" />}>
                 <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">₹{collectorData.weeklyEarnings}</div>
-                <p className="md:text-sm xs:text-xs text-xxs text-purple-600 font-medium">+12% from last week</p>
+                {/* <p className="md:text-sm xs:text-xs text-xxs text-purple-600 font-medium">+12% from last week</p> */}
               </DashboardCard>
 
-              <DashboardCard title="Next Pickup" icon={<Clock className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-orange-600" />}>
+              {/* <DashboardCard title="Next Pickup" icon={<Clock className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-orange-600" />}>
                 <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">10:00 AM</div>
                 <p className="md:text-sm xs:text-xs text-xxs text-orange-600 font-medium">123 Main St</p>
-              </DashboardCard>
+              </DashboardCard> */}
             </div>
 
 
