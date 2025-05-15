@@ -17,7 +17,7 @@ import { ApiResponse } from '../../types/common';
 import { IAdmin, IUser } from '../../types/user';
 import { IChat } from '../../types/chat';
 
-const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
+const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
     transports: ["websocket", "polling"],
     withCredentials: true,
 });

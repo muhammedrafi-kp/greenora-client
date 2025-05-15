@@ -4,7 +4,7 @@ import { loginSuccess, Logout } from "../redux/authSlice";
 import { toast } from "react-hot-toast";
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_BASE_URL,
+    baseURL: import.meta.env.VITE_API_GATEWAY_URL,
     withCredentials: true,
 });
 
@@ -77,7 +77,7 @@ apiClient.interceptors.response.use(
 
 
 const publicApiClient = axios.create({
-    baseURL: import.meta.env.VITE_BASE_URL,
+    baseURL: import.meta.env.VITE_API_GATEWAY_URL,
     withCredentials: true,
 });
 

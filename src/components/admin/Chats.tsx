@@ -11,28 +11,11 @@ import { IChat } from '../../types/chat';
 import '../../styles/scrollbar.css';
 
 
-const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL, {
+const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
     transports: ["websocket", "polling"],
     withCredentials: true,
 });
 
-// console.log("VITE_CHAT_SERVICE_URL:", import.meta.env.VITE_CHAT_SERVICE_URL);
-
-// interface IChat {
-//     _id: string;
-//     participant1: string;
-//     participant1Role: string;
-//     participant2: string;
-//     participant2Role: "user" | "collector";
-//     participant2Name: string;
-//     participant2ProfileUrl: string;
-//     lastMessage: string;
-//     isTyping: boolean;
-//     isOnline: boolean;
-//     createdAt: Date;
-//     updatedAt: Date;
-//     unreadCount?: number;
-// }
 
 interface IMessage {
     _id: string;
@@ -162,9 +145,9 @@ const AdminChat: React.FC = () => {
         socket.emit("admin_connected");
 
         socket.on("online_users", (userList) => {
-            console.log("online users :",userList);
+            console.log("online users :", userList);
 
-            setChats(prevChats => 
+            setChats(prevChats =>
                 prevChats.map(chat => ({
                     ...chat,
                     isOnline: userList.includes(chat.participant2) ? true : false
@@ -176,7 +159,7 @@ const AdminChat: React.FC = () => {
             console.log("user is online:", userId);
             console.log("currentChat on user online:", currentChat);
 
-            if(currentChat?.participant2 === userId){
+            if (currentChat?.participant2 === userId) {
                 setCurrentChat(prev => prev ? { ...prev, isOnline: true } : null);
             }
 
@@ -191,7 +174,7 @@ const AdminChat: React.FC = () => {
             console.log("user is offline:", userId);
             console.log("currentChat on user offline:", currentChat);
 
-            if(currentChat?.participant2 === userId){
+            if (currentChat?.participant2 === userId) {
                 setCurrentChat(prev => prev ? { ...prev, isOnline: false } : null);
             }
 
@@ -205,7 +188,7 @@ const AdminChat: React.FC = () => {
         // Add global typing event listeners
         const handleTyping = ({ chatId }: { chatId: string }) => {
             console.log("user is typing:", chatId);
-            
+
             // Update current chat if it matches
             if (currentChat && chatId === currentChat._id) {
                 setCurrentChat(prev => prev ? { ...prev, isTyping: true } : null);
@@ -221,7 +204,7 @@ const AdminChat: React.FC = () => {
 
         const handleStopTyping = ({ chatId }: { chatId: string }) => {
             console.log("user stopped typing:", chatId);
-            
+
             // Update current chat if it matches
             if (currentChat && chatId === currentChat._id) {
                 setCurrentChat(prev => prev ? { ...prev, isTyping: false } : null);

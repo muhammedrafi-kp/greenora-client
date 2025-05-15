@@ -18,7 +18,7 @@ import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { ApiResponse } from '../../types/common';
 import { INotification } from '../../types/notification';
 
-const socket = io(import.meta.env.VITE_NOTIFICATION_SERVICE_URL, {
+const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
     withCredentials: true,
     transports: ['websocket'],
 });
