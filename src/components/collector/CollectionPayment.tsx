@@ -68,7 +68,9 @@ const CollectionPayment: React.FC = () => {
 
 
 
-    const [selectedPayment, setSelectedPayment] = useState<'digital' | 'cash'>('digital');
+    const [selectedPayment, setSelectedPayment] = useState<'digital' | 'cash'>(
+        collection.type === 'scrap' ? 'cash' : 'digital'
+    );
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSendingRequest, setIsSendingRequest] = useState(false);
     // const [receiptGenerated, setReceiptGenerated] = useState(false);
@@ -124,7 +126,6 @@ const CollectionPayment: React.FC = () => {
     const handleCompleteCollection = async () => {
         setIsProcessing(true);
         try {
-
             const finalCollectionData = {
                 items: formData.items,
                 notes: formData.notes,
@@ -132,7 +133,7 @@ const CollectionPayment: React.FC = () => {
 
             const formDataToSend = new FormData();
             // Add collection data  
-            formDataToSend.append('paymentMethod', selectedPayment);
+            formDataToSend.append('paymentMethod', collection.type === 'scrap' ? 'cash' : selectedPayment);
             formDataToSend.append('collectionData', JSON.stringify(finalCollectionData));
 
             formData.proofs.forEach((proof) => {

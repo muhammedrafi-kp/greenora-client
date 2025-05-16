@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt } from "react-icons/fa";
 import { getDistricts, getServiceAreas } from '../../services/locationService';
-import { getRevenueData } from '../../services/collectionService';
+import { getDashboardData, getRevenueData } from '../../services/collectionService';
 import { ApiResponse } from '../../types/common';
 import { IDistrict, IServiceArea } from '../../types/location';
 
@@ -18,77 +18,118 @@ interface IRevenueData {
   scrapCollections: number;
 }
 
+interface IDashboardData {
+  totalCollections: number;
+  totalRevenue: number;
+  wasteCollections: number;
+  scrapCollections: number;
+}
+
 const AdminDashboard:React.FC = () => {
 
   const [districts, setDistricts] = useState<IDistrict[]>([]);
   const [serviceAreas, setServiceAreas] = useState<IServiceArea[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedServiceArea, setSelectedServiceArea] = useState<string>('all');
+  const [dashboardData, setDashboardData] = useState<IDashboardData>({
+    totalCollections: 0,
+    totalRevenue: 0,
+    wasteCollections: 0,
+    scrapCollections: 0
+  });
   const [revenueData, setRevenueData] = useState<IRevenueData[]>([]);
-  const [timeRange, setTimeRange] = useState('month');
+  // const [timeRange, setTimeRange] = useState('month');
   
   // Collection type distribution
   const collectionTypeData = [
-    { name: 'Waste', value: 65 },
-    { name: 'Scrap', value: 35 },
+    { name: 'Waste', value: 90 },
+    { name: 'Scrap', value: 10 },
   ];
   
   // Revenue by district
   const districtRevenueData = [
-    { district: 'North', waste: 12500, scrap: 18000 },
-    { district: 'South', waste: 9800, scrap: 15200 },
-    { district: 'East', waste: 7600, scrap: 11000 },
-    { district: 'West', waste: 11200, scrap: 14500 },
-    { district: 'Central', waste: 13400, scrap: 19800 },
+    { district: 'Palakkad', waste: 1440, scrap:160 },
+    { district: 'Malappuram', waste: 330, scrap: 222 },
+    { district: 'Kozhikode', waste: 0, scrap: 0 },
   ];
   
   // Collection status distribution
   const statusData = [
-    { name: 'Pending', value: 15 },
-    { name: 'Scheduled', value: 25 },
-    { name: 'In Progress', value: 20 },
-    { name: 'Completed', value: 35 },
-    { name: 'Cancelled', value: 5 },
+    { name: 'Pending', value: 2 },
+    { name: 'Scheduled', value: 5 },
+    { name: 'In Progress', value: 2 },
+    { name: 'Completed', value: 6 },
+    { name: 'Cancelled', value: 2 },
   ];
   
   // Monthly collection trends
   const monthlyTrendsData = [
-    { month: 'Jan', waste: 65, scrap: 45 },
-    { month: 'Feb', waste: 75, scrap: 48 },
-    { month: 'Mar', waste: 82, scrap: 52 },
-    { month: 'Apr', waste: 70, scrap: 55 },
-    { month: 'May', waste: 85, scrap: 62 },
-    { month: 'Jun', waste: 90, scrap: 68 },
+    { month: 'Jan', waste: 12, scrap: 4 },
+    { month: 'Feb', waste: 8, scrap: 3 },
+    { month: 'Mar', waste: 15, scrap: 2 },
+    { month: 'Apr', waste: 7, scrap: 6 },
+    { month: 'May', waste: 13, scrap: 4 },
+    { month: 'Jun', waste: 8, scrap: 3 },
   ];
   
   // Top collector performance
   const collectorPerformanceData = [
-    { name: 'John D.', collections: 52, revenue: 15800, rating: 4.8 },
-    { name: 'Sarah K.', collections: 48, revenue: 14200, rating: 4.9 },
-    { name: 'Mike T.', collections: 43, revenue: 12900, rating: 4.7 },
-    { name: 'Lisa M.', collections: 41, revenue: 12400, rating: 4.6 },
+    { name: 'collector.', collections: 5, revenue: 1500, rating: 4.8 },
+    { name: 'Leo', collections: 4, revenue: 1400, rating: 4.9 },
+    { name: 'John.', collections: 3, revenue: 1200, rating: 4.7 },
+    { name: 'Rajesh', collections: 2, revenue: 1100, rating: 4.6 },
+    { name: 'Alex', collections: 1, revenue: 1000, rating: 4.6 },
   ];
   
   // Most collected items
   const topItemsData = [
-    { name: 'Cardboard', quantity: 325, revenue: 5200 },
-    { name: 'Paper', quantity: 280, revenue: 4200 },
-    { name: 'Glass', quantity: 210, revenue: 3800 },
-    { name: 'Plastic', quantity: 195, revenue: 3500 },
-    { name: 'Metal', quantity: 175, revenue: 6200 },
+    { name: 'Cardboard', quantity: 25, revenue: 2000 },
+    { name: 'Paper', quantity: 28, revenue: 2500 },
+    { name: 'Glass', quantity: 10, revenue: 1000 },
+    { name: 'Plastic', quantity: 19, revenue: 1500 },
+    { name: 'Metal', quantity: 17, revenue: 2000 },
   ];
+
+  // const dashboardData = [
+  //   {
+  //     title: 'Total Collections',
+  //     value: '10',
+  //     color: 'bg-white border-l-4 border-emerald-400',
+  //     iconColor: 'text-emerald-400'
+  //   },
+  //   {
+  //     title: 'Total Revenue',
+  //     value: '₹2460',
+  //     color: 'bg-white border-l-4 border-sky-400',
+  //     iconColor: 'text-sky-400'
+  //   },
+  //   {
+  //     title: 'Active Collectors',
+  //     value: '5',
+  //     color: 'bg-white border-l-4 border-violet-400',
+  //     iconColor: 'text-violet-400'
+  //   },
+  //   {
+  //     title: 'Pending Collections',
+  //     value: '12',
+  //     color: 'bg-white border-l-4 border-amber-400',
+  //     iconColor: 'text-amber-400'
+  //   }
+  // ]
   
   // Colors for charts
+  
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
   // New state for revenue filters
-  const [dateFilter, setDateFilter] = useState('thismonth');
+  const [dateFilter, setDateFilter] = useState('last7days');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     fetchDistricts();
     fetchRevenueData();
+    fetchDashboardData();
   }, []);
 
   useEffect(() => {
@@ -104,9 +145,17 @@ const AdminDashboard:React.FC = () => {
     fetchRevenueData();
   }, [selectedDistrict, selectedServiceArea, dateFilter, startDate, endDate]);
 
+  const fetchDashboardData = async () => {
+    const response = await getDashboardData();
+    console.log("dashboard data",response);
+    if (response.success) {
+      setDashboardData(response.data);
+    }
+  };
   const fetchDistricts = async () => {
     try {
       const res: ApiResponse<IDistrict[]> = await getDistricts();
+
       if (res.success) {
         setDistricts(res.data);
       }
@@ -129,8 +178,8 @@ const AdminDashboard:React.FC = () => {
   const fetchRevenueData = async () => {
     try {
       const params = {
-        district: selectedDistrict,
-        serviceArea: selectedServiceArea,
+        districtId: selectedDistrict === 'all' ? undefined : selectedDistrict,
+        serviceAreaId: selectedServiceArea === 'all' ? undefined : selectedServiceArea,
         dateFilter: dateFilter,
         startDate: startDate,
         endDate: endDate
@@ -160,48 +209,61 @@ const AdminDashboard:React.FC = () => {
     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-6 py-4">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          {
-            title: 'Total Collections',
-            value: '10',
-            color: 'bg-white border-l-4 border-emerald-400',
-            iconColor: 'text-emerald-400'
-          },
-          {
-            title: 'Total Revenue',
-            value: '₹2460',
-            color: 'bg-white border-l-4 border-sky-400',
-            iconColor: 'text-sky-400'
-          },
-          {
-            title: 'Active Collectors',
-            value: '5',
-            color: 'bg-white border-l-4 border-violet-400',
-            iconColor: 'text-violet-400'
-          },
-          {
-            title: 'Pending Collections',
-            value: '12',
-            color: 'bg-white border-l-4 border-amber-400',
-            iconColor: 'text-amber-400'
-          }
-        ].map((card, index) => (
-          <div key={index}
-            className={`${card.color} rounded-lg shadow-sm hover:shadow-md transition-all duration-300`}
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-gray-600 text-base font-medium mb-1">{card.title}</h3>
-                  <p className="text-2xl font-bold text-gray-800">{card.value}</p>
-                </div>
-                <div className={`${card.iconColor} opacity-80`}>
-                  {/* Icon would go here */}
-                </div>
+        <div className="bg-white border-l-4 border-emerald-400 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 text-base font-medium mb-1">Total Collections</h3>
+                <p className="text-2xl font-bold text-gray-800">{dashboardData.totalCollections || 0}</p>
+              </div>
+              <div className="text-emerald-400 opacity-80">
+                {/* Icon would go here */}
               </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="bg-white border-l-4 border-sky-400 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 text-base font-medium mb-1">Total Revenue</h3>
+                <p className="text-2xl font-bold text-gray-800">₹{dashboardData.totalRevenue || 0}</p>
+              </div>
+              <div className="text-sky-400 opacity-80">
+                {/* Icon would go here */}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border-l-4 border-violet-400 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 text-base font-medium mb-1">Waste Collections</h3>
+                <p className="text-2xl font-bold text-gray-800">{dashboardData.wasteCollections || 0}</p>
+              </div>
+              <div className="text-violet-400 opacity-80">
+                {/* Icon would go here */}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border-l-4 border-amber-400 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 text-base font-medium mb-1">Scrap Collections</h3>
+                <p className="text-2xl font-bold text-gray-800">{dashboardData.scrapCollections || 0}</p>
+              </div>
+              <div className="text-amber-400 opacity-80">
+                {/* Icon would go here */}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Revenue Graph Section */}
@@ -375,7 +437,7 @@ const AdminDashboard:React.FC = () => {
       </div>
 
       {/* Time range selector */}
-      <div className="mt-6 flex justify-end">
+      {/* <div className="mt-6 flex justify-end">
         <div className="inline-flex rounded-md shadow-sm" role="group">
           <button
             type="button"
@@ -405,7 +467,7 @@ const AdminDashboard:React.FC = () => {
             Year
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Charts Row 1 - Collection Type and Status */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -539,7 +601,7 @@ const AdminDashboard:React.FC = () => {
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b border-gray-200">{collector.name}</td>
                     <td className="py-2 px-4 border-b border-gray-200">{collector.collections}</td>
-                    <td className="py-2 px-4 border-b border-gray-200">${collector.revenue.toLocaleString()}</td>
+                    <td className="py-2 px-4 border-b border-gray-200">₹{collector.revenue.toLocaleString()}</td>
                     <td className="py-2 px-4 border-b border-gray-200">{collector.rating}/5.0</td>
                   </tr>
                 ))}
@@ -571,7 +633,7 @@ const AdminDashboard:React.FC = () => {
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b border-gray-200">{item.name}</td>
                     <td className="py-2 px-4 border-b border-gray-200">{item.quantity} kg</td>
-                    <td className="py-2 px-4 border-b border-gray-200">${item.revenue.toLocaleString()}</td>
+                    <td className="py-2 px-4 border-b border-gray-200">₹{item.revenue.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>

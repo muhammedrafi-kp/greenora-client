@@ -68,7 +68,7 @@ apiClient.interceptors.response.use(
 
 
         if ([500, 502, 503, 504].includes(error.response?.status || 0)) {
-            window.location.href = '/error/500';
+            // window.location.href = '/error/500';
         }
 
         return Promise.reject(error);

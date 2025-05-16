@@ -198,6 +198,30 @@ export const getRevenueData = async (params: object) => {
   }
 }
 
+export const getDashboardData = async () => {
+  try {
+    const response = await apiClient.get('/collection-service/collection/dashboard');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    throw error;
+  }
+}
+
+export const getCollectorDashboardData = async () => {
+  try {
+    const response = await apiClient.get('/collection-service/collection/collector/dashboard');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching collector dashboard data:", error);
+    throw error;
+  }
+}
+
+
+
+
+
 export const getAssignedCollections = async (params: { 
   status?: string;
   startDate?: string;
@@ -212,3 +236,17 @@ export const getAssignedCollections = async (params: {
       throw error;
   }
 }
+
+
+export const getCollectorRevenueData = async (params: object) => {
+  try {
+    const response = await apiClient.get('/collection-service/collection/revenue/collector', { params });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching collector revenue data:", error);
+    throw error;
+  }
+}
+
+// export const 
+

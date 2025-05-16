@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {  Save, AlertTriangle, Power, Edit, X } from 'lucide-react';
+import {  Save, AlertTriangle, Edit, X } from 'lucide-react';
+// import {  Power } from 'lucide-react';
+
 // import {  SettingsIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Modal from '../common/Modal';
@@ -33,7 +35,7 @@ const Settings: React.FC = () => {
       const dummyData = {
         success: true,
         settings: {
-          collectorRevenuePercentage: 75,
+          collectorRevenuePercentage: 15,
           maintenanceMode: false
         }
       };
@@ -61,9 +63,9 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleMaintenanceToggle = () => {
-    setShowMaintenanceModal(true);
-  };
+  // const handleMaintenanceToggle = () => {
+  //   setShowMaintenanceModal(true);
+  // };
 
   const confirmMaintenanceToggle = async () => {
     try {
@@ -214,7 +216,7 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Maintenance Mode Card */}
-          <div className="bg-white border rounded-lg hover:shadow-md transition-all duration-300">
+          {/* <div className="bg-white border rounded-lg hover:shadow-md transition-all duration-300">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-medium text-gray-900">System Status</h3>
@@ -257,7 +259,7 @@ const Settings: React.FC = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

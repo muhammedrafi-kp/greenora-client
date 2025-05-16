@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
     FaBars,
@@ -7,8 +8,25 @@ import {
 } from 'react-icons/fa';
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdChatBubbleOutline, MdOutlineLogout } from "react-icons/md";
+import notificationAlert from '../../../assets/notification-alert.mp3';
+import { io } from 'socket.io-client';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { useDispatch } from 'react-redux';
 import { Logout } from '../../../redux/authSlice';
+import { getUnreadNotificationCount } from '../../../services/notificationService';
+import { incrementUnreadCount, setUnreadCount } from '../../../redux/notificationSlice';
+import { ApiResponse } from '../../../types/common';
+
+
+const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
+    withCredentials: true,
+    transports: ['websocket'],
+    path: "/notification/socket.io",
+});
+
+interface DecodedToken extends JwtPayload {
+    userId: string;
+}
 
 interface NavbarProps {
     toggleSidebar: () => void;
@@ -18,7 +36,55 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const navigate = useNavigate();
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
     const dispatch = useDispatch();
+    const unreadCount = useSelector((state: any) => state.notification.unreadCount.collector);
+    const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
+
+    console.log(" isLoggedIn:",  isLoggedIn);
+    console.log(" role:",  role);
+    console.log(" token:",  token);
+
+    // useEffect(() => {
+    //     fetchUnreadNotificationCount();
+    // }, []);
+
+    const fetchUnreadNotificationCount = async () => {
+        try {
+            const res: ApiResponse<number> = await getUnreadNotificationCount();
+            if (res.success) {
+                dispatch(setUnreadCount({ role: "collector", count: res.data }));
+            }
+        } catch (error) {
+            console.error("Error fetching unread notification count:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (isLoggedIn && role === 'collector' && token) {
+            const decodedToken = jwtDecode<DecodedToken>(token);
+            console.log("decodedToken:", decodedToken);
+            fetchUnreadNotificationCount();
+
+            socket.connect();
+            socket.emit("join-room", decodedToken.userId);
+
+            socket.on("receive-notification", () => {
+                
+                dispatch(incrementUnreadCount("collector"));
+
+                if (audioRef.current) {
+                    audioRef.current.play().catch(err => console.log("Audio play failed:", err));
+                }
+            });
+
+            return () => {
+                socket.off("receive-notification");
+                socket.disconnect();
+            };
+        }
+    }, [isLoggedIn, role, token]);
 
     const toggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
@@ -43,6 +109,8 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     };
 
     return (
+        <>
+        <audio ref={audioRef} src={notificationAlert} />
         <nav className="bg-white shadow-sm border-b border-gray-100">
             <div className="max-w-full mx-auto md:px-6 xs:px-4 px-2">
                 <div className="flex items-center justify-between md:h-16 h-14">
@@ -77,9 +145,11 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                 className='md:p-2 p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200'
                             >
                                 <IoMdNotificationsOutline className="md:w-6 md:h-6 xs:w-5 xs:h-5 w-4 h-4 text-gray-600 hover:text-green-600" />
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 flex items-center justify-center md:text-xs text-xxs font-semibold">
-                                    3
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 flex items-center justify-center md:text-xs text-xxs font-semibold">
+                                    {unreadCount}
                                 </span>
+                                )}
                             </button>
                         </div>
 
@@ -90,9 +160,9 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                 className='md:p-2 p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200'
                             >
                                 <MdChatBubbleOutline className="md:w-6 md:h-6 xs:w-5 xs:h-5 w-4 h-4 text-gray-600 hover:text-green-600" />
-                                <span className="absolute -top-1 -right-1 bg-green-600 text-white rounded-full md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 flex items-center justify-center md:text-xs text-xxs font-semibold">
+                                {/* <span className="absolute -top-1 -right-1 bg-green-600 text-white rounded-full md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 flex items-center justify-center md:text-xs text-xxs font-semibold">
                                     2
-                                </span>
+                                </span> */}
                             </button>
                         </div>
 
@@ -110,14 +180,12 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                     {/* Profile Info */}
                                     <div className="md:p-3 p-2 border-b">
                                         <div className="md:p-2 p-1.5 flex items-center space-x-3 hover:bg-gray-100 rounded-lg transition-colors duration-200 cursor-pointer">
-                                            <img
-                                                src="https://via.placeholder.com/40"
-                                                alt="Profile"
-                                                className="md:w-10 md:h-10 xs:w-8 xs:h-8 w-6 h-6 rounded-full"
-                                            />
+                                           <div>
+                                           <FaRegUserCircle className="md:w-4 md:h-4 w-3 h-3 text-gray-500" />  
+                                           </div>
                                             <div>
-                                                <h3 className="text-gray-900 font-semibold md:text-sm xs:text-xs text-xxs">Agent Name</h3>
-                                                <p className="text-gray-500 md:text-sm xs:text-xs text-xxs">agent@example.com</p>
+                                                {/* <h3 className="text-gray-900 font-semibold md:text-sm xs:text-xs text-xxs">Agent Name</h3> */}
+                                                <p className="text-gray-500 md:text-sm xs:text-xs text-xxs">collector@gmail.com</p>
                                             </div>
                                         </div>
                                     </div>
@@ -132,15 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                                 <span className="md:text-sm xs:text-xs text-xxs">View Profile</span>
                                             </div>
                                         </li>
-                                        <li
-                                            className="block md:px-4 px-3 md:py-2.5 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200"
-                                            onClick={() => navigate('/agent/notifications')}
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                <IoMdNotificationsOutline className="md:w-4 md:h-4 w-3 h-3 text-gray-500" />
-                                                <span className="md:text-sm xs:text-xs text-xxs">Notifications</span>
-                                            </div>
-                                        </li>
+                                        
                                         <li 
                                             className="block md:px-4 px-3 md:py-2.5 py-2 text-gray-700 hover:bg-red-100 rounded-lg cursor-pointer transition-colors duration-200"
                                             onClick={handleLogout}
@@ -158,6 +218,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                 </div>
             </div>
         </nav>
+        </>
     );
 };
 

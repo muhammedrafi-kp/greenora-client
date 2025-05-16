@@ -1,113 +1,180 @@
-import React from 'react';
-import {
-  AlertTriangle,
-  CheckCircle,
-  Info,
-  Trash2,
-  MoreVertical
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "../../services/notificationService";
+import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUnreadCount } from '../../redux/notificationSlice';
+import { INotification } from '../../types/notification';
+import { ApiResponse } from '../../types/common';
 
-interface Notification {
-  id: number;
-  type: 'urgent' | 'success' | 'info';
-  title: string;
-  message: string;
-  time: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-}
+const socket = io(import.meta.env.VITE_NOTIFICATION_SERVICE_URL, {
+  withCredentials: true,
+  transports: ['websocket'],
+});
 
 const Notifications: React.FC = () => {
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: 'urgent',
-      title: 'New Pickup Added',
-      message: 'A new pickup has been added to your route at 123 Main St.',
-      time: '5 minutes ago',
-      icon: AlertTriangle,
-      color: 'text-red-500',
-      bgColor: 'bg-red-50'
-    },
-    {
-      id: 2,
-      type: 'success',
-      title: 'Route Completed',
-      message: 'You have successfully completed all pickups for today.',
-      time: '1 hour ago',
-      icon: CheckCircle,
-      color: 'text-green-500',
-      bgColor: 'bg-green-50'
-    },
-    {
-      id: 3,
-      type: 'info',
-      title: 'Schedule Update',
-      message: 'Your tomorrow\'s schedule has been updated.',
-      time: '2 hours ago',
-      icon: Info,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50'
+  const unreadCount = useSelector((state: any) => state.notification.unreadCount.collector);
+
+  console.log("unreadCount:", unreadCount);
+  const fetchNotifications = async (pageNum: number = 1) => {
+    try {
+      setIsLoading(true);
+      const res: ApiResponse<INotification[]> = await getNotifications(pageNum);
+      console.log("res :", res);
+      if (res.success) {
+        const existingIds = new Set(notifications.map(n => n._id));
+        const newNotifications = res.data.filter(
+          (notification: INotification) => !existingIds.has(notification._id)
+        );
+
+        if (pageNum === 1) {
+          setNotifications(res.data);
+        } else {
+          setNotifications(prev => [...prev, ...newNotifications]);
+        }
+
+        setHasMore(newNotifications.length > 0);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchNotifications(page);
+
+    socket.connect();
+    socket.emit("join-room", "67bddc928b682fd63bb7bdb2");
+    // Listen for new notifications
+    socket.on("receive-notification", (notification: INotification) => {
+      console.log("notification:", notification);
+      setNotifications(prev => [notification, ...prev]);
+    });
+
+    return () => {
+      socket.off("receive-notification");
+      socket.disconnect();
+    };
+  }, [page]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isLoading && hasMore) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const handleNotificationClick = async (notificationId: string, url: string) => {
+    try {
+      const res: ApiResponse<null> = await markNotificationAsRead(notificationId);
+      if (res.success) {
+        setNotifications(prev =>
+          prev.map(notif =>
+            notif._id === notificationId
+              ? { ...notif, isRead: true }
+              : notif
+          )
+        );
+        dispatch(setUnreadCount({ role: "collector", count: Math.max(0, unreadCount - 1) }));
+
+        if (url) {
+          navigate(url);
+        }
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const res: ApiResponse<null> = await markAllNotificationsAsRead();
+      if (res.success) {
+        setNotifications(prev =>
+          prev.map(notif => ({ ...notif, isRead: true }))
+        );
+        dispatch(setUnreadCount({ role: "collector", count: 0 }));
+      }
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
+  };
 
   return (
     <main className="flex-1 overflow-x-hidden overflow-y-auto">
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex justify-end items-center mb-6">
-          {/* <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-800">Notifications</h1>
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
-              3 new
-            </span>
-          </div> */}
-          <button className="text-blue-500 hover:text-blue-600 text-sm">
-            Mark all as read
-          </button>
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllAsRead}
+              className="text-sm text-green-700 hover:text-green-800 font-medium px-2 py-1 rounded-md hover:bg-green-50 transition-colors"
+            >
+              Mark all as read
+            </button>
+          )}
         </div>
 
-        <div className="bg-white rounded-lg border shadow-sm">
-          <div className="p-6">
-            <div className="space-y-4">
+        <div
+          onScroll={handleScroll}
+          className="space-y-3 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
+        >
+          {notifications && notifications.length > 0 ? (
+            <>
               {notifications.map((notification) => (
                 <div
-                  key={notification.id}
-                  className={`${notification.bgColor} p-4 rounded-lg flex items-start gap-4`}
+                  key={notification._id}
+                  onClick={() => handleNotificationClick(notification._id, notification.url)}
+                  className={`p-3 rounded-lg ${notification.isRead ? 'bg-gray-50' : 'bg-white'} border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative`}
                 >
-                  <div className={`${notification.color} mt-1`}>
-                    <notification.icon className="w-5 h-5" />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-medium">{notification.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {notification.message}
-                        </p>
-                        <span className="text-xs text-gray-500 mt-2 block">
-                          {notification.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <Trash2 className="w-4 h-4 text-gray-400" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <MoreVertical className="w-4 h-4 text-gray-400" />
-                        </button>
-                      </div>
+                  {!notification.isRead && (
+                    <div className="absolute right-2 top-2">
+                      <div className="bg-red-500 h-1 rounded-full w-1"></div>
                     </div>
+                  )}
+                  <div className="flex justify-between items-center mt-2">
+                    <h4 className={'text-gray-800 text-sm font-semibold'}>
+                      {notification.title}
+                    </h4>
+                    <span className="text-gray-500 text-xs">
+                      {new Date(notification.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      }).replace(' at ', ' ')}
+                    </span>
                   </div>
+                  <p className={`text-gray-600 text-sm mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
+                    {notification.message}
+                  </p>
                 </div>
               ))}
+              {isLoading && (
+                <div className="text-center py-4">
+                  <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center text-gray-500 py-4">
+              No notifications
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </main >
+    </main>
   );
 };
 

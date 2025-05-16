@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  User, Phone, Mail, MapPin, Award, Shield, Edit, Lock, CheckCircle, AlertCircle, Camera, X
+  User, Phone, Mail, MapPin, Shield, Edit, Lock, CheckCircle, AlertCircle, Camera, X
 } from 'lucide-react';
+// import {Award} from 'lucide-react';
 import { FaTransgender } from "react-icons/fa";
 import { ChangePassword } from '../common/ChangePassword';
 import ProfileSkeleton from '../collector/skeltons/ProfileSkelton';
@@ -56,12 +57,12 @@ const Profile: React.FC<ProfileProps> = () => {
 
   const idProofTypes = ['Aadhar', 'Voter-ID', 'Driving-License'];
 
-  const performanceStats = [
-    { label: "Pickups Completed", value: "1,234" },
-    { label: "On-time Rate", value: "95%" },
-    { label: "Customer Rating", value: "4.8/5" },
-    { label: "Areas Covered", value: "3" }
-  ];
+  // const performanceStats = [
+  //   { label: "Pickups Completed", value: "1,234" },
+  //   { label: "On-time Rate", value: "95%" },
+  //   { label: "Customer Rating", value: "4.8/5" },
+  //   { label: "Areas Covered", value: "3" }
+  // ];
 
   const validateField = (name: string, value: string): string | undefined => {
     switch (name) {
@@ -784,7 +785,7 @@ const Profile: React.FC<ProfileProps> = () => {
           )}
 
         </ProfileCard>
-        <ProfileCard title="Performance Overview">
+        {/* <ProfileCard title="Performance Overview">
           <div className="grid xs:grid-cols-2 grid-cols-1 gap-4">
             {performanceStats.map((stat, index) => (
               <div key={index} className="p-4 bg-gray-50 rounded-lg">
@@ -807,7 +808,7 @@ const Profile: React.FC<ProfileProps> = () => {
               </div>
             </div>
           </div>
-        </ProfileCard>
+        </ProfileCard> */}
       </div >
 
       {showChangePassword && (

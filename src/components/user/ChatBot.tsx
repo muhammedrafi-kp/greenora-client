@@ -11,15 +11,15 @@ import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
 import ReactMarkdown from 'react-markdown';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
-import { IMessage } from '../../types/chat';
+import { IChat,IMessage } from '../../types/chat';
 import "../../styles/scrollbar.css";
 import { ApiResponse } from '../../types/common';
 import { IAdmin, IUser } from '../../types/user';
-import { IChat } from '../../types/chat';
 
-const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
-    transports: ["websocket", "polling"],
+const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
+    transports: ["websocket"],
     withCredentials: true,
+    path: "/chat/socket.io",
 });
 
 

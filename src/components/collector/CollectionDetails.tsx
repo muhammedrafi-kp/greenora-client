@@ -201,15 +201,15 @@ const CollectionDetails: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <CreditCard className="w-5 h-5 flex-shrink-0" />
-                                            <span>
+                                            {/* <span>
                                                 <div className="font-medium">Payment Status</div>
                                                 <div>{collection.payment.status.charAt(0).toUpperCase() + collection.payment.status.slice(1)}</div>
-                                            </span>
+                                            </span> */}
 
-                                        {/* <span>
+                                        <span>
                                             <div className="font-medium">Payment Status</div>
-                                            <div>{collection.payment.status}</div>
-                                        </span> */}
+                                            <div>{collection.payment?.status}</div>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Clock,
   MapPin,
@@ -7,7 +7,7 @@ import {
   Star,
   // CircleUser,
   ClipboardList,
-  DollarSign,
+  IndianRupee,
   CheckCircle
 } from 'lucide-react';
 
@@ -23,6 +23,71 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt } from "react-icons/fa";
+import { getCollectorRevenueData, getCollectorDashboardData } from '../../services/collectionService';
+import { ApiResponse } from '../../types/common';
+
+interface IDashboardData {
+  totalCollections: number;
+  totalRevenue: number;
+  wasteCollections: number;
+  scrapCollections: number;
+}
+
+interface IRevenueData {
+  date: string;
+  waste: number;
+  scrap: number;
+  wasteCollections: number;
+  scrapCollections: number;
+}
+
+interface CollectorData {
+  name: string;
+  collectorId: string;
+  performanceMetrics: {
+    totalCollections: number;
+    averageRating: number;
+    onTimeRate: number;
+  };
+  currentTasks: number;
+  maxCapacity: number;
+  availabilityStatus: string;
+  weeklyEarnings: number;
+  monthlyEarnings: number;
+}
+
+interface CollectionType {
+  name: string;
+  value: number;
+}
+
+// interface MonthlyData {
+//   name: string;
+//   collections: number;
+//   earnings: number;
+// }
+
+interface PickupData {
+  id: number;
+  address: string;
+  time: string;
+  status: string;
+  wasteType: string;
+  customerName: string;
+  estimatedWeight: string;
+  estimatedEarning: string;
+}
+
+interface PerformanceData {
+  month: string;
+  rating: number;
+  onTimeRate: number;
+}
+
+interface WasteTypeData {
+  name: string;
+  weight: number;
+}
 
 const DashboardCard = ({ title, icon, children }: {
   title: string;
@@ -40,94 +105,66 @@ const DashboardCard = ({ title, icon, children }: {
 
 const Dashboard: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
-  const [dateFilter, setDateFilter] = useState('today');
+  const [dateFilter, setDateFilter] = useState('last7days');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [dashboardData, setDashboardData] = useState<IDashboardData | null>(null);
+  const [revenueData, setRevenueData] = useState<IRevenueData[]>([]);
+  const [collectorData] = useState<CollectorData | null>(null);
+  const [collectionTypeData] = useState<CollectionType[]>([
+    { name: 'Waste', value: 90 },
+    { name: 'Scrap', value: 10 }
+  ]);
+  // const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([
+  //   { name: 'Jan', collections: 120, earnings: 15000 },
+  //   { name: 'Feb', collections: 150, earnings: 18000 },
+  //   { name: 'Mar', collections: 180, earnings: 22000 },
+  //   { name: 'Apr', collections: 160, earnings: 20000 },
+  //   { name: 'May', collections: 200, earnings: 25000 },
+  //   { name: 'Jun', collections: 220, earnings: 28000 }
+  // ]);
+  const [todayPickups] = useState<PickupData[]>([]);
+  const [performanceData] = useState<PerformanceData[]>([]);
+  const [wasteTypesData] = useState<WasteTypeData[]>([
+    { name: 'Plastic', weight: 5 },
+    { name: 'Paper', weight: 10 },
+    { name: 'Metal', weight: 2 },
+    { name: 'Glass', weight: 4 },
+    { name: 'Organic', weight: 7 }
+  ]);
 
-  // Sample collector data - would be fetched from API in real implementation
-  const collectorData = {
-    name: "Alex Johnson",
-    collectorId: "COL1245",
-    performanceMetrics: {
-      totalCollections: 328,
-      averageRating: 4.8,
-      onTimeRate: 92
-    },
-    currentTasks: 3,
-    maxCapacity: 5,
-    availabilityStatus: "available",
-    weeklyEarnings: 2580,
-    monthlyEarnings: 9450
-  };
+  useEffect(() => {
 
-  // Collection stats data
-  const collectionTypeData = [
-    { name: 'Waste', value: 65 },
-    { name: 'Scrap', value: 35 },
-  ];
+    const fetchDashboardData = async () => {
+      try {
+        const res: ApiResponse<IDashboardData> = await getCollectorDashboardData();
+        console.log("dashboard data", res);
+        if (res.success) {
+          setDashboardData(res.data);
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
 
-  // Monthly collections data
-  const monthlyData = [
-    { name: 'Jan', collections: 38, earnings: 9450 },
-    { name: 'Feb', collections: 42, earnings: 8620 },
-    { name: 'Mar', collections: 45, earnings: 9780 },
-    { name: 'Apr', collections: 40, earnings: 9580 },
-    { name: 'May', collections: 48, earnings: 9920 },
-    { name: 'Jun', collections: 52, earnings: 9100 },
-  ];
+    fetchDashboardData();
 
-  // Daily schedule data
-  const todayPickups = [
-    {
-      id: 1,
-      address: "123 Main St, Downtown",
-      time: "10:00 AM",
-      status: "Pending",
-      wasteType: "Recyclable",
-      customerName: "John Smith",
-      estimatedWeight: "25 kg",
-      estimatedEarning: "$12.50"
-    },
-    {
-      id: 2,
-      address: "456 Oak Ave, Uptown",
-      time: "11:30 AM",
-      status: "In Progress",
-      wasteType: "Organic",
-      customerName: "Sarah Johnson",
-      estimatedWeight: "18 kg",
-      estimatedEarning: "$9.00"
-    },
-    {
-      id: 3,
-      address: "789 Pine Rd, Westside",
-      time: "2:00 PM",
-      status: "Scheduled",
-      wasteType: "General",
-      customerName: "Mike Brown",
-      estimatedWeight: "32 kg",
-      estimatedEarning: "$16.00"
-    }
-  ];
+    const fetchRevenueData = async () => {
+      try {
+        const res: ApiResponse<IRevenueData[]> = await getCollectorRevenueData({
+          dateFilter,
+          startDate: startDate?.toISOString(),
+          endDate: endDate?.toISOString()
+        });
+        console.log("revenue data", res);
+        setRevenueData(res.data);
+      } catch (error) {
+        console.error('Error fetching revenue data:', error);
+      }
+    };
 
-  // Performance over time
-  const performanceData = [
-    { month: 'Jan', rating: 4.5, onTimeRate: 88 },
-    { month: 'Feb', rating: 4.6, onTimeRate: 90 },
-    { month: 'Mar', rating: 4.7, onTimeRate: 92 },
-    { month: 'Apr', rating: 4.8, onTimeRate: 91 },
-    { month: 'May', rating: 4.8, onTimeRate: 94 },
-    { month: 'Jun', rating: 4.9, onTimeRate: 95 },
-  ];
-
-  // Waste types collected
-  const wasteTypesData = [
-    { name: 'Paper', weight: 120 },
-    { name: 'Plastic', weight: 85 },
-    { name: 'Metal', weight: 65 },
-    { name: 'Glass', weight: 45 },
-    { name: 'Organic', weight: 95 },
-  ];
+    fetchRevenueData();
+  }, [dateFilter, startDate, endDate]);
 
   // Colors for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -140,17 +177,6 @@ const Dashboard: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
-  // Dummy revenue data
-  const revenueData = [
-    { date: '2024-03-01', waste: 1200, scrap: 800, total: 2000, wasteCollections: 12, scrapCollections: 8 },
-    { date: '2024-03-02', waste: 1500, scrap: 900, total: 2400, wasteCollections: 15, scrapCollections: 9 },
-    { date: '2024-03-03', waste: 1300, scrap: 850, total: 2150, wasteCollections: 13, scrapCollections: 8 },
-    { date: '2024-03-04', waste: 1600, scrap: 950, total: 2550, wasteCollections: 16, scrapCollections: 9 },
-    { date: '2024-03-05', waste: 1400, scrap: 880, total: 2280, wasteCollections: 14, scrapCollections: 8 },
-    { date: '2024-03-06', waste: 1700, scrap: 1000, total: 2700, wasteCollections: 17, scrapCollections: 10 },
-    { date: '2024-03-07', waste: 1450, scrap: 920, total: 2370, wasteCollections: 14, scrapCollections: 9 },
-  ];
 
   return (
     <main className="flex-1 overflow-x-hidden overflow-y-auto">
@@ -228,25 +254,33 @@ const Dashboard: React.FC = () => {
 
             {/* Key Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <DashboardCard title="Today's Pickups" icon={<Truck className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-emerald-600" />}>
-                <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">5</div>
-                <p className="md:text-sm xs:text-xs text-xxs text-emerald-600 font-medium">2 completed</p>
+              <DashboardCard title="Total Collections" icon={<Truck className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-emerald-600" />}>
+                <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">
+                  {dashboardData?.totalCollections || 0}
+                </div>
+                <p className="md:text-sm xs:text-xs text-xxs text-emerald-600 font-medium">Total pickups</p>
               </DashboardCard>
 
-              <DashboardCard title="Total Weight" icon={<Package className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-blue-600" />}>
-                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">12 kg</div>
-                {/* <p className="md:text-sm xs:text-xs text-xxs text-blue-600 font-medium">+15% from yesterday</p> */}
+              <DashboardCard title="Total Revenue" icon={<IndianRupee className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-blue-600" />}>
+                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">
+                  ₹{dashboardData?.totalRevenue || 0}
+                </div>
+                <p className="md:text-sm xs:text-xs text-xxs text-blue-600 font-medium">Total earnings</p>
               </DashboardCard>
 
-              <DashboardCard title="Weekly Earnings" icon={<DollarSign className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-purple-600" />}>
-                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">₹{collectorData.weeklyEarnings}</div>
-                {/* <p className="md:text-sm xs:text-xs text-xxs text-purple-600 font-medium">+12% from last week</p> */}
+              <DashboardCard title="Waste Collections" icon={<Package className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-purple-600" />}>
+                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">
+                  {dashboardData?.wasteCollections || 0}
+                </div>
+                <p className="md:text-sm xs:text-xs text-xxs text-purple-600 font-medium">Waste pickups</p>
               </DashboardCard>
 
-              {/* <DashboardCard title="Next Pickup" icon={<Clock className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-orange-600" />}>
-                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">10:00 AM</div>
-                <p className="md:text-sm xs:text-xs text-xxs text-orange-600 font-medium">123 Main St</p>
-              </DashboardCard> */}
+              <DashboardCard title="Scrap Collections" icon={<Package className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-orange-600" />}>
+                <div className="md:text-2xl xs:text-xl text-lg font-bold text-gray-800">
+                  {dashboardData?.scrapCollections || 0}
+                </div>
+                <p className="md:text-sm xs:text-xs text-xxs text-orange-600 font-medium">Scrap pickups</p>
+              </DashboardCard>
             </div>
 
 
@@ -431,7 +465,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Monthly Overview */}
-            <div className="bg-white rounded-lg border shadow-sm p-4 mb-8">
+            {/* <div className="bg-white rounded-lg border shadow-sm p-4 mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Overview</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
@@ -448,7 +482,7 @@ const Dashboard: React.FC = () => {
                   <Bar yAxisId="right" dataKey="earnings" name="Earnings ($)" fill="#82ca9d" />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </div> */}
           </>
         )}
 
@@ -525,20 +559,20 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <DashboardCard title="Total Collections" icon={<ClipboardList className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-blue-600" />}>
                 <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">
-                  {collectorData.performanceMetrics.totalCollections}
+                  {collectorData?.performanceMetrics.totalCollections || 0}
                 </div>
                 <p className="md:text-sm xs:text-xs text-xxs text-blue-600 font-medium">Lifetime collections</p>
               </DashboardCard>
 
               <DashboardCard title="Average Rating" icon={<Star className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-yellow-500" />}>
                 <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">
-                  {collectorData.performanceMetrics.averageRating}
+                  {collectorData?.performanceMetrics.averageRating || 0}
                 </div>
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`md:w-4 md:h-4 w-3 h-3 ${i < Math.floor(collectorData.performanceMetrics.averageRating)
+                      className={`md:w-4 md:h-4 w-3 h-3 ${i < Math.floor(collectorData?.performanceMetrics.averageRating || 0)
                         ? 'text-yellow-400 fill-yellow-400'
                         : 'text-gray-300'
                         }`}
@@ -549,12 +583,12 @@ const Dashboard: React.FC = () => {
 
               <DashboardCard title="On-Time Rate" icon={<CheckCircle className="md:w-5 md:h-5 xs:w-4 xs:h-4 w-3 h-3 text-green-600" />}>
                 <div className="md:text-3xl xs:text-2xl text-xl font-bold text-gray-800">
-                  {collectorData.performanceMetrics.onTimeRate}%
+                  {collectorData?.performanceMetrics.onTimeRate || 0}%
                 </div>
                 <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
                   <div
                     className="bg-green-500 h-2 rounded-full"
-                    style={{ width: `${collectorData.performanceMetrics.onTimeRate}%` }}
+                    style={{ width: `${collectorData?.performanceMetrics.onTimeRate || 0}%` }}
                   ></div>
                 </div>
               </DashboardCard>
@@ -603,11 +637,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
                   <p className="text-sm text-green-600 font-medium">Weekly Earnings</p>
-                  <p className="text-2xl font-bold text-gray-800 mt-2">₹{collectorData.weeklyEarnings}</p>
+                  <p className="text-2xl font-bold text-gray-800 mt-2">₹{collectorData?.weeklyEarnings || 0}</p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
                   <p className="text-sm text-purple-600 font-medium">Monthly Earnings</p>
-                  <p className="text-2xl font-bold text-gray-800 mt-2">₹{collectorData.monthlyEarnings}</p>
+                  <p className="text-2xl font-bold text-gray-800 mt-2">₹{collectorData?.monthlyEarnings || 0}</p>
                 </div>
               </div>
             </div>

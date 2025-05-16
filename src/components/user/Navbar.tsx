@@ -21,12 +21,12 @@ import { INotification } from '../../types/notification';
 const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
     withCredentials: true,
     transports: ['websocket'],
+    path: "/notification/socket.io",
 });
 
 interface DecodedToken extends JwtPayload {
     userId: string;
 }
-
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -38,8 +38,11 @@ const NavBar: React.FC = () => {
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const { unreadCount } = useSelector((state: any) => state.notification);
+    const unreadCount = useSelector((state: any) => state.notification.unreadCount.user);
     const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
+
+    
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -84,7 +87,7 @@ const NavBar: React.FC = () => {
         try {
             const res: ApiResponse<number> = await getUnreadNotificationCount();
             if (res.success) {
-                dispatch(setUnreadCount(res.data));
+                dispatch(setUnreadCount({ role: "user", count: res.data }));
                 console.log("unread:", unreadCount)
             }
         } catch (error) {
@@ -118,7 +121,7 @@ const NavBar: React.FC = () => {
             socket.on("receive-notification", (notification: INotification) => {
                 console.log("notification:", notification);
                 setNotifications(prev => [notification, ...prev]);
-                dispatch(incrementUnreadCount());
+                dispatch(incrementUnreadCount("user"));
 
                 if (audioRef.current) {
                     audioRef.current.play().catch(err => console.log("Audio play failed:", err));
@@ -128,7 +131,7 @@ const NavBar: React.FC = () => {
             socket.on("notification-read", (notificationId: string) => {
                 console.log("notification-read:", notificationId);
                 setNotifications(prev => prev.filter(notif => notif._id !== notificationId));
-                dispatch(setUnreadCount(Math.max(0, unreadCount - 1)));
+                dispatch(setUnreadCount({ role: "user", count: Math.max(0, unreadCount - 1) }));
             });
 
             return () => {
@@ -201,7 +204,7 @@ const NavBar: React.FC = () => {
                             : notif
                     )
                 );
-                dispatch(setUnreadCount(Math.max(0, unreadCount - 1)));
+                dispatch(setUnreadCount({ role: "user", count: Math.max(0, unreadCount - 1) }));
 
                 // Navigate to the notification URL
                 if (url) {

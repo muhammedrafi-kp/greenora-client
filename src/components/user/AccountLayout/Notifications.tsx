@@ -21,7 +21,7 @@ const Notifications: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     
-    const unreadCount = useSelector((state: any) => state.notification.unreadCount);
+    const unreadCount = useSelector((state: any) => state.notification.unreadCount.user);
 
     const fetchNotifications = async (pageNum: number = 1) => {
         try {
@@ -84,7 +84,7 @@ const Notifications: React.FC = () => {
                             : notif
                     )
                 );
-                dispatch(setUnreadCount(Math.max(0, unreadCount - 1)));
+                dispatch(setUnreadCount({ role: "user", count: Math.max(0, unreadCount - 1) }));
                 
                 if (url) {
                     navigate(url);
@@ -103,7 +103,7 @@ const Notifications: React.FC = () => {
                     prev.map(notif => ({ ...notif, isRead: true }))
                 );
                 // Set unread count to 0 in Redux store
-                dispatch(setUnreadCount(0));
+                dispatch(setUnreadCount({ role: "user", count: 0 }));
             }
         } catch (error) {
             console.error("Error marking all notifications as read:", error);

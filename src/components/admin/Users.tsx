@@ -303,10 +303,19 @@ const Users: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden">
                               {user.profileUrl ? (
-                                <img src={user.profileUrl} alt={user.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <User className="w-6 h-6 text-blue-600" />
-                              )}
+                                <img 
+                                  src={user.profileUrl} 
+                                  alt={user.name} 
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    // If image fails to load, replace with user icon
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              <User className="w-6 h-6 text-blue-600 fallback-icon" />
                             </div>
                             <span className="font-medium text-gray-900">{user.name}</span>
                           </div>

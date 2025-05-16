@@ -11,9 +11,10 @@ import { IChat } from '../../types/chat';
 import '../../styles/scrollbar.css';
 
 
-const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
-    transports: ["websocket", "polling"],
+const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
+    transports: ["websocket"],
     withCredentials: true,
+    path: "/chat/socket.io",
 });
 
 
@@ -273,7 +274,7 @@ const AdminChat: React.FC = () => {
         };
 
         // Join room and get chat history
-        socket.emit('join_room', { chatId: currentChat._id, userId: currentChat.participant2 });
+        socket.emit('join_room', { chatId: currentChat._id, userId: currentChat.participant1 });
         setIsLoadingChatHistory(true);
         socket.emit('get_chat_history', { chatId: currentChat._id });
 
@@ -291,7 +292,7 @@ const AdminChat: React.FC = () => {
         return () => {
             socket.off('chat_history');
             socket.off('receive_message');
-            socket.emit('leave_room', { chatId: currentChat._id, userId: currentChat.participant2 });
+            socket.emit('leave_room', { chatId: currentChat._id, userId: currentChat.participant1 });
         };
     }, [currentChat?._id]); // Only depend on chat ID
 
@@ -633,9 +634,9 @@ const AdminChat: React.FC = () => {
                                         <div className="flex justify-start">
                                             <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
                                                 <div className="flex gap-1">
-                                                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                                                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                                                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                                                    <span key="dot1" className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                                                    <span key="dot2" className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                                                    <span key="dot3" className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                                                 </div>
                                             </div>
                                         </div>
