@@ -14,7 +14,7 @@ import '../../styles/scrollbar.css';
 const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
     transports: ["websocket"],
     withCredentials: true,
-    path: "/chat/socket.io",
+    path: "/chat/socket.io/",
 });
 
 
