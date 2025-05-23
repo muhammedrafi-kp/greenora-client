@@ -168,7 +168,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                             {isLogin ? 'Login' : 'Sign Up'}
                         </h2>
 
-                        <GoogleOAuthProvider clientId="180114315510-l6uvuq8k7kcj93re4uf79ae6dh1kaejt.apps.googleusercontent.com">
+                        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string}>
                             <GoogleLogin
                                 onSuccess={handleGoogleSuccess}
                                 onError={() => {
