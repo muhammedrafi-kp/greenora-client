@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { changePassword } from '../../services/authService';
 import { toast } from 'react-hot-toast';
@@ -36,7 +36,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateField = (name: string, value: string): string | undefined => {
+  const validateField = useCallback((name: string, value: string): string | undefined => {
     switch (name) {
       case 'currentPassword':
         if (!value.trim()) {
@@ -80,9 +80,9 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
       default:
         return undefined;
     }
-  };
+  }, [passwords]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     setPasswords(prev => ({
@@ -107,9 +107,9 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
         }));
       }
     }
-  };
+  }, [touched, passwords]);
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     const { name } = e.target;
 
     // Mark field as touched
@@ -124,9 +124,9 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
       ...prev,
       [name]: error
     }));
-  };
+  }, [passwords, validateField]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     // Mark all fields as touched
     setTouched({
       currentPassword: true,
@@ -151,7 +151,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
 
     setIsLoading(true);
     try {
-      const res:ApiResponse<null> = await changePassword(role, passwords.currentPassword, passwords.newPassword);
+      const res: ApiResponse<null> = await changePassword(role, passwords.currentPassword, passwords.newPassword);
       if (res.success) {
         toast.success("Password changed", {
           style: { background: "#222", color: "#fff" },
@@ -170,7 +170,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [passwords, role, onClose, validateField]);
 
   const passwordFormContent = (
     <form className="space-y-4 mt-4">
@@ -184,6 +184,7 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
             name="currentPassword"
             placeholder='Current Password'
             value={passwords.currentPassword}
+            autoComplete='current-password'
             onChange={handleChange}
             onBlur={handleBlur}
             className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-semibold text-gray-700 border rounded-lg focus:ring-green-500 focus:border-green-500
@@ -213,8 +214,9 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
           <input
             type={showPasswords.newPassword ? "text" : "password"}
             name="newPassword"
-             placeholder='New Password'
+            placeholder='New Password'
             value={passwords.newPassword}
+            autoComplete='new-password'
             onChange={handleChange}
             onBlur={handleBlur}
             className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-semibold text-gray-700 border rounded-lg focus:ring-green-500 focus:border-green-500
@@ -244,8 +246,9 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
           <input
             type={showPasswords.confirmPassword ? "text" : "password"}
             name="confirmPassword"
-             placeholder='Confirm New Password'
+            placeholder='Confirm New Password'
             value={passwords.confirmPassword}
+            autoComplete='new-password'
             onChange={handleChange}
             onBlur={handleBlur}
             className={`w-full px-4 xs:py-2 py-1 xs:text-sm text-xs font-semibold text-gray-700 border rounded-lg focus:ring-green-500 focus:border-green-500
@@ -303,5 +306,5 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({ isOpen, onClose,
   );
 };
 
-export default ChangePassword;
+export default React.memo(ChangePassword);
 

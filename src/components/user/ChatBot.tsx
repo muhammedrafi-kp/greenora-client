@@ -16,11 +16,13 @@ import "../../styles/scrollbar.css";
 import { ApiResponse } from '../../types/common';
 import { IAdmin, IUser } from '../../types/user';
 
-const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
-    transports: ["websocket"],
-    withCredentials: true,
-    path: "/chat/socket.io",
-});
+// const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
+//     transports: ["websocket"],
+//     withCredentials: true,
+//     // path: "/chat/socket.io",
+// });
+
+const socket = io(``);
 
 
 const quickRepliesMap = {
@@ -488,14 +490,14 @@ const ChatBot: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-40">
+        <div className="fixed bottom-8 right-10 z-50">
             {/* Chat Button */}
             <button
                 onClick={toggleChat}
                 className={`${isOpen ? 'scale-0' : 'scale-100'
-                    } group transition-all duration-300 bg-gradient-to-r from-green-900 to-green-800 text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-2xl relative`}
+                    } group transition-all duration-300 bg-gradient-to-r from-green-900 to-green-800 text-white p-4 sm:p-5 rounded-full shadow-lg hover:shadow-2xl relative`}
             >
-                <BiMessageRoundedDots className="w-6 h-6 sm:w-7 sm:h-7 group-hover:scale-110 transition-transform" />
+                <BiMessageRoundedDots className="w-7 h-7 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform" />
                 {showNotification && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full animate-bounce">
                         1

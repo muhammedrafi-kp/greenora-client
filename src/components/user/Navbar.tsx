@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.svg';
+import logo from '../../assets/logo-transparent-png2.png'
 import { IoIosNotifications } from "react-icons/io";
 import { FaUserCircle, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
 import { BiChevronDown } from 'react-icons/bi';
@@ -18,11 +18,12 @@ import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { ApiResponse } from '../../types/common';
 import { INotification } from '../../types/notification';
 
-const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
-    withCredentials: true,
-    transports: ['websocket'],
-    path: "/notification/socket.io",
-});
+// const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
+//     withCredentials: true,
+//     transports: ['websocket'],
+//     path: "/notification/socket.io",
+// });
+const socket = io(``);
 
 interface DecodedToken extends JwtPayload {
     userId: string;
@@ -41,8 +42,8 @@ const NavBar: React.FC = () => {
     const unreadCount = useSelector((state: any) => state.notification.unreadCount.user);
     const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
 
-    
-
+    console.log("isLoggedIn :",isLoggedIn)
+    console.log("role :",role)
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -224,44 +225,82 @@ const NavBar: React.FC = () => {
             {/* Add audio element */}
             <audio ref={audioRef} src={notificationAlert} />
 
-            <nav className="bg-slate-100 p-1 shadow-md text-slate-950 w-full fixed top-0 z-50">
+            <nav className="bg-slate-100 p-3 shadow-md text-slate-950 w-full fixed top-0 z-50">
                 <div className="container flex justify-between items-center mx-auto">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <img
-                            src={logo}
-                            alt="Greenora logo"
-                            style={{ width: '250px', height: 'auto' }}
-                        />
+                    {/* Logo and Mobile Menu */}
+                    <div className="flex items-center gap-4">
+                        
+                        {/* Mobile Hamburger Menu (left side) */}
+                        <div className="md:hidden mt-2">
+                            <button onClick={toggleMenu} className="focus:outline-none">
+                                <svg
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    {isOpen ? (
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    ) : (
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 6h16M4 12h16M4 18h16"
+                                        />
+                                    )}
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Logo */}
+                        <div className="flex items-center lg:ml-8 md:ml-6">
+                            <img
+                                src={logo}
+                                alt="Greenora logo"
+                                className="lg:w-12 md:w-10 w-7 lg:h-12 md:h-10 h-7"
+                            />
+                            <span className="ml-2 font-bold text-green-900 text-xl md:text-2xl lg:text-3xl select-none">Greenora</span>
+                        </div>
                     </div>
 
-                    {/* Hamburger Menu (for medium screens and smaller) */}
-                    <div className="md:hidden">
-                        <button onClick={toggleMenu} className="focus:outline-none">
-                            <svg
-                                className="h-6 w-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                {isOpen ? (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                ) : (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                )}
-                            </svg>
-                        </button>
+                    {/* Mobile Icons (right side) */}
+                    <div className="md:hidden flex items-center lg:gap-2 gap-1">
+                        {isLoggedIn && role === 'user' && (
+                            <>
+                                {/* Mobile Notification Icon */}
+                                <div className="relative">
+                                    <button
+                                        onClick={toggleNotification}
+                                        className="p-2 rounded-full hover:bg-slate-200 transition-colors"
+                                    >
+                                        <IoIosNotifications className="h-5 w-5 text-slate-950" />
+                                        {unreadCount > 0 && (
+                                            <span className="bg-red-500 border-2 border-white h-4 w-4 justify-center rounded-full text-white text-xs absolute -right-1 -top-1 font-bold inline-flex items-center">
+                                                {unreadCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {/* Mobile Profile Icon */}
+                                <div className="relative">
+                                    <button
+                                        onClick={toggleDropdown}
+                                        className="p-1 rounded-full hover:bg-slate-200 transition-colors"
+                                    >
+                                        <FaUserCircle className="h-6 w-6 text-green-900" />
+                                        {/* <div className="bg-green-500 border-2 border-white h-2.5 w-2.5 rounded-full absolute right-0 top-0"></div> */}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Navigation Links */}
@@ -455,100 +494,150 @@ const NavBar: React.FC = () => {
 
                 {/* Mobile Sidebar */}
                 <div
-                    className={`fixed top-0 right-0 w-72 h-full bg-white transform ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                    className={`fixed top-0 left-0 w-72 h-full bg-white transform ${isOpen ? 'translate-x-0' : '-translate-x-full'
                         } transition-transform duration-300 ease-in-out md:hidden z-50`}
                 >
                     {/* Sidebar Header */}
                     <div className="bg-gradient-to-r p-3 from-green-900 to-green-800">
                         {isLoggedIn && role === 'user' ? (
-                            <div className="flex gap-4 items-center">
+                            <div className="flex gap-3 sm:gap-4 items-center">
                                 <div className="relative">
-                                    <FaUserCircle className="h-12 text-white w-12" />
-                                    <div className="bg-green-400 border-2 border-white h-3 rounded-full w-3 absolute bottom-0 right-0"></div>
+                                    <FaUserCircle className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+                                    <div className="bg-green-400 border-2 border-white h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full absolute bottom-0 right-0"></div>
                                 </div>
                                 <div>
-                                    <h3 className="text-white font-medium">User Name</h3>
-                                    <p className="text-green-100 text-sm">Welcome back!</p>
+                                    <h3 className="text-white font-medium text-sm sm:text-base">User Name</h3>
+                                    <p className="text-green-100 text-xs sm:text-sm">Welcome back!</p>
                                 </div>
                             </div>
                         ) : (
                             <div className="text-white">
-                                <h3 className="font-medium">Welcome to Greenora</h3>
-                                <p className="text-green-100 text-sm">Please login to continue</p>
+                                <h3 className="font-medium text-sm sm:text-base">Welcome to Greenora</h3>
+                                <p className="text-green-100 text-xs sm:text-sm">Please login to continue</p>
                             </div>
                         )}
                     </div>
 
                     {/* Sidebar Navigation */}
-                    <div className="p-4 z-50">
-                        <ul className="space-y-2">
+                    <div className="p-3 sm:p-4 z-50">
+                        <ul className="space-y-1.5 sm:space-y-2">
                             <li>
                                 <button
                                     onClick={() => navigate('/')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
-                                    <FaHome className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Home</span>
+                                    <FaHome className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                    <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Home</span>
                                 </button>
                             </li>
                             <li>
                                 <button
                                     onClick={() => navigate('/services')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
-                                    <GrServices className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Services</span>
+                                    <GrServices className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                    <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Services</span>
                                 </button>
                             </li>
-                            {/* <li>
-                                <button
-                                    onClick={() => navigate('/pricing')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
-                                >
-                                    <IoIosPricetags className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Pricing</span>
-                                </button>
-                            </li> */}
-                            <li>
-                                <button
-                                    className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
-                                >
-                                    <IoIosNotifications className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Notifications</span>
-                                    <span className="bg-red-500 rounded-full text-white text-xs font-bold ml-auto px-2 py-1">
-                                        6
-                                    </span>
-                                </button>
-                            </li>
+                            {isLoggedIn && role === 'user' ? (
+                                <>
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                navigate('/account/');
+                                                toggleMenu();
+                                            }}
+                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                        >
+                                            <FaUserCircle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                            <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Account</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                navigate('/account/collections');
+                                                toggleMenu();
+                                            }}
+                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                        >
+                                            <FaClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                            <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">My Collections</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button onClick={()=>{
+                                            navigate('/account/notifications');
+                                            toggleMenu();
+                                        }}
+                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                        >
+                                            <IoIosNotifications className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                            <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Notifications</span>
+                                            <span className="bg-red-500 rounded-full text-white text-xs font-bold ml-auto px-1.5 py-0.5 sm:px-2 sm:py-1">
+                                                6
+                                            </span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                navigate('/account/charges');
+                                                toggleMenu();
+                                            }}
+                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                        >
+                                            <TbCoinRupeeFilled className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                            <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Charges</span>
+                                        </button>
+                                    </li>
+                                </>
+                            ) : (
+                                <li>
+                                    <button
+                                        onClick={openLoginModal}
+                                        className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                    >
+                                        <MdLogin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                        <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Account</span>
+                                    </button>
+                                </li>
+                            )}
                             <li>
                                 <button
                                     onClick={() => navigate('/about')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
-                                    <FaInfoCircle className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">About</span>
+                                    <FaInfoCircle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                    <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">About</span>
                                 </button>
                             </li>
                             <li>
                                 <button
                                     onClick={() => navigate('/contact')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
-                                    <GrContact className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                    <span className="font-medium group-hover:text-green-900">Contact</span>
+                                    <GrContact className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                    <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Contact</span>
                                 </button>
                             </li>
                         </ul>
+                        
 
-                        <div className="border-gray-100 border-t mt-6 pt-4 space-y-2">
-                            <button
-                                onClick={openLoginModal}
-                                className="flex rounded-lg text-gray-700 w-full gap-4 group hover:bg-green-50 items-center px-4 py-3 transition-colors"
-                            >
-                                <MdLogin className="h-5 text-gray-500 w-5 group-hover:text-green-900" />
-                                <span className="font-medium group-hover:text-green-900">Login</span>
-                            </button>
-                        </div>
+                        {isLoggedIn && role === 'user' && (
+                            <div className="border-gray-100 border-t mt-4 sm:mt-6 pt-3 sm:pt-4 space-y-1.5 sm:space-y-2">
+                                <button
+                                    onClick={() => {
+                                        handleLogout();
+                                        toggleMenu();
+                                    }}
+                                    className="flex rounded-lg text-red-600 w-full gap-3 sm:gap-4 group hover:bg-red-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                >
+                                    <MdLogout className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 group-hover:text-red-700" />
+                                    <span className="font-medium group-hover:text-red-700 text-sm sm:text-base">Logout</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                 </div>

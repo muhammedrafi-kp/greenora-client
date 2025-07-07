@@ -17,18 +17,6 @@ const Landing: React.FC = () => {
     const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
     const navigate = useNavigate();
     const [showAuthModal, setShowAuthModal] = useState(false);
-    // const [isVisible, setIsVisible] = useState(false);
-
-    // useEffect(() => {
-    //     const handleScroll = () => {
-    //         const currentScrollPos = window.scrollY;
-    //         const visible = currentScrollPos > 100;
-    //         setIsVisible(visible);
-    //     };
-
-    //     window.addEventListener('scroll', handleScroll);
-    //     return () => window.removeEventListener('scroll', handleScroll);
-    // }, []);
 
     const handleSchedulePickup = () => {
         if (isLoggedIn) {
@@ -61,7 +49,7 @@ const Landing: React.FC = () => {
 
     return (
         <>
-            <div className="w-full mt-16 min-h-screen">
+            <div className="w-full lg:mt-16 mt-11 min-h-screen">
                 {/* Hero Section with Animated Text */}
                 <motion.div
                     className="w-full h-[50vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] bg-cover bg-center relative"
@@ -72,7 +60,7 @@ const Landing: React.FC = () => {
                 >
                     <section className="flex flex-col items-center justify-center h-full text-white bg-black bg-opacity-75 p-4">
                         <motion.h1
-                            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center"
+                            className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center"
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5, duration: 0.8 }}
@@ -92,11 +80,11 @@ const Landing: React.FC = () => {
 
                         <motion.button
                             onClick={handleSchedulePickup}
-                            className="mt-6 bg-green-800 hover:bg-green-900 text-white font-medium py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                            className="mt-6 bg-green-800 hover:bg-green-900 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            Schedule pickup
+                            Schedule a pickup
                         </motion.button>
                     </section>
                 </motion.div>

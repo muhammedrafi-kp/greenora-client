@@ -1,39 +1,40 @@
-import React from 'react'
+import React,{lazy,Suspense} from 'react'
 import { Routes, Route } from 'react-router-dom';
 
-import UserProtectedRoute from '../ProtectedRoutes/UserProtectedRoute';
-import Layout from '../components/user/Layout';
+const UserProtectedRoute = lazy(()=>import('../ProtectedRoutes/UserProtectedRoute'));
+const Layout = lazy(()=>import('../components/user/Layout'));
 
-import UserHome from '../pages/user/UserHome';
-import UserResetPassword from '../pages/user/UserResetPassword';
-import UserPricing from '../pages/user/UserPricing';
-import UserCollectionDetails from '../pages/user/UserCollectionDetails';
-import UserTrackingCollector from '../pages/user/UserTrackingCollector';
+const UserHome = lazy(()=>import('../pages/user/UserHome'));
+const UserResetPassword = lazy(()=>import('../pages/user/UserResetPassword'));
+const UserPricing = lazy(()=>import('../pages/user/UserPricing'));
+const UserCollectionDetails = lazy(()=>import('../pages/user/UserCollectionDetails'));
+const UserTrackingCollector = lazy(()=>import('../pages/user/UserTrackingCollector'));
 
-import UserAccount from '../pages/user/UserAccount';
+const UserAccount = lazy(()=>import('../pages/user/UserAccount'));
 // import UserActivity from '../paer/UserActivity';
-import UserProfile from '../pages/user/UserProfile';
-import UserWasteCollectionHistory from '../pages/user/UserWasteCollectionHistory';
-import UserCharges from '../pages/user/UserCharges';
-import UserWallet from '../pages/user/UserWallet';
-import UserNotifications from '../pages/user/UserNotifications';
+const UserProfile = lazy(()=>import('../pages/user/UserProfile'));
+const UserWasteCollectionHistory = lazy(()=>import('../pages/user/UserWasteCollectionHistory'));
+const UserCharges = lazy(()=>import('../pages/user/UserCharges'));
+const UserWallet = lazy(()=>import('../pages/user/UserWallet'));
+const UserNotifications = lazy(()=>import('../pages/user/UserNotifications'));
 
-import UserPickupLayout from '../pages/user/UserPickup';
-import UserPickupType from '../pages/user/UserPickupType';
-import UserPickupAddress from '../pages/user/UserPickupAddress';
-import UserPickupDetailsForm from '../pages/user/UserPickupDetailsForm';
-import UserPickupReview from '../pages/user/UserPickupReview';
-import UserPickupPayment from '../pages/user/UserPickupPayment';
-import UserPickupSuccess from '../pages/user/UserPickupSuccess';
-import UserPickupFailure from '../pages/user/UserPickupFailure';
+const UserPickupLayout = lazy(()=>import('../pages/user/UserPickup'));
+const UserPickupType = lazy(()=>import('../pages/user/UserPickupType'));
+const UserPickupAddress = lazy(()=>import('../pages/user/UserPickupAddress'));
+const UserPickupDetailsForm = lazy(()=>import('../pages/user/UserPickupDetailsForm'));
+const UserPickupReview = lazy(()=>import('../pages/user/UserPickupReview'));
+const UserPickupPayment = lazy(()=>import('../pages/user/UserPickupPayment'));
+const UserPickupSuccess = lazy(()=>import('../pages/user/UserPickupSuccess'));
+const UserPickupFailure = lazy(()=>import('../pages/user/UserPickupFailure'));
 
-
-import Error404 from '../components/common/Error404';
+import Spinner from '../components/common/Spinner';
+const Error404 = lazy(()=>import('../components/common/Error404'));
 
 
 const UserRoutes: React.FC = () => {
     return (
         <>
+        <Suspense fallback={<Spinner />}>
             <Routes>
                 <Route element={<Layout />}>
 
@@ -68,7 +69,7 @@ const UserRoutes: React.FC = () => {
                 </Route>
                 <Route path="*" element={<Error404 role='user' />} />
             </Routes>
-
+        </Suspense>
         </>
     )
 }

@@ -151,7 +151,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                 // onClick={closeModal}
                 >
                     <div
-                        className={`relative bg-white p-10 rounded-xl shadow-lg max-w-md sm:w-full w-3/4 transform transition-all duration-300 ${showModal ? 'translate-y-0' : 'translate-y-20'
+                        className={`relative bg-white p-8 rounded-xl shadow-lg max-w-md sm:w-full w-11/12 transform transition-all duration-300 ${showModal ? 'translate-y-0' : 'translate-y-20'
                             } max-h-[90vh] overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}
                         onClick={(e) => e.stopPropagation()}
                     >

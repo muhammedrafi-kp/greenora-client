@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, } from 'react';
 import { User, Mail, Phone, Lock, Camera, Edit } from 'lucide-react';
 import { getUserData, updateUserData } from "../../../services/userService";
 import { IUser } from '../../../types/user';
