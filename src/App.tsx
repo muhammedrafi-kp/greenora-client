@@ -7,9 +7,7 @@ const AgentRoutes = lazy(() => import('./routes/CollectorRoutes'));
 const AdminRoutes = lazy(() => import('./routes/AdminRoutes'));
 const Error500 = lazy(() => import('./components/common/Error500'));
 import Spinner from './components/common/Spinner';
-
 function App() {
-
   return (
     <>
       <Suspense fallback={<Spinner />}>
