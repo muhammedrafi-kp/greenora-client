@@ -5,7 +5,7 @@ import { FaRobot, FaUser } from "react-icons/fa";
 import { BiMessageRoundedDots, BiCopy } from "react-icons/bi";
 import { IoIosArrowDown } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 import { getUserData, getAdminData } from '../../services/userService';
 import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
 import ReactMarkdown from 'react-markdown';
@@ -16,13 +16,15 @@ import "../../styles/scrollbar.css";
 import { ApiResponse } from '../../types/common';
 import { IAdmin, IUser } from '../../types/user';
 
+import socket from "../../sockets/chatSocket";
 // const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
 //     transports: ["websocket"],
 //     withCredentials: true,
 //     // path: "/chat/socket.io",
 // });
 
-const socket = io(``);
+// const socket = io(``);
+
 
 
 const quickRepliesMap = {

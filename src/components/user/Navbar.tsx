@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo-transparent-png2.png'
+import logo from '../../assets/logo.png'
 import { IoIosNotifications } from "react-icons/io";
 import { FaUserCircle, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
 import { BiChevronDown } from 'react-icons/bi';
@@ -12,18 +12,19 @@ import { Logout } from '../../redux/authSlice';
 import notificationAlert from '../../assets/notification-alert.mp3';
 import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '../../services/notificationService';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
-import { io } from 'socket.io-client';
+// import { io } from 'socket.io-client';
 import { setUnreadCount, incrementUnreadCount } from '../../redux/notificationSlice';
 import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { ApiResponse } from '../../types/common';
 import { INotification } from '../../types/notification';
+import socket from "../../sockets/notificationSocket";
 
 // const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
 //     withCredentials: true,
 //     transports: ['websocket'],
 //     path: "/notification/socket.io",
 // });
-const socket = io(``);
+// const socket = io(``);
 
 interface DecodedToken extends JwtPayload {
     userId: string;
@@ -42,8 +43,8 @@ const NavBar: React.FC = () => {
     const unreadCount = useSelector((state: any) => state.notification.unreadCount.user);
     const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
 
-    console.log("isLoggedIn :",isLoggedIn)
-    console.log("role :",role)
+    console.log("isLoggedIn :", isLoggedIn)
+    console.log("role :", role)
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -229,7 +230,7 @@ const NavBar: React.FC = () => {
                 <div className="container flex justify-between items-center mx-auto">
                     {/* Logo and Mobile Menu */}
                     <div className="flex items-center gap-4">
-                        
+
                         {/* Mobile Hamburger Menu (left side) */}
                         <div className="md:hidden mt-2">
                             <button onClick={toggleMenu} className="focus:outline-none">
@@ -566,7 +567,7 @@ const NavBar: React.FC = () => {
                                         </button>
                                     </li>
                                     <li>
-                                        <button onClick={()=>{
+                                        <button onClick={() => {
                                             navigate('/account/notifications');
                                             toggleMenu();
                                         }}
@@ -622,7 +623,7 @@ const NavBar: React.FC = () => {
                                 </button>
                             </li>
                         </ul>
-                        
+
 
                         {isLoggedIn && role === 'user' && (
                             <div className="border-gray-100 border-t mt-4 sm:mt-6 pt-3 sm:pt-4 space-y-1.5 sm:space-y-2">
