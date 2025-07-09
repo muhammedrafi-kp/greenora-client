@@ -7,13 +7,28 @@
 // export default chatSocket;
 
 
+// import { io, Socket } from "socket.io-client";
+
+// const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL;
+
+// export const createSocketConnection = (url: string): Socket => {
+//   return io(url, {
+//     path: "/chat/socket.io", // match backend's path
+//     withCredentials: true,
+//     transports: ["websocket"]
+//   });
+// };
+
+// const chatSocket: Socket = createSocketConnection(CHAT_SOCKET_URL);
+// export default chatSocket;
+
 import { io, Socket } from "socket.io-client";
 
-const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL + "/chat-service";
+const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL; // No trailing /chat-service
 
 export const createSocketConnection = (url: string): Socket => {
   return io(url, {
-    path: "/chat/socket.io", // match backend's path
+    path: "/chat/socket.io", // This must match the `path:` in backend server
     withCredentials: true,
     transports: ["websocket"]
   });
