@@ -12,19 +12,19 @@ import { Logout } from '../../redux/authSlice';
 import notificationAlert from '../../assets/notification-alert.mp3';
 import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '../../services/notificationService';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
-// import { io } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { setUnreadCount, incrementUnreadCount } from '../../redux/notificationSlice';
 import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { ApiResponse } from '../../types/common';
 import { INotification } from '../../types/notification';
-import socket from "../../sockets/notificationSocket";
+// import socket from "../../sockets/notificationSocket";
 
 // const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
 //     withCredentials: true,
 //     transports: ['websocket'],
 //     path: "/notification/socket.io",
 // });
-// const socket = io(``);
+const socket = io(``);
 
 interface DecodedToken extends JwtPayload {
     userId: string;
