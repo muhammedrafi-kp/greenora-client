@@ -59,7 +59,7 @@ export const createSocketConnection = (url: string): Socket => {
   const socket = io(url, {
     path: "/chat/socket.io",
     withCredentials: true,
-    transports: ["websocket"], // Keeping this as 'websocket' only to force the issue for debugging
+    // transports: ["websocket"], // Keeping this as 'websocket' only to force the issue for debugging
     secure: true,
   });
 
