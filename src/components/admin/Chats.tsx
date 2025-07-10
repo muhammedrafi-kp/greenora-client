@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IoMdSearch } from "react-icons/io";
 import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-// import io from 'socket.io-client';
 import { getChats } from '../../services/chatService';
 import { IoPersonCircleOutline } from 'react-icons/io5';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -11,13 +10,6 @@ import { IChat } from '../../types/chat';
 import '../../styles/scrollbar.css';
 
 import socket from "../../sockets/chatSocket";
-
-// const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
-//     transports: ["websocket"],
-//     withCredentials: true,
-//     path: "/chat/socket.io",
-// });
-
 
 interface IMessage {
     _id: string;

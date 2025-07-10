@@ -1,7 +1,13 @@
-import { Socket } from "socket.io-client";
-import { createSocketConnection } from "../utils/createSocket";
+import { io, Socket } from "socket.io-client";
 
-const NOTIFICATION_SOCKET_URL = import.meta.env.VITE_NOTIFICATION_SERVICE_URL || "http://localhost:6000";
-const notificationSocket: Socket = createSocketConnection(NOTIFICATION_SOCKET_URL);
+export const createSocketConnection = (url: string): Socket => {
+    return io(url, {
+        path: "/chat/socket.io",
+        withCredentials: true,
+        transports: ["websocket"],
+        secure: true,
+    });
+};
 
+const notificationSocket: Socket = createSocketConnection(import.meta.env.VITE_API_GATEWAY_URL);
 export default notificationSocket;
