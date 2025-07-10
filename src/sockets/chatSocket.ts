@@ -30,7 +30,8 @@ export const createSocketConnection = (url: string): Socket => {
   return io(url, {
     path: "/chat/socket.io",
     withCredentials: true,
-    transports: ["websocket"]
+    transports: ["websocket"],
+    secure: true,
   });
 };
 
