@@ -17,15 +17,6 @@ import { ApiResponse } from '../../types/common';
 import { IAdmin, IUser } from '../../types/user';
 
 import socket from "../../sockets/chatSocket";
-// const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
-//     transports: ["websocket"],
-//     withCredentials: true,
-//     // path: "/chat/socket.io",
-// });
-
-// const socket = io(``);
-
-
 
 const quickRepliesMap = {
     initial: [
