@@ -28,7 +28,7 @@ const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL;
 
 export const createSocketConnection = (url: string): Socket => {
   return io(url, {
-    path: "/socket/chat",
+    path: "/chat/socket.io",
     withCredentials: true,
     transports: ["websocket"],
     secure: true,
