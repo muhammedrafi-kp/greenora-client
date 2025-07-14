@@ -483,7 +483,7 @@ const ChatBot: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-8 right-10 z-50">
+        <div className="fixed bottom-8 right-8 z-50">
             {/* Chat Button */}
             <button
                 onClick={toggleChat}

@@ -3,8 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { BsSend, BsEmojiSmile } from "react-icons/bs";
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
-import io from 'socket.io-client';
-// import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { getCollectorData } from '../../services/collectorService';
 import { getAdminData } from '../../services/userService';
 import { initiateChat } from '../../services/chatService';
@@ -12,16 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { ApiResponse } from '../../types/common';
 import { IChat, IMessage } from '../../types/chat';
 import { ICollector, IAdmin } from '../../types/user';
-
-// interface DecodedToken extends JwtPayload {
-//   collectorId: string;
-// }
-
-const socket = io(`${import.meta.env.VITE_API_GATEWAY_URL}`, {
-  transports: ["websocket"],
-  withCredentials: true,
-  path: "/chat/socket.io",
-});
+import socket from "../../sockets/chatSocket";
 
 const Chat: React.FC = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
