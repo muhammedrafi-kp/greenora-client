@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export default function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault(); // Stop the browser from auto-showing
-      setDeferredPrompt(e);
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsVisible(true);
     };
 
@@ -20,25 +25,39 @@ export default function InstallPrompt() {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
-    // @ts-ignore
-    deferredPrompt.prompt(); // Show the install prompt
 
-    // Optional: wait for the user's choice
-    // @ts-ignore
+    await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     console.log(`User response to install prompt: ${outcome}`);
     setDeferredPrompt(null);
     setIsVisible(false);
   };
 
+  const handleCancel = () => {
+    setIsVisible(false);
+  };
+
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 bg-black text-white p-4 rounded shadow-lg z-50">
-      <p>Install this app for a better experience!</p>
-      <button onClick={handleInstallClick} className="bg-blue-500 px-3 py-1 mt-2 rounded">
-        Install App
-      </button>
+    <div className="fixed bottom-4 right-4 left-4 md:left-auto md:max-w-sm bg-white border border-gray-300 p-4 rounded-lg shadow-lg z-50">
+      <p className="text-black text-sm font-medium mb-2">
+        Install this app on your device for a better experience.
+      </p>
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={handleCancel}
+          className="bg-gray-300 text-black px-3 py-1 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleInstallClick}
+          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+        >
+          Install
+        </button>
+      </div>
     </div>
   );
 }
