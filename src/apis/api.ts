@@ -60,8 +60,8 @@ apiClient.interceptors.response.use(
             typeof error.response.data === 'object' &&
             error.response.data !== null &&
             'message' in error.response.data &&
-            error.response.data.message === "User is blocked.") {
-            toast.error("Your account is blocked.");
+            error.response.data.message === "User is blocked") {
+            toast.error("Your account is blocked");
             store.dispatch(Logout());
             return Promise.reject(error);
         }

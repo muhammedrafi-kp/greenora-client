@@ -40,7 +40,7 @@ export default function InstallPrompt() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 left-4 md:left-auto md:max-w-sm bg-white border border-gray-300 p-4 rounded-lg shadow-lg z-50">
+    <div className="fixed bottom-4 right-4 left-4 md:left-auto md:max-w-sm bg-gray-900 border border-gray-300 p-4 rounded-lg shadow-lg z-50">
       <p className="text-black text-sm font-medium mb-2">
         Install this app on your device for a better experience.
       </p>
