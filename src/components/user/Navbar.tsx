@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png'
 import { IoIosNotifications } from "react-icons/io";
+import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
 import { FaUserCircle, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
 import { BiChevronDown } from 'react-icons/bi';
 import { MdLogin, MdLogout } from "react-icons/md";
@@ -17,6 +18,7 @@ import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { ApiResponse } from '../../types/common';
 import { INotification } from '../../types/notification';
 import socket from "../../sockets/notificationSocket";
+import ChatBot from './ChatBot';
 
 interface DecodedToken extends JwtPayload {
     userId: string;
@@ -31,6 +33,7 @@ const NavBar: React.FC = () => {
     const [page, setPage] = useState<number>(1);
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isChatOpenMobile, setIsChatOpenMobile] = useState(false);
 
     const unreadCount = useSelector((state: any) => state.notification.unreadCount.user);
     const { isLoggedIn, role, token } = useSelector((state: any) => state.auth);
@@ -213,6 +216,110 @@ const NavBar: React.FC = () => {
         }
     };
 
+    // Helper function to render the notification card responsively
+    const renderNotificationCard = () => (
+        <>
+            {/* Overlay for mobile */}
+            <div
+                className="fixed inset-0 z-40 bg-black/30 md:hidden"
+                onClick={() => setIsNotificationOpen(false)}
+                style={{ display: isNotificationOpen ? 'block' : 'none' }}
+            ></div>
+            <div
+                ref={notificationContainerRef}
+                onScroll={handleScroll}
+                className={`bg-white border border-gray-200 rounded-lg shadow-2xl md:w-[32rem] w-full max-w-sm md:max-w-none [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 fixed md:absolute left-1/2 md:left-auto md:right-0 top-1/2 md:top-auto md:mt-2 z-50 transform -translate-x-1/2 md:translate-x-0 -translate-y-1/2 md:translate-y-0 duration-300 ${notifications.length === 0 ? 'h-[10rem]' : 'max-h-[80vh] md:max-h-[28rem]'} overflow-y-auto transition-all`}
+                style={{ display: isNotificationOpen ? 'block' : 'none' }}
+            >
+                <div className="bg-gray-50 border-b mb-4 sticky top-0 z-10">
+                    <div className="flex items-center justify-between px-4 py-2">
+                        <h3 className="text-gray-800 text-lg font-semibold">
+                            Notifications
+                        </h3>
+                        <button
+                            onClick={toggleNotification}
+                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                            <svg
+                                className="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div className="px-4 space-y-3">
+                    {notifications && notifications.length > 0 ? (
+                        <>
+                            {notifications.map((notification) => (
+                                <div
+                                    key={notification._id}
+                                    onClick={() => handleNotificationClick(notification._id, notification.url)}
+                                    className={`p-3 rounded-lg ${notification.isRead ? 'bg-gray-50' : 'bg-white'} border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative`}
+                                >
+                                    {!notification.isRead && (
+                                        <div className="absolute right-2 top-2">
+                                            <div className="bg-red-500 h-1 rounded-full w-1"></div>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center mt-2">
+                                        <h4 className={'text-gray-800 text-sm font-semibold'}>
+                                            {notification.title}
+                                        </h4>
+                                        <span className="text-gray-500 text-xs">
+                                            {new Date(notification.createdAt).toLocaleString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}
+                                        </span>
+                                    </div>
+                                    <p className={`text-gray-600 text-xs mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
+                                        {notification.message}
+                                    </p>
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="text-center py-4">
+                                    <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="text-center text-gray-500 py-4">
+                            No notifications
+                        </div>
+                    )}
+                </div>
+                {notifications.length > 0 && (
+                    <div className="bg-gray-50 border-t bottom-0 mt-4 pb-4 pt-2 px-4 sticky">
+                        <button
+                            onClick={() => {
+                                navigate('/account/notifications');
+                                toggleNotification();
+                            }}
+                            className="text-center text-green-700 text-sm w-full hover:text-green-800"
+                        >
+                            View All Notifications
+                        </button>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+
     return (
         <>
             {/* Add audio element */}
@@ -264,7 +371,7 @@ const NavBar: React.FC = () => {
                     </div>
 
                     {/* Mobile Icons (right side) */}
-                    <div className="md:hidden flex items-center lg:gap-2 gap-1">
+                    <div className="md:hidden flex items-center lg:gap-3 gap-2">
                         {isLoggedIn && role === 'user' && (
                             <>
                                 {/* Mobile Notification Icon */}
@@ -273,24 +380,26 @@ const NavBar: React.FC = () => {
                                         onClick={toggleNotification}
                                         className="p-2 rounded-full hover:bg-slate-200 transition-colors"
                                     >
-                                        <IoIosNotifications className="h-5 w-5 text-slate-950" />
+                                        <IoIosNotifications className="h-6 w-6 text-slate-950" />
                                         {unreadCount > 0 && (
                                             <span className="bg-red-500 border-2 border-white h-4 w-4 justify-center rounded-full text-white text-xs absolute -right-1 -top-1 font-bold inline-flex items-center">
                                                 {unreadCount}
                                             </span>
                                         )}
                                     </button>
+                                    {/* Mobile Notification Card */}
+                                    {isNotificationOpen && renderNotificationCard()}
                                 </div>
-
-                                {/* Mobile Profile Icon */}
+                                {/* Mobile Chat Icon */}
                                 <div className="relative">
-                                    <button
-                                        onClick={toggleDropdown}
-                                        className="p-1 rounded-full hover:bg-slate-200 transition-colors"
-                                    >
-                                        <FaUserCircle className="h-6 w-6 text-green-900" />
-                                        {/* <div className="bg-green-500 border-2 border-white h-2.5 w-2.5 rounded-full absolute right-0 top-0"></div> */}
-                                    </button>
+                                    {!isChatOpenMobile && (
+                                        <button
+                                            onClick={() => setIsChatOpenMobile(true)}
+                                            className="p-1 rounded-full hover:bg-slate-200 transition-colors"
+                                        >
+                                            <IoChatbubbleEllipsesSharp className="h-6 w-6 text-green-900" />
+                                        </button>
+                                    )}
                                 </div>
                             </>
                         )}
@@ -321,101 +430,8 @@ const NavBar: React.FC = () => {
                                             </span>
                                         )}
                                     </div>
-
-                                    {/* Notification Card */}
-                                    {isNotificationOpen && (
-                                        <div
-                                            ref={notificationContainerRef}
-                                            onScroll={handleScroll}
-                                            className={`bg-white border border-gray-200 rounded-lg shadow-2xl w-[32rem] [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 absolute duration-300 ${notifications.length === 0 ? 'h-[10rem]' : 'max-h-[28rem]'} mt-2 overflow-y-auto right-0 transform transition-all`}
-                                        >
-                                            <div className="bg-gray-50 border-b mb-4 sticky top-0 z-10">
-                                                <div className="flex items-center justify-between px-4 py-2">
-                                                    <h3 className="text-gray-800 text-lg font-semibold">
-                                                        Notifications
-                                                    </h3>
-                                                    <button
-                                                        onClick={toggleNotification}
-                                                        className="text-gray-500 hover:text-gray-700 transition-colors"
-                                                    >
-                                                        <svg
-                                                            className="h-5 w-5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="px-4 space-y-3">
-                                                {notifications && notifications.length > 0 ? (
-                                                    <>
-                                                        {notifications.map((notification) => (
-                                                            <div
-                                                                key={notification._id}
-                                                                onClick={() => handleNotificationClick(notification._id, notification.url)}
-                                                                className={`p-3 rounded-lg ${notification.isRead ? 'bg-gray-50' : 'bg-white'} border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative`}
-                                                            >
-                                                                {!notification.isRead && (
-                                                                    <div className="absolute right-2 top-2">
-                                                                        <div className="bg-red-500 h-1 rounded-full w-1"></div>
-                                                                    </div>
-                                                                )}
-                                                                <div className="flex justify-between items-center mt-2">
-                                                                    <h4 className={'text-gray-800 text-sm font-semibold'}>
-                                                                        {notification.title}
-                                                                    </h4>
-                                                                    <span className="text-gray-500 text-xs">
-                                                                        {new Date(notification.createdAt).toLocaleString('en-US', {
-                                                                            year: 'numeric',
-                                                                            month: 'long',
-                                                                            day: 'numeric',
-                                                                            hour: 'numeric',
-                                                                            minute: '2-digit',
-                                                                            hour12: true
-                                                                        })}
-                                                                    </span>
-                                                                </div>
-                                                                <p className={`text-gray-600 text-xs mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
-                                                                    {notification.message}
-                                                                </p>
-                                                            </div>
-                                                        ))}
-                                                        {isLoading && (
-                                                            <div className="text-center py-4">
-                                                                <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <div className="text-center text-gray-500 py-4">
-                                                        No notifications
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {notifications.length > 0 && (
-                                                <div className="bg-gray-50 border-t bottom-0 mt-4 pb-4 pt-2 px-4 sticky">
-                                                    <button
-                                                        onClick={() => {
-                                                            navigate('/account/notifications');
-                                                            toggleNotification();
-                                                        }}
-                                                        className="text-center text-green-700 text-sm w-full hover:text-green-800"
-                                                    >
-                                                        View All Notifications
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* Notification Card (Desktop) */}
+                                    {isNotificationOpen && renderNotificationCard()}
                                 </div>
 
                                 {/* Profile Icon with Dropdown */}
@@ -645,6 +661,10 @@ const NavBar: React.FC = () => {
             </nav>
 
             {isLoginModalOpen && <AuthModal closeModal={closeLoginModal} initialMode="login" />}
+            {/* Render ChatBot as a modal for mobile */}
+            {isChatOpenMobile && (
+                <ChatBot isMobileModal={true} onCloseMobileModal={() => setIsChatOpenMobile(false)} />
+            )}
         </>
     );
 };
