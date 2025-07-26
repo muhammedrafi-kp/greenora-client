@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png'
 import { IoIosNotifications } from "react-icons/io";
 import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
-import { FaUserCircle, FaHome, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
+import { FaUserCircle, FaInfoCircle, FaClipboardList } from 'react-icons/fa';
+import { GoHomeFill } from "react-icons/go";
 import { BiChevronDown } from 'react-icons/bi';
-import { MdLogin, MdLogout } from "react-icons/md";
-import { GrServices, GrContact } from "react-icons/gr";
+import { MdLogout } from "react-icons/md";
+import { RiLogoutCircleRLine } from "react-icons/ri";
+import { GrContact } from "react-icons/gr";
+// import { GrServices } from "react-icons/gr";
 import AuthModal from './AuthModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { Logout } from '../../redux/authSlice';
@@ -331,10 +334,10 @@ const NavBar: React.FC = () => {
                     <div className="flex items-center gap-4">
 
                         {/* Mobile Hamburger Menu (left side) */}
-                        <div className="md:hidden mt-2">
+                        <div className="md:hidden mt-2 ml-2">
                             <button onClick={toggleMenu} className="focus:outline-none">
                                 <svg
-                                    className="h-6 w-6"
+                                    className="h-7 w-7"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -503,51 +506,72 @@ const NavBar: React.FC = () => {
 
                 {/* Mobile Sidebar */}
                 <div
-                    className={`fixed top-0 left-0 w-72 h-full bg-white transform ${isOpen ? 'translate-x-0' : '-translate-x-full'
+                    className={`fixed top-0 left-0 w-64 h-full bg-white transform ${isOpen ? 'translate-x-0' : '-translate-x-full'
                         } transition-transform duration-300 ease-in-out md:hidden z-50`}
                 >
                     {/* Sidebar Header */}
-                    <div className="bg-gradient-to-r p-3 from-green-900 to-green-800">
-                        {isLoggedIn && role === 'user' ? (
-                            <div className="flex gap-3 sm:gap-4 items-center">
-                                <div className="relative">
+                    <div className="bg-gradient-to-r py-4 px-6 from-green-900 to-green-800">
+
+                        <div className="flex gap-2 sm:gap-3 items-center">
+                            {/* Logo */}
+                            <img
+                                src={logo}
+                                alt="Greenora logo"
+                                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white "
+                            />
+                            <span className="ml-2 font-bold text-white text-xl md:text-2xl lg:text-3xl select-none">Greenora</span>
+                        </div>
+                        {/* {isLoggedIn && role === 'user' ? (
+                            <div className="flex gap-2 sm:gap-3 items-center"> */}
+                        {/* Logo */}
+                        {/* <img
+                                    src={logo}
+                                    alt="Greenora logo"
+                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white "
+                                />
+                                <span className="ml-2 font-bold text-white text-xl md:text-2xl lg:text-3xl select-none">Greenora</span> */}
+
+                        {/* User Icon */}
+                        {/* <div className="relative">
                                     <FaUserCircle className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
                                     <div className="bg-green-400 border-2 border-white h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full absolute bottom-0 right-0"></div>
-                                </div>
-                                <div>
+                                </div> */}
+                        {/* Welcome Text */}
+                        {/* <div>
+                                    <h3 className="text-white font-medium text-sm sm:text-base">Welcome back!</h3>
                                     <h3 className="text-white font-medium text-sm sm:text-base">User Name</h3>
                                     <p className="text-green-100 text-xs sm:text-sm">Welcome back!</p>
-                                </div>
-                            </div>
+                                </div> */}
+                        {/* </div>
                         ) : (
                             <div className="text-white">
                                 <h3 className="font-medium text-sm sm:text-base">Welcome to Greenora</h3>
                                 <p className="text-green-100 text-xs sm:text-sm">Please login to continue</p>
                             </div>
-                        )}
+                        )} */}
                     </div>
 
                     {/* Sidebar Navigation */}
-                    <div className="p-3 sm:p-4 z-50">
+                    <div className="p-4 sm:p-4 z-50">
                         <ul className="space-y-1.5 sm:space-y-2">
                             <li>
                                 <button
                                     onClick={() => navigate('/')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-6  group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
-                                    <FaHome className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                    <GoHomeFill className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 group-hover:text-green-900" />
                                     <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Home</span>
                                 </button>
                             </li>
-                            <li>
+                            {/* <li>
                                 <button
                                     onClick={() => navigate('/services')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-6 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
                                     <GrServices className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                     <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Services</span>
                                 </button>
-                            </li>
+                            </li> */}
                             {isLoggedIn && role === 'user' ? (
                                 <>
                                     <li>
@@ -556,7 +580,7 @@ const NavBar: React.FC = () => {
                                                 navigate('/account/');
                                                 toggleMenu();
                                             }}
-                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                            className="flex rounded-lg text-gray-700 w-full gap-6  group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                         >
                                             <FaUserCircle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                             <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Account</span>
@@ -568,18 +592,18 @@ const NavBar: React.FC = () => {
                                                 navigate('/account/collections');
                                                 toggleMenu();
                                             }}
-                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                            className="flex rounded-lg text-gray-700 w-full gap-6  group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                         >
                                             <FaClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                             <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">My Collections</span>
                                         </button>
                                     </li>
-                                    <li>
+                                    {/* <li>
                                         <button onClick={() => {
                                             navigate('/account/notifications');
                                             toggleMenu();
                                         }}
-                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                            className="flex rounded-lg text-gray-700 w-full gap-6  group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                         >
                                             <IoIosNotifications className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                             <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Notifications</span>
@@ -587,14 +611,14 @@ const NavBar: React.FC = () => {
                                                 6
                                             </span>
                                         </button>
-                                    </li>
+                                    </li> */}
                                     <li>
                                         <button
                                             onClick={() => {
                                                 navigate('/account/charges');
                                                 toggleMenu();
                                             }}
-                                            className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                            className="flex rounded-lg text-gray-700 w-full gap-6  group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                         >
                                             <TbCoinRupeeFilled className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                             <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Charges</span>
@@ -605,9 +629,9 @@ const NavBar: React.FC = () => {
                                 <li>
                                     <button
                                         onClick={openLoginModal}
-                                        className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                        className="flex rounded-lg text-gray-700 w-full gap-6 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                     >
-                                        <MdLogin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
+                                        <FaUserCircle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                         <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Account</span>
                                     </button>
                                 </li>
@@ -615,7 +639,7 @@ const NavBar: React.FC = () => {
                             <li>
                                 <button
                                     onClick={() => navigate('/about')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-6  group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
                                     <FaInfoCircle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                     <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">About</span>
@@ -624,7 +648,7 @@ const NavBar: React.FC = () => {
                             <li>
                                 <button
                                     onClick={() => navigate('/contact')}
-                                    className="flex rounded-lg text-gray-700 w-full gap-3 sm:gap-4 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
+                                    className="flex rounded-lg text-gray-700 w-full gap-6 group hover:bg-green-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
                                     <GrContact className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 group-hover:text-green-900" />
                                     <span className="font-medium group-hover:text-green-900 text-sm sm:text-base">Contact</span>
@@ -642,7 +666,7 @@ const NavBar: React.FC = () => {
                                     }}
                                     className="flex rounded-lg text-red-600 w-full gap-3 sm:gap-4 group hover:bg-red-50 items-center px-3 py-2.5 sm:px-4 sm:py-3 transition-colors"
                                 >
-                                    <MdLogout className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 group-hover:text-red-700" />
+                                    <RiLogoutCircleRLine className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 group-hover:text-red-700" />
                                     <span className="font-medium group-hover:text-red-700 text-sm sm:text-base">Logout</span>
                                 </button>
                             </div>
