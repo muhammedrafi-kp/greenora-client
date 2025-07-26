@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logo from '../../assets/logo.png'
 import banner from '../../assets/20036.jpg';
 import whoWeAreImage from '../../assets/greenora-banner.jpeg';
 import wasteCollection from '../../assets/waste-collection.png';
@@ -12,6 +13,9 @@ import ecoFriendly from '../../assets/eco-friendly.png';
 import subscription from '../../assets/subsciption.png';
 import wasteManagmnetIndia from '../../assets/waste-managment-india.jpg';
 import AuthModal from './AuthModal';
+import { FaInstagram, FaFacebook, FaLinkedin  } from "react-icons/fa";
+import { IoLocationOutline,IoMailOutline } from "react-icons/io5";
+import { LuPhone } from "react-icons/lu";
 
 const Landing: React.FC = () => {
     const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
@@ -110,7 +114,7 @@ const Landing: React.FC = () => {
                             </p>
 
                             <p className="mt-4  text-xs md:text-sm lg:text-base text-gray-800 font-medium leading-relaxed">
-                                Driven by a vision of a cleaner, greener planet, Greenora combines technology and community engagement to transform how waste is managed, turning challenges into opportunities for a sustainable future. Together, let’s reduce, reuse, and rethink waste for a better tomorrow.
+                                Driven by a vision of a cleaner, greener planet, Greenora combines technology and community engagement to transform how waste is managed, turning challenges into opportunities for a sustainable future. Together, let's reduce, reuse, and rethink waste for a better tomorrow.
                             </p>
                         </motion.div>
                         <motion.div
@@ -192,6 +196,221 @@ const Landing: React.FC = () => {
                         </motion.div>
                     </div>
                 </motion.section>
+
+                {/* Statistics Section */}
+                <motion.section
+                    className="bg-gray-900 p-10 sm:p-12 md:p-15 w-full relative"
+                    style={{
+                        backgroundImage: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Cdefs%3E%3Cpattern id=\'grain\' width=\'100\' height=\'100\' patternUnits=\'userSpaceOnUse\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'1\' fill=\'%23ffffff\' opacity=\'0.1\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'100\' height=\'100\' fill=\'url(%23grain)\'/%3E%3C/svg%3E")'
+                    }}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={fadeInUp}
+                >
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                            {[
+                                { number: "4", label: "Years of Experience" },
+                                { number: "1k+", label: "Happy Customers" },
+                                { number: "10+", label: "Partners" },
+                                { number: "5", label: "Districts in Kerala" }
+                            ].map((stat, index) => (
+                                <motion.div
+                                    key={index}
+                                    className="text-center"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: index * 0.1 }}
+                                >
+                                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
+                                        {stat.number}
+                                    </div>
+                                    <div className="text-sm md:text-base text-white font-medium">
+                                        {stat.label}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* Customer Testimonials Section */}
+                <motion.section
+                    className="bg-white p-10 sm:p-10 md:p-20 w-full"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={fadeInUp}
+                >
+                    <div className="max-w-7xl mx-auto">
+                        <motion.h2
+                            className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12 text-green-800"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                        >
+                            What Customers Say
+                        </motion.h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                            {[
+                                {
+                                    quote: "Efficient & Reliable Service!",
+                                    text: "Greenora has completely transformed how we manage waste in our community. Their prompt service and eco-friendly solutions have made a significant difference in reducing our environmental footprint.",
+                                    reviewer: "Ravi M., Community Organizer"
+                                },
+                                {
+                                    quote: "A Step Towards Sustainability!",
+                                    text: "I love how Greenora integrates technology with waste management. Their real-time tracking and recycling programs have made it easy for us to contribute to a cleaner planet.",
+                                    reviewer: "Aditi S., Business Owner"
+                                },
+                                {
+                                    quote: "Highly Recommended!",
+                                    text: "Their scrap collection service is fantastic! It's great to see old materials being recycled responsibly, helping reduce landfill waste.",
+                                    reviewer: "Rajesh P., Resident"
+                                },
+                                {
+                                    quote: "Game-Changer for Waste Management!",
+                                    text: "Greenora's approach to waste management is both innovative and impactful. Their commitment to sustainability inspires others to join the cause.",
+                                    reviewer: "Priya L., Environmental Activist"
+                                }
+                            ].map((testimonial, index) => (
+                                <motion.div
+                                    key={index}
+                                    className="bg-white rounded-lg shadow-lg p-6 border border-gray-100"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: index * 0.1 }}
+                                    whileHover={{ y: -5, transition: { duration: 0.3 } }}
+                                >
+                                    <div className="flex items-start mb-4">
+                                        <span className="text-yellow-400 text-xl mr-2">⭐</span>
+                                        <h3 className="font-bold text-lg text-gray-800">{testimonial.quote}</h3>
+                                    </div>
+                                    <p className="text-gray-600 mb-4 leading-relaxed">{testimonial.text}</p>
+                                    <p className="text-sm text-gray-500">- {testimonial.reviewer}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* Footer Section */}
+                <footer className="bg-green-900 text-white">
+                    <div className="max-w-7xl mx-auto p-8 md:p-12">
+                        {/* Top Section */}
+                        <div className="border-b border-gray-300 pb-8 mb-8">
+                            <div className="flex flex-col md:flex-row justify-between items-start">
+                                <div className="mb-6 md:mb-0">
+                                    <div className="flex items-center mb-3 gap-3">
+                                        <img src={logo}
+                                            alt="Greenora logo"
+                                            className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-white "
+                                        />
+                                        <h1 className="text-2xl font-bold mr-2">Greenora</h1>
+
+                                    </div>
+                                    <p className="text-sm mb-4"> <strong>Recycle for a better tomorrow.</strong> </p>
+                                    <div className="flex items-center">
+                                        <span className="text-sm mr-2">Follow Greenora on</span>
+                                        <div className="flex space-x-3">
+                                            <a href="#" className="w-6 h-6  rounded-full flex items-center justify-center">
+                                                {/* <span className="text-green-900 text-xs">📷</span> */}
+                                                <FaInstagram className="h-5 w-5 sm:h-6 sm:w-6" />
+                                            </a>
+                                            <a href="#" className="w-6 h-6  rounded-full flex items-center justify-center">
+                                                <FaFacebook className="h-5 w-5 sm:h-6 sm:w-6" />
+                                            </a>
+                                            <a href="#" className="w-6 h-6 rounded-full flex items-center justify-center">
+                                                <FaLinkedin className="h-5 w-5 sm:h-6 sm:w-6" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Main Content */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                            {/* Services */}
+                            <div>
+                                <h3 className="font-bold text-lg mb-4">Services</h3>
+                                <ul className="space-y-2 text-sm">
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Waste Collection & Disposal</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Recycling Solutions</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Scrap Collection</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Eco-Friendly Awareness Programs</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Real-Time Waste Tracking</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Custom Waste Management Plans</a></li>
+                                </ul>
+                            </div>
+
+                            {/* Contact Information */}
+                            <div>
+                                <h3 className="font-bold text-lg mb-4">Contact Information</h3>
+                                <p className="text-sm mb-4">Feel free to contact and reach us!</p>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex items-start">
+                                        <div className="w-4 h-4 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                                            {/* <span className="text-white text-xs">📍</span> */}
+                                            <IoLocationOutline className="h-4 w-5 text-yellow-500" />
+
+                                        </div>
+                                        <p>Greenora Private Limited, Kakkanchery Chelembra PO, Thenhipalam, Kerala 673634</p>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-4 h-4 rounded-full flex items-center justify-center mr-3">
+                                            <LuPhone className="h-4 w-5 text-yellow-400" />
+                                        </div>
+                                        <p>+91 773638XXXX</p>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-4 h-4  rounded-full flex items-center justify-center mr-3">
+                                            <IoMailOutline className="h-4 w-5 text-yellow-400" />
+                                        </div>
+                                        <p>greenorainfo@gmail.com</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Regions */}
+                            <div>
+                                <h3 className="font-bold text-lg mb-4">Regions</h3>
+                                <ul className="space-y-2 text-sm">
+                                    {['Malappuram', 'Calicut', 'Palakkad', 'Thrissure'].map((region, index) => (
+                                        <li key={index} className="flex items-center">
+                                            <div className="w-4 h-4 rounded-full flex items-center justify-center mr-3">
+                                            <IoLocationOutline className="h-4 w-5 text-yellow-500" />
+                                            </div>
+                                            <a href="#" className="hover:text-green-300 transition-colors">{region}</a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Support */}
+                            <div>
+                                <h3 className="font-bold text-lg mb-4">Support</h3>
+                                <ul className="space-y-2 text-sm">
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Contact Us</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Privacy Policy</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Terms & Conditions</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Cancellation Policy</a></li>
+                                    <li><a href="#" className="hover:text-green-300 transition-colors">Refund Policy</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Copyright */}
+                        <div className="border-t border-gray-300 pt-6">
+                            <p className="text-center text-sm text-gray-300">
+                                CopyRight © Greenora Private Limited. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </footer>
             </div>
 
             {showAuthModal && <AuthModal closeModal={closeModal} />}

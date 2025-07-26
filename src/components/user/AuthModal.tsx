@@ -151,7 +151,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                 // onClick={closeModal}
                 >
                     <div
-                        className={`relative bg-white p-8 rounded-xl shadow-lg max-w-md sm:w-full w-11/12 transform transition-all duration-300 ${showModal ? 'translate-y-0' : 'translate-y-20'
+                        className={`relative bg-white px-8 py-10 rounded-xl shadow-lg max-w-md sm:w-full w-11/12 transform transition-all duration-300 ${showModal ? 'translate-y-0' : 'translate-y-20'
                             } max-h-[90vh] overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -200,7 +200,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                                         onChange={handleInputChange}
                                         value={formData.name}
 
-                                        className={`w-full border rounded-lg sm:h-12 xs:h-10 h-8 focus:outline-secondary-500 px-3 sm:text-base text-xs ${formError.name ? 'border-red-700' : 'border-gray-300'}`}
+                                        className={`w-full border rounded-lg sm:h-12 h-10 focus:outline-secondary-500 px-3 sm:text-base text-xs ${formError.name ? 'border-red-700' : 'border-gray-300'}`}
 
                                         placeholder="Full Name"
                                     />
@@ -218,7 +218,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                                 name="email"
                                 onChange={handleInputChange}
                                 value={formData.email}
-                                className={`w-full border rounded-lg sm:h-12 xs:h-10 h-8 px-3 sm:text-base text-xs ${formError.email ? 'border-red-700' : 'border-gray-300'}`}
+                                className={`w-full border rounded-lg sm:h-12 h-10 px-3 sm:text-base text-xs ${formError.email ? 'border-red-700' : 'border-gray-300'}`}
                                 placeholder="Email Address"
                             />
                             {formError.email && <p className="text-xs text-red-700">{formError.email}</p>}
@@ -232,7 +232,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                                         name="phone"
                                         onChange={handleInputChange}
                                         value={formData.phone}
-                                        className={`w-full border rounded-lg sm:h-12 xs:h-10 h-8 focus:outline-secondary-500 px-3 sm:text-base text-xs mt-4 ${formError.phone ? 'border-red-700' : 'border-gray-300'}`}
+                                        className={`w-full border rounded-lg sm:h-12 h-10 focus:outline-secondary-500 px-3 sm:text-base text-xs mt-4 ${formError.phone ? 'border-red-700' : 'border-gray-300'}`}
                                         placeholder="Phone Number"
                                     />
                                     {formError.phone && <p className="text-xs text-red-700">{formError.phone}</p>}
@@ -246,7 +246,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                                     name="password"
                                     onChange={handleInputChange}
                                     value={formData.password}
-                                    className={`w-full border rounded-lg sm:h-12 xs:h-10 h-8 focus:outline-secondary-500 px-3 sm:text-base text-xs ${formError.password ? 'border-red-700' : 'border-gray-300'}`}
+                                    className={`w-full border rounded-lg sm:h-12 h-10 focus:outline-secondary-500 px-3 sm:text-base text-xs ${formError.password ? 'border-red-700' : 'border-gray-300'}`}
                                     placeholder="Password"
                                 />
                                 <span
@@ -267,7 +267,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                                         name="confirmPassword"
                                         onChange={handleInputChange}
                                         value={formData.confirmPassword}
-                                        className={`w-full border rounded-lg sm:h-12 xs:h-10 h-8 focus:outline-secondary-500 px-3 sm:text-base text-xs ${formError.confirmPassword ? 'border-red-700' : 'border-gray-300'}`}
+                                        className={`w-full border rounded-lg sm:h-12  h-10 focus:outline-secondary-500 px-3 sm:text-base text-xs ${formError.confirmPassword ? 'border-red-700' : 'border-gray-300'}`}
                                         placeholder="Confirm Password"
                                     />
                                     <span
@@ -313,7 +313,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                             )}
 
                             <button
-                                className="w-full bg-green-800 hover:bg-green-900 text-white font-medium mt-8 xs:py-2 py-1 md:py-3 rounded-lg disabled:opacity-50"
+                                className="w-full bg-green-800 hover:bg-green-900 text-white font-medium mt-8 py-2 md:py-3 rounded-lg disabled:opacity-50"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}
