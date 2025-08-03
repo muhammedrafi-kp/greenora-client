@@ -45,18 +45,21 @@ const ProfileSection: React.FC = () => {
             if (!value.trim()) {
                 return "Full name is required";
             }
-            // if (/[^a-zA-Z\s]/.test(value)) {
-            //     return "Full name cannot contain special characters";
-            // }
+            if (value.trim().length < 3 || value.trim().length > 15) {
+                return "Name must be between 3 and 15 characters";
+            }
+            if (/^_+$/.test(value.trim())) {
+                return "Name cannot be only underscores";
+            }
         }
 
         if (name === 'phone') {
-            const phoneRegex = /^[0-9]{10}$/;
+            const phoneRegex = /^[6-9][0-9]{9}$/;
             if (!value.trim()) {
                 return "Phone number is required";
             }
             if (!phoneRegex.test(value)) {
-                return "Phone number must be 10 digits long";
+                return "Phone number must start with 6-9 and contain exactly 10 digits";
             }
         }
 
