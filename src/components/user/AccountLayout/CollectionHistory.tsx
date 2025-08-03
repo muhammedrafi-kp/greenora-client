@@ -126,9 +126,18 @@ const CollectionHistory: React.FC = () => {
       if (response.success) {
         setWalletBalance(response.data.balance);
         setShowPaymentModal(true);
+      } else {
+        // If wallet is not available, still show payment modal but only with online payment
+        setWalletBalance(0);
+        setSelectedMethod('online'); // Auto-select online payment
+        setShowPaymentModal(true);
       }
     } catch (error) {
       console.error('Error fetching wallet data:', error);
+      // Even if there's an error, show payment modal with online payment only
+      setWalletBalance(0);
+      setSelectedMethod('online'); // Auto-select online payment
+      setShowPaymentModal(true);
     }
   };
 
@@ -259,28 +268,30 @@ const CollectionHistory: React.FC = () => {
             <div className="space-y-4">
               <p className="text-sm font-medium text-gray-700">Select Payment Method</p>
 
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedMethod('wallet')}
-                  className={`flex items-center justify-between p-4 border rounded-lg transition-all
-                    ${selectedMethod === 'wallet'
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-green-200'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Wallet className="w-5 h-5 text-gray-600" />
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-800">Pay with Wallet</p>
-                      <p className="text-xs text-gray-500">Balance: ₹{walletBalance}</p>
+              <div className={`grid gap-4 ${walletBalance > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {walletBalance > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMethod('wallet')}
+                    className={`flex items-center justify-between p-4 border rounded-lg transition-all
+                      ${selectedMethod === 'wallet'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-green-200'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Wallet className="w-5 h-5 text-gray-600" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-gray-800">Pay with Wallet</p>
+                        <p className="text-xs text-gray-500">Balance: ₹{walletBalance}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'wallet' ? 'border-green-500' : 'border-gray-300'}`}>
-                    {selectedMethod === 'wallet' && (
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                    )}
-                  </div>
-                </button>
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'wallet' ? 'border-green-500' : 'border-gray-300'}`}>
+                      {selectedMethod === 'wallet' && (
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                      )}
+                    </div>
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -313,7 +324,7 @@ const CollectionHistory: React.FC = () => {
                 </button>
               </div>
 
-              {selectedMethod === 'wallet' && walletBalance < selectedCollection.estimatedCost && (
+              {selectedMethod === 'wallet' && walletBalance > 0 && walletBalance < selectedCollection.estimatedCost && (
                 <p className="text-sm font-medium text-red-500">
                   Insufficient wallet balance.
                 </p>
@@ -334,9 +345,9 @@ const CollectionHistory: React.FC = () => {
               <button
                 type="button"
                 onClick={handlePaymentClick}
-                disabled={paymentLoading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance < selectedCollection.estimatedCost)}
+                disabled={paymentLoading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance > 0 && walletBalance < selectedCollection.estimatedCost)}
                 className={`${paymentLoading ? 'w-full' : 'w-1/2'} bg-green-800 hover:bg-green-900 text-white py-3 rounded-lg text-sm font-medium
-                  ${paymentLoading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance < selectedCollection.estimatedCost)
+                  ${paymentLoading || !selectedMethod || (selectedMethod === 'wallet' && walletBalance > 0 && walletBalance < selectedCollection.estimatedCost)
                     ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {paymentLoading ? 'Processing...' : `Pay with ${selectedMethod === 'wallet' ? 'Wallet' : 'Online'}`}

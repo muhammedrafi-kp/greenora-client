@@ -41,7 +41,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 left-4 md:left-auto md:max-w-sm bg-gray-900 border border-gray-300 p-4 rounded-lg shadow-lg z-50">
-      <p className="text-black text-sm font-medium mb-2">
+      <p className="text-sm font-medium mb-2">
         Install this app on your device for a better experience.
       </p>
       <div className="flex justify-end gap-2">
