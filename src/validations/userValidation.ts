@@ -80,7 +80,6 @@
 
 export interface IFormErrors {
     name?: string;
-    username?: string;
     email?: string;
     phone?: string;
     password?: string;
@@ -93,14 +92,9 @@ export interface IFormErrors {
         if (!isLogin) {
           if (!value.trim()) return "Full name is required";
           // if (/[^a-zA-Z\s]/.test(value)) return "Full name cannot contain special characters";
-          if (value.trim().length < 2) return "Full name must be at least 2 characters";
-        }
-        break;
-      case 'username':
-        if (!isLogin) {
-          if (!value.trim()) return "Username is required";
-          if (value.trim().length < 3 || value.trim().length > 15) return "Username must be 3-15 characters";
-          if (/^_+$/.test(value.trim())) return "Username cannot be only underscores";
+          if (value.trim().length < 3) return "Full name must be at least 3 characters";
+          if (value.trim().length > 15) return "Full name must be at most 15 characters";
+          if (/^_+$/.test(value.trim())) return "Full name cannot be only underscores";
         }
         break;
       case 'email':
@@ -138,7 +132,7 @@ export interface IFormErrors {
   
     const fieldValidations = isLogin 
       ? ['email', 'password'] 
-      : ['name', 'username', 'email', 'phone', 'password', 'confirmPassword'];
+      : ['name', 'email', 'phone', 'password', 'confirmPassword'];
   
     fieldValidations.forEach(field => {
       const error = validateField(field, formData[field], isLogin);
