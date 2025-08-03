@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
-import { getCollectionHistory, paywithRazorpay, paywithWallet } from '../../../services/collectionService';
+import { getCollection,getCollectionHistory, paywithRazorpay, paywithWallet } from '../../../services/collectionService';
 import { getWalletData } from '../../../services/paymentService';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, CreditCard, Lock } from 'lucide-react';
@@ -147,6 +147,19 @@ const CollectionHistory: React.FC = () => {
 
   const handlePaymentClick = async () => {
     if (!selectedCollection || !selectedMethod) return;
+
+    // Fetch collection data to check payment status
+    const response = await getCollection(selectedCollection.collectionId);
+    
+    const collection = response.data;
+    // Check if payment is already completed
+    if (collection?.payment?.status === 'success') {
+      toast.success('Payment already completed.');
+      setShowPaymentModal(false);
+      setSelectedMethod(null);
+      setSelectedCollection(null);
+      return;
+    }
 
     setPaymentLoading(true);
     try {
