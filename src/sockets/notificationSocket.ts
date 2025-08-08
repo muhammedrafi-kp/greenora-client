@@ -9,5 +9,5 @@ export const createSocketConnection = (url: string): Socket => {
     });
 };
 
-const notificationSocket: Socket = createSocketConnection(import.meta.env.VITE_API_GATEWAY_URL);
+const notificationSocket: Socket = createSocketConnection("https://api-greenora.mhdrafi.online");
 export default notificationSocket;

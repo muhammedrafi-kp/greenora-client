@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL; 
+// const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL; 
 
 export const createSocketConnection = (url: string): Socket => {
   return io(url, {
@@ -11,7 +11,7 @@ export const createSocketConnection = (url: string): Socket => {
   });
 };
 
-const chatSocket: Socket = createSocketConnection(CHAT_SOCKET_URL);
+const chatSocket: Socket = createSocketConnection("https://api-greenora.mhdrafi.online");
 
 export default chatSocket;
 
