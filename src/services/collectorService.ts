@@ -4,7 +4,7 @@ import { ApiResponse } from "../types/common";
 
 export const getCollectorData = async ():Promise<ApiResponse<ICollector>> => {
     try {
-        const res = await apiClient.get("/user-service/collector");
+        const res = await apiClient.get("/user-service/collectors/me");
         return res.data;
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -14,7 +14,7 @@ export const getCollectorData = async ():Promise<ApiResponse<ICollector>> => {
 
 export const updateCollectorData = async (collectorData: FormData):Promise<ApiResponse<ICollector>> => {
     try {
-        const res = await apiClient.put("/user-service/collector", collectorData, {
+        const res = await apiClient.put("/user-service/collectors/me", collectorData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

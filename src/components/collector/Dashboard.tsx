@@ -5,20 +5,12 @@ import {
   Package,
   Truck,
   Star,
-  // CircleUser,
   ClipboardList,
   IndianRupee,
   CheckCircle
 } from 'lucide-react';
 
-// import {
-//   Calendar,
-//   TrendingUp,
 
-//   Award,
-//   BarChart as BarChartIcon,
-//   Target,
-// } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';

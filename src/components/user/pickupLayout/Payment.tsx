@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Lock, Wallet, CreditCard } from 'lucide-react';
@@ -18,6 +18,7 @@ const Payment: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<'wallet' | 'online' | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const paymentHandledRef = useRef(false); 
 
   const dispatch = useDispatch();
   const { Razorpay } = useRazorpay();
@@ -25,6 +26,13 @@ const Payment: React.FC = () => {
   console.log("collectionData From state:", collectionData);
 
   useEffect(() => {
+    // Check if collectionData is undefined or null and redirect
+    if (!collectionData) {
+      dispatch(setStep({ step: 1 }));
+      navigate('/');
+      return;
+    }
+
     const fetchWalletData = async () => {
       setLoading(true);
       try {
@@ -45,7 +53,7 @@ const Payment: React.FC = () => {
     }
 
     fetchWalletData();
-  }, []);
+  }, [collectionData, navigate]);
 
 
   const handleBack = () => {
@@ -103,6 +111,7 @@ const Payment: React.FC = () => {
         console.log("initiate payment response:", response);
         if (response.success) {
 
+
           const options: RazorpayOrderOptions = {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID,
             amount: response.data.amount,
@@ -114,6 +123,8 @@ const Payment: React.FC = () => {
               color: "#10B981"
             },
             handler: async (response: any) => {
+              console.log("payment handler setting true..")
+              paymentHandledRef.current = true;
               try {
                 console.log("razorpay response :", response)
                 const verifyResponse = await verifyRazorpayAdvance(response);
@@ -148,12 +159,16 @@ const Payment: React.FC = () => {
             notes: "Razorpay Corporate Office",
             modal: {
               ondismiss: function () {
-                navigate('/pickup/failure', {
-                  state: {
-                    error: 'Payment was cancelled',
-                    collectionData: collectionData
-                  }
-                });
+                console.log("Paymnet cancelled!");
+                // console.log("paymentHandled : ", paymentHandledRef.current)
+                // if (paymentHandledRef.current) {
+                //   navigate('/pickup/failure', {
+                //     state: {
+                //       error: 'Payment fail',
+                //       collectionData: collectionData
+                //     }
+                //   });
+                // }
               }
             }
           };
@@ -167,9 +182,16 @@ const Payment: React.FC = () => {
           });
         }
       } catch (error: any) {
-        navigate('/pickup/failure', {
-          state: { error: error.message || 'Something went wrong' }
-        });
+        if (error.status === 409) {
+          toast.error('Payment already in progress', {
+            icon: '⚠️',
+          });
+        } else {
+          navigate('/pickup/failure', {
+            state: { error: error.message || 'Something went wrong' }
+          });
+        }
+
       } finally {
         setLoading(false);
       }

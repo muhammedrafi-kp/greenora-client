@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { googleCallbackUser } from "../../services/authService";
 import { loginUser, signUpUser } from "../../services/authService";
 import { ApiResponse } from '../../types/common';
+
 interface AuthModalProps {
     closeModal: () => void;
     initialMode?: 'login' | 'signup';
@@ -57,7 +58,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
             try {
                 if (isLogin) {
                     const res:ApiResponse<{token:string,role:string}> = await loginUser(formData.email, formData.password);
-                    console.log(res)
+                    console.log("login response:",res)
                     if (res.success) {
                         // Dispatch user login action with user data
                         dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));

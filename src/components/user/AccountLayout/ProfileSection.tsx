@@ -51,6 +51,9 @@ const ProfileSection: React.FC = () => {
             if (/^_+$/.test(value.trim())) {
                 return "Name cannot be only underscores";
             }
+            if (/^\d+$/.test(value.trim())) {
+                return "Name cannot be only numbers";
+            }
         }
 
         if (name === 'phone') {

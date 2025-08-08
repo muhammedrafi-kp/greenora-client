@@ -36,14 +36,15 @@ apiClient.interceptors.response.use(
             try {
                 const state = store.getState();
                 const role = state.auth.role;
+                console.log("state:",state)
                 console.log("role:", role);
-                const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/user-service/${role}/refresh-token`,
+                const response = await axios.post(`${import.meta.env.VITE_API_GATEWAY_URL}/user-service/${role}s/refresh-token`,
                     {},
                     { withCredentials: true }
                 );
 
                 if (response.status === 200) {
-                    console.log("response:", response)
+                    console.log("refresh-token response:", response)
                     store.dispatch(loginSuccess({ token: response.data.token, role: response.data.role }));
                     originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers["Authorization"] = `Bearer ${response.data.token}`;

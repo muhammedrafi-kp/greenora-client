@@ -24,25 +24,39 @@ const Users: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   const usersPerPage = 10;
 
+  // Debounce search term
   useEffect(() => {
-    fetchUsers();
-  }, [searchTerm, selectedStatus, sortField, sortDirection, currentPage]);
+    const timer = setTimeout(() => {
+      const trimmedSearch = searchTerm.trim();
+      setDebouncedSearchTerm(trimmedSearch);
+    }, 600); // 600ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    // Only fetch users if there's a search term or if it's the initial load
+    if (debouncedSearchTerm.length > 0 || (searchTerm === '' && debouncedSearchTerm === '')) {
+      fetchUsers();
+    }
+  }, [debouncedSearchTerm, selectedStatus, sortField, sortDirection, currentPage]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res:ApiResponse<{users:IUser[],totalItems:number,totalPages:number,currentPage:number}> = await getUsers({
-        search: searchTerm,
+      const res: ApiResponse<{ users: IUser[], totalItems: number, totalPages: number, currentPage: number }> = await getUsers({
+        search: debouncedSearchTerm || '',
         status: selectedStatus,
         sortField,
         sortOrder: sortDirection,
         page: currentPage,
         limit: usersPerPage
       });
-      
+
       if (res.success) {
         setUsers(res.data.users);
         setTotalItems(res.data.totalItems);
@@ -78,7 +92,7 @@ const Users: React.FC = () => {
 
   const handleExport = (type: 'csv' | 'pdf') => {
     setExportType(type);
-    
+
     const headers = ['Name', 'Email', 'Phone', 'Status'];
     const exportData = {
       headers,
@@ -92,7 +106,7 @@ const Users: React.FC = () => {
     };
 
     exportTableData(type, exportData);
-    
+
     setShowExportMessage(true);
     setTimeout(() => {
       setShowExportMessage(false);
@@ -118,7 +132,7 @@ const Users: React.FC = () => {
 
     try {
       setLoading(true);
-      const res:ApiResponse<null> = await updateUserStatus(selectedUser._id);
+      const res: ApiResponse<null> = await updateUserStatus(selectedUser._id);
       console.log(res)
       if (res.success) {
         setUsers(prevUsers =>
@@ -143,14 +157,6 @@ const Users: React.FC = () => {
       setShowModal(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -282,13 +288,23 @@ const Users: React.FC = () => {
                   <tr className="bg-gray-100 border-b border-gray-100">
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Full name</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Email</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Phone</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Auth</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length === 0 ? (
+                  {loading ? (
                     <tr>
-                      <td colSpan={3} className="px-4 py-8 text-center">
+                      <td colSpan={4} className="px-4 py-8 text-center">
+                        <div className="flex justify-center items-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : users.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <User className="w-12 h-12 mb-2 text-gray-400" />
                           <p className="text-sm font-medium">No users found</p>
@@ -303,9 +319,9 @@ const Users: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden">
                               {user.profileUrl ? (
-                                <img 
-                                  src={user.profileUrl} 
-                                  alt={user.name} 
+                                <img
+                                  src={user.profileUrl}
+                                  alt={user.name}
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
                                     // If image fails to load, replace with user icon
@@ -317,10 +333,13 @@ const Users: React.FC = () => {
                               ) : null}
                               <User className="w-6 h-6 text-blue-600 fallback-icon" />
                             </div>
-                            <span className="font-medium text-gray-900">{user.name}</span>
+                            <span className="font-medium text-gray-900">{user.name || 'N/A'}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-3 text-gray-600">{user.email}</td>
+                        <td className="px-6 py-3 text-gray-600">{user.email || 'N/A'}</td>
+                        <td className="px-6 py-3 text-gray-600">{user.phone || 'N/A'}</td>
+                        <td className="px-6 py-3 text-gray-600">{user.authProvider || 'N/A'}</td>
+
                         <td className="px-6 py-3 text-left">
                           <button
                             onClick={() => handleStatusChangeModal(user)}
@@ -349,22 +368,20 @@ const Users: React.FC = () => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-lg border ${
-                    currentPage === 1
-                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                  className={`p-2 rounded-lg border ${currentPage === 1
+                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className={`p-2 rounded-lg border ${
-                    currentPage === totalPages
-                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                  className={`p-2 rounded-lg border ${currentPage === totalPages
+                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>

@@ -43,6 +43,7 @@ const Requests: React.FC = () => {
   const [collections, setCollections] = useState<ICollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [showExportMessage, setShowExportMessage] = useState(false);
@@ -60,6 +61,16 @@ const Requests: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmedSearch = searchTerm.trim();
+      setDebouncedSearchTerm(trimmedSearch);
+    }, 600); // 600ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   useEffect(() => {
     fetchDistricts();
     fetchCollections();
@@ -75,8 +86,11 @@ const Requests: React.FC = () => {
   }, [selectedDistrict]);
 
   useEffect(() => {
-    fetchCollections();
-  }, [selectedStatus, selectedDistrict, selectedServiceArea, startDate, endDate, sortAscending, currentPage]);
+    // Only fetch collections if there's a search term or if it's the initial load
+    if (debouncedSearchTerm.length > 0 || (searchTerm === '' && debouncedSearchTerm === '')) {
+      fetchCollections();
+    }
+  }, [debouncedSearchTerm, selectedStatus, selectedDistrict, selectedServiceArea, startDate, endDate, sortAscending, currentPage]);
 
   const fetchDistricts = async () => {
     try {
@@ -111,7 +125,7 @@ const Requests: React.FC = () => {
         endDate: endDate || undefined,
         sortBy: 'createdAt',
         sortOrder: sortAscending ? 'asc' : 'desc',
-        search: searchTerm || undefined,
+        search: debouncedSearchTerm || undefined,
         page: currentPage,
         limit: collectionsPerPage
       };
@@ -158,11 +172,7 @@ const Requests: React.FC = () => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    // Debounce the search
-    const timeoutId = setTimeout(() => {
-      fetchCollections();
-    }, 500);
-    return () => clearTimeout(timeoutId);
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   const getStatusColor = (status: string) => {

@@ -12,6 +12,7 @@ export const createSocketConnection = (url: string): Socket => {
 };
 
 const chatSocket: Socket = createSocketConnection(CHAT_SOCKET_URL);
+
 export default chatSocket;
 
 

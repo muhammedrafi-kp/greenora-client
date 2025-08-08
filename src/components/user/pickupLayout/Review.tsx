@@ -27,6 +27,20 @@ const Review = () => {
   const districtId = pickupRequest.district;
   const serviceAreaId = pickupRequest.serviceArea;
 
+  // Check if any required data is missing and redirect to pickup if so
+  useEffect(() => {
+    if (!pickupRequest || !pickupType || !address || !details || !districtId || !serviceAreaId) {
+      // toast.error('Pickup data is incomplete. Please start over.');
+      navigate('/pickup');
+      return;
+    }
+  }, [pickupRequest, pickupType, address, details, districtId, serviceAreaId, navigate]);
+
+  // Early return if data is missing to prevent component from rendering
+  if (!pickupRequest || !pickupType || !address || !details || !districtId || !serviceAreaId) {
+    return null; // Don't render anything while redirecting
+  }
+
   console.log("details", details);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -78,6 +92,7 @@ const Review = () => {
         toast.error(response.message);
       }
     } catch (error) {
+      console.log("error : ",error)
       toast.error('Failed to calculate pickup cost');
     } finally {
       setIsLoading(false);
