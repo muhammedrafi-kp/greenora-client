@@ -17,6 +17,7 @@ export interface IUser {
     name: string;
     email: string;
     phone: string;
+    authProvider?:string;
     profileUrl?: string; 
     isBlocked: boolean;
 }

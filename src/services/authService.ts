@@ -1,11 +1,11 @@
 import { IUserSignUpData, ICollectorSignUpData } from "../types/user";
 import { publicApiClient } from "../apis/api";
 import { apiClient } from "../apis/api";
-import {ApiResponse} from "../types/common";
-import { IUser,ICollector } from "../types/user";
+import { ApiResponse } from "../types/common";
+import { IUser, ICollector } from "../types/user";
 
 //admin auth apis
-export const loginAdmin = async (email: string, password: string):Promise<ApiResponse<{token:string,role:string}>> => {
+export const loginAdmin = async (email: string, password: string): Promise<ApiResponse<{ token: string, role: string }>> => {
     try {
         const res = await publicApiClient.post("/user-service/admin/login", { email, password });
         return res.data;
@@ -26,9 +26,9 @@ export const signUpAdmin = async (email: string, password: string) => {
 };
 
 //user auth apis
-export const loginUser = async (email: string, password: string):Promise<ApiResponse<{token:string,role:string}>> => {
+export const loginUser = async (email: string, password: string): Promise<ApiResponse<{ token: string, role: string }>> => {
     try {
-        const res = await publicApiClient.post("/user-service/user/login", { email, password });
+        const res = await publicApiClient.post("/user-service/users/login", { email, password });
         return res.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -36,9 +36,9 @@ export const loginUser = async (email: string, password: string):Promise<ApiResp
     }
 }
 
-export const signUpUser = async (userData: IUserSignUpData):Promise<ApiResponse<null>> => {
+export const signUpUser = async (userData: IUserSignUpData): Promise<ApiResponse<null>> => {
     try {
-        const res = await publicApiClient.post("/user-service/user/signup", userData);
+        const res = await publicApiClient.post("/user-service/users/signup", userData);
         return res.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -46,9 +46,9 @@ export const signUpUser = async (userData: IUserSignUpData):Promise<ApiResponse<
     }
 }
 
-export const verifyOtpUser = async (email: string, otp: string):Promise<ApiResponse<{token:string,role:string,user:IUser}>> => {
+export const verifyOtpUser = async (email: string, otp: string): Promise<ApiResponse<{ token: string, role: string, user: IUser }>> => {
     try {
-        const res = await publicApiClient.post("/user-service/user/verify-otp", { email, otp });
+        const res = await publicApiClient.post("/user-service/users/otp/verify", { email, otp });
         return res.data;
     } catch (error) {
         console.error("Error during OTP verification:", error);
@@ -56,9 +56,9 @@ export const verifyOtpUser = async (email: string, otp: string):Promise<ApiRespo
     }
 };
 
-export const resendOtpUser = async (email: string):Promise<ApiResponse<null>> => {
+export const resendOtpUser = async (email: string): Promise<ApiResponse<null>> => {
     try {
-        const res = await publicApiClient.post("/user-service/user/resend-otp", { email });
+        const res = await publicApiClient.post("/user-service/users/otp/resend", { email });
         console.log("response form service :", res);
         return res.data;
     } catch (error) {
@@ -67,9 +67,9 @@ export const resendOtpUser = async (email: string):Promise<ApiResponse<null>> =>
     }
 };
 
-export const googleCallbackUser = async (credential: string):Promise<ApiResponse<{token:string,role:string,user:IUser}>> => {
+export const googleCallbackUser = async (credential: string): Promise<ApiResponse<{ token: string, role: string, user: IUser }>> => {
     try {
-        const res = await publicApiClient.post("/user-service/user/google/callback", { credential });
+        const res = await publicApiClient.post("/user-service/users/google/callback", { credential });
         return res.data;
     } catch (error) {
         console.error("Error during Google callback:", error);
@@ -78,9 +78,9 @@ export const googleCallbackUser = async (credential: string):Promise<ApiResponse
 };
 
 //collector auth apis   
-export const loginCollector = async (email: string, password: string):Promise<ApiResponse<{token:string,role:string,collector:ICollector}>> => {
+export const loginCollector = async (email: string, password: string): Promise<ApiResponse<{ token: string, role: string, collector: ICollector }>> => {
     try {
-        const res = await publicApiClient.post("/user-service/collector/login", { email, password });
+        const res = await publicApiClient.post("/user-service/collectors/login", { email, password });
         return res.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -88,9 +88,9 @@ export const loginCollector = async (email: string, password: string):Promise<Ap
     }
 }
 
-export const signUpCollector = async (userData: ICollectorSignUpData):Promise<ApiResponse<null>> => {
+export const signUpCollector = async (userData: ICollectorSignUpData): Promise<ApiResponse<null>> => {
     try {
-        const res = await publicApiClient.post("/user-service/collector/signup", userData);
+        const res = await publicApiClient.post("/user-service/collectors/signup", userData);
         return res.data;
     } catch (error) {
         console.error("Login Error:", error);
@@ -98,9 +98,9 @@ export const signUpCollector = async (userData: ICollectorSignUpData):Promise<Ap
     }
 }
 
-export const verifyOtpCollector = async (email: string, otp: string):Promise<ApiResponse<{token:string,role:string,collector:ICollector}>> => {
+export const verifyOtpCollector = async (email: string, otp: string): Promise<ApiResponse<{ token: string, role: string, collector: ICollector }>> => {
     try {
-        const res = await publicApiClient.post("/user-service/collector/verify-otp", { email, otp });
+        const res = await publicApiClient.post("/user-service/collectors/otp/verify", { email, otp });
         return res.data;
     } catch (error) {
         console.error("Error during OTP verification:", error);
@@ -108,9 +108,9 @@ export const verifyOtpCollector = async (email: string, otp: string):Promise<Api
     }
 };
 
-export const resendOtpCollector = async (email: string):Promise<ApiResponse<null>> => {
+export const resendOtpCollector = async (email: string): Promise<ApiResponse<null>> => {
     try {
-        const res = await publicApiClient.post("/user-service/collector/resend-otp", { email });
+        const res = await publicApiClient.post("/user-service/collectors/otp/resend", { email });
         console.log("response form service :", res);
         return res.data;
     } catch (error) {
@@ -119,9 +119,9 @@ export const resendOtpCollector = async (email: string):Promise<ApiResponse<null
     }
 };
 
-export const googleCallbackCollector = async (credential: string):Promise<ApiResponse<{token:string,role:string,collector:ICollector}>> => {
+export const googleCallbackCollector = async (credential: string): Promise<ApiResponse<{ token: string, role: string, collector: ICollector }>> => {
     try {
-        const res = await publicApiClient.post("/user-service/collector/google/callback", { credential });
+        const res = await publicApiClient.post("/user-service/collectors/google/callback", { credential });
         return res.data;
     } catch (error) {
         console.error("Error during Google callback:", error);
@@ -131,9 +131,9 @@ export const googleCallbackCollector = async (credential: string):Promise<ApiRes
 
 
 //common auth apis
-export const changePassword = async (role: string, currentPassword: string, newPassword: string):Promise<ApiResponse<null>> => {
+export const changePassword = async (role: string, currentPassword: string, newPassword: string): Promise<ApiResponse<null>> => {
     try {
-        const res = await apiClient.patch(`/user-service/${role}/password`, { currentPassword, newPassword });
+        const res = await apiClient.patch(`/user-service/${role}s/me/password`, { currentPassword, newPassword });
         return res.data;
     } catch (error) {
         console.error("Error changing password:", error);
@@ -141,9 +141,9 @@ export const changePassword = async (role: string, currentPassword: string, newP
     }
 }
 
-export const sendResetLink = async (role: string, email: string):Promise<ApiResponse<null>> => {
+export const sendResetLink = async (role: string, email: string): Promise<ApiResponse<null>> => {
     try {
-        const res = await publicApiClient.post(`/user-service/${role}/forget-password`, { email });
+        const res = await publicApiClient.post(`/user-service/${role}s/password-reset`, { email });
         return res.data;
     } catch (error) {
         console.error("Error changing password:", error);
@@ -151,9 +151,9 @@ export const sendResetLink = async (role: string, email: string):Promise<ApiResp
     }
 }
 
-export const resetPassword = async (role: string, token: string, password: string):Promise<ApiResponse<null>> => {
+export const resetPassword = async (role: string, token: string, password: string): Promise<ApiResponse<null>> => {
     try {
-        const res = await publicApiClient.patch(`/user-service/${role}/reset-password`, { token, password });
+        const res = await publicApiClient.patch(`/user-service/${role}s/password-reset`, { token, password });
         return res.data;
     } catch (error) {
         console.error("Error changing password:", error);

@@ -10,7 +10,7 @@ import {
     FaChevronUp
 } from 'react-icons/fa';
 import { FaPeopleGroup ,FaLocationDot} from "react-icons/fa6";
-import { BiSolidCategory } from "react-icons/bi";
+import { TbTruckDelivery } from "react-icons/tb";
 
 interface SidebarProps {
     isSidebarOpen: boolean;
@@ -114,7 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                             >
                                 <div className="flex items-center space-x-3">
                                     <span className="group-hover:scale-110 transition-transform duration-200">
-                                        <BiSolidCategory />
+                                        <FaClipboardList />
                                     </span>
                                     <span>Categories</span>
                                 </div>
@@ -192,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                                 }}
                             >
                                 <span className="group-hover:scale-110 transition-transform duration-200">
-                                    <FaClipboardList />
+                                    <TbTruckDelivery />
                                 </span>
                                 <span>Collection Requests</span>
                             </div>

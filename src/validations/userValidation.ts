@@ -95,6 +95,7 @@ export interface IFormErrors {
           if (value.trim().length < 3) return "Full name must be at least 3 characters";
           if (value.trim().length > 15) return "Full name must be at most 15 characters";
           if (/^_+$/.test(value.trim())) return "Full name cannot be only underscores";
+          if (/^\d+$/.test(value.trim())) return "Full name cannot be only numbers";
         }
         break;
       case 'email':

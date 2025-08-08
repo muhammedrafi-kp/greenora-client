@@ -41,6 +41,15 @@ const Sidebar: React.FC = () => {
     fetchUserData();
   }, []);
 
+  // Cleanup object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadedImage) {
+        URL.revokeObjectURL(uploadedImage);
+      }
+    };
+  }, [uploadedImage]);
+
   const fetchUserData = async () => {
     try {
       const res:ApiResponse<IUser> = await getUserData();
@@ -64,6 +73,9 @@ const Sidebar: React.FC = () => {
   };
 
   const handleCancelUpload = () => {
+    if (uploadedImage) {
+      URL.revokeObjectURL(uploadedImage);
+    }
     setUploadedImage(null);
   };
 
@@ -79,6 +91,9 @@ const Sidebar: React.FC = () => {
         const res:ApiResponse<string> = await uploadProfileImage(formData);
         if (res.success) {
           setUserData((prev) => (prev ? { ...prev, profileUrl: res.data } : null));
+          if (uploadedImage) {
+            URL.revokeObjectURL(uploadedImage);
+          }
           setUploadedImage(null);
         }
       } catch (error) {
@@ -98,7 +113,13 @@ const Sidebar: React.FC = () => {
           <div className="flex flex-col items-center p-4 border-b">
             <div className="relative group">
               <div className="w-20 h-20  rounded-full flex items-center justify-center relative">
-                {userData?.profileUrl ? (
+                {uploadedImage ? (
+                  <img
+                    src={uploadedImage}
+                    alt="Profile Preview"
+                    className="sm:w-24 sm:h-24 xs:w-20 xs:h-20 w-16 h-16 rounded-full sm:border-4 border-2 border-white shadow-lg object-cover"
+                  />
+                ) : userData?.profileUrl ? (
                   <img
                     src={userData?.profileUrl}
                     alt="Profile"

@@ -48,13 +48,27 @@ const Collectors: React.FC = () => {
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [selectedCollectorDetails, setSelectedCollectorDetails] = useState<ICollector | null>(null);
     const [exportType, setExportType] = useState<'csv' | 'pdf' | null>(null);
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
     const collectorsPerPage = 10;
 
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const trimmedSearch = searchTerm.trim();
+            setDebouncedSearchTerm(trimmedSearch);
+        }, 600); // 600ms delay
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
     useEffect(() => {
         fetchDistricts();
-        fetchCollectors();
-    }, [searchTerm, selectedStatus, selectedVerification, selectedDistrict, selectedServiceArea, sortField, sortDirection, currentPage]);
+        // Only fetch collectors if there's a search term or if it's the initial load
+        if (debouncedSearchTerm.length > 0 || (searchTerm === '' && debouncedSearchTerm === '')) {
+            fetchCollectors();
+        }
+    }, [debouncedSearchTerm, selectedStatus, selectedVerification, selectedDistrict, selectedServiceArea, sortField, sortDirection, currentPage]);
 
     useEffect(() => {
         if (selectedDistrict !== 'all') {
@@ -91,7 +105,7 @@ const Collectors: React.FC = () => {
         try {
             setLoading(true);
             const res: ApiResponse<{ collectors: ICollector[], totalItems: number, totalPages: number, currentPage: number }> = await getCollectors({
-                search: searchTerm,
+                search: debouncedSearchTerm || '',
                 status: selectedStatus,
                 verificationStatus: selectedVerification,
                 district: selectedDistrict,
@@ -121,34 +135,34 @@ const Collectors: React.FC = () => {
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page on new search
     };
 
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedStatus(e.target.value);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page on status change
     };
 
     const handleVerificationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedVerification(e.target.value);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page on verification change
     };
 
     const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedDistrict(e.target.value);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page on district change
     };
 
     const handleServiceAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedServiceArea(e.target.value);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page on service area change
     };
 
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const [field, direction] = e.target.value.split('-');
         setSortField(field);
         setSortDirection(direction);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page on sort change
     };
 
     const handleStatusChangeModal = (collector: ICollector) => {
@@ -224,14 +238,6 @@ const Collectors: React.FC = () => {
             setExportType(null);
         }, 3000);
     };
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
-            </div>
-        );
-    }
 
     if (error) {
         return (

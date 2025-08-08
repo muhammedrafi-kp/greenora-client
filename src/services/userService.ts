@@ -5,7 +5,7 @@ import { IAdmin, IUser, ICollector } from "../types/user";
 //admin
 export const getAdminData = async (): Promise<ApiResponse<IAdmin>> => {
     try {
-        const res = await apiClient.get("/user-service/user/admin");
+        const res = await apiClient.get("/user-service/users/admin");
         return res.data;
     } catch (error) {
         console.error("Error fetching admin data:", error);
@@ -107,7 +107,7 @@ export const getAvailableCollectors = async (serviceAreaId: string, preferredDat
 //user
 export const getUserData = async ():Promise<ApiResponse<IUser>> => {
     try {
-        const res = await apiClient.get("/user-service/user");
+        const res = await apiClient.get("/user-service/users/me");
         return res.data;
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -117,7 +117,7 @@ export const getUserData = async ():Promise<ApiResponse<IUser>> => {
 
 export const updateUserData = async (userData: FormData):Promise<ApiResponse<IUser>> => {
     try {
-        const res = await apiClient.put("/user-service/user", userData, {
+        const res = await apiClient.put("/user-service/users/me", userData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -134,7 +134,7 @@ export const updateUserData = async (userData: FormData):Promise<ApiResponse<IUs
 
 export const uploadProfileImage = async (data: FormData):Promise<ApiResponse<string>> => {
     try {
-        const res = await apiClient.patch("/user-service/user/upload-profile-image", data, {
+        const res = await apiClient.patch("/user-service/users/me/profile-image", data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

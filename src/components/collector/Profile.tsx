@@ -27,6 +27,35 @@ interface FormErrors {
   gender?: string;
 }
 
+// Add image validation function
+const isValidImageUrl = (url: string): boolean => {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+// Function to check if an image is valid by testing if it loads
+const validateImage = (url: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timeout = setTimeout(() => {
+      resolve(false);
+    }, 5000); // 5 second timeout
+    
+    img.onload = () => {
+      clearTimeout(timeout);
+      resolve(true);
+    };
+    img.onerror = () => {
+      clearTimeout(timeout);
+      resolve(false);
+    };
+    img.src = url;
+  });
+};
 
 const ProfileCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="bg-white rounded-lg border shadow-sm">
@@ -51,6 +80,8 @@ const Profile: React.FC<ProfileProps> = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [idFrontImage, setIdFrontImage] = useState<string | null>(null);
   const [idBackImage, setIdBackImage] = useState<string | null>(null);
+  const [removeIdFront, setRemoveIdFront] = useState<boolean>(false);
+  const [removeIdBack, setRemoveIdBack] = useState<boolean>(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [district, setDistrict] = useState<string>('');
   const [serviceArea, setServiceArea] = useState<string>('');
@@ -68,11 +99,15 @@ const Profile: React.FC<ProfileProps> = () => {
     switch (name) {
       case 'name':
         if (!value.trim()) return "Full name is required";
-        // if (/[^a-zA-Z\s]/.test(value)) return "Full name cannot contain special characters";
+        if (value.trim().length < 3 || value.trim().length > 15) return "Name must be between 3-15 characters";
+        if (/^_+$/.test(value.trim())) return "Name cannot be only underscores";
+        if (/^[0-9]+$/.test(value.trim())) return "Name cannot be only numbers";
         break;
       case 'phone':
         if (!value.trim()) return "Phone number is required";
         if (!/^[0-9]{10}$/.test(value)) return "Phone number must be 10 digits";
+        if (!/^[6-9]/.test(value)) return "Phone number must start with 6-9";
+        if (/^0{10}$/.test(value)) return "Phone number cannot be all zeros";
         break;
       case 'serviceArea':
         if (!value.trim()) return "Service area is required";
@@ -191,6 +226,29 @@ const Profile: React.FC<ProfileProps> = () => {
     fetchDistrictAndServiceArea();
   }, [collectorData?.district, collectorData?.serviceArea])
 
+  // Validate images when collector data is loaded
+  useEffect(() => {
+    const validateExistingImages = async () => {
+      if (collectorData?.idProofFrontUrl && isValidImageUrl(collectorData.idProofFrontUrl)) {
+        const isFrontValid = await validateImage(collectorData.idProofFrontUrl);
+        if (!isFrontValid) {
+          console.warn("Front ID proof image is invalid or corrupted");
+        }
+      }
+      
+      if (collectorData?.idProofBackUrl && isValidImageUrl(collectorData.idProofBackUrl)) {
+        const isBackValid = await validateImage(collectorData.idProofBackUrl);
+        if (!isBackValid) {
+          console.warn("Back ID proof image is invalid or corrupted");
+        }
+      }
+    };
+
+    if (collectorData) {
+      validateExistingImages();
+    }
+  }, [collectorData]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -239,8 +297,10 @@ const Profile: React.FC<ProfileProps> = () => {
   const clearIdImage = (type: 'front' | 'back') => {
     if (type === 'front') {
       setIdFrontImage(null);
+      setRemoveIdFront(true);
     } else {
       setIdBackImage(null);
+      setRemoveIdBack(true);
     }
   };
 
@@ -272,14 +332,32 @@ const Profile: React.FC<ProfileProps> = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate existing images if they exist
+    if (collectorData?.idProofFrontUrl && !removeIdFront) {
+      const isFrontValid = await validateImage(collectorData.idProofFrontUrl);
+      if (!isFrontValid) {
+        // toast.error("Front ID proof image is invalid or corrupted");
+        return;
+      }
+    }
+
+    if (collectorData?.idProofBackUrl && !removeIdBack) {
+      const isBackValid = await validateImage(collectorData.idProofBackUrl);
+      if (!isBackValid) {
+        // toast.error("Back ID proof image is invalid or corrupted");
+        return;
+      }
+    }
+
     // Add validation for ID proof images
-    if ((idFrontImage || collectorData?.idProofFrontUrl) &&
-      !(idBackImage || collectorData?.idProofBackUrl)) {
+    const hasFrontImage = (idFrontImage || (collectorData?.idProofFrontUrl && !removeIdFront));
+    const hasBackImage = (idBackImage || (collectorData?.idProofBackUrl && !removeIdBack));
+
+    if (hasFrontImage && !hasBackImage) {
       toast.error("Please upload both sides of your ID proof");
       return;
     }
-    if (!(idFrontImage || collectorData?.idProofFrontUrl) &&
-      (idBackImage || collectorData?.idProofBackUrl)) {
+    if (!hasFrontImage && hasBackImage) {
       toast.error("Please upload both sides of your ID proof");
       return;
     }
@@ -297,6 +375,10 @@ const Profile: React.FC<ProfileProps> = () => {
     if (collectorData?.district) formData.append('district', collectorData.district);
     if (collectorData?.gender) formData.append('gender', collectorData.gender);
     if (collectorData?.idProofType) formData.append('idProofType', collectorData.idProofType);
+
+    // Handle image removal flags
+    if (removeIdFront) formData.append('removeIdFront', 'true');
+    if (removeIdBack) formData.append('removeIdBack', 'true');
 
     // Handle image uploads
     if (uploadedImage) {
@@ -339,6 +421,8 @@ const Profile: React.FC<ProfileProps> = () => {
       if (res.success) {
         toast.success("Profile updated");
         setIsEditing(false);
+        setRemoveIdFront(false);
+        setRemoveIdBack(false);
         await fetchCollectorData();
       } else {
         toast.error("Failed to update profile.");
@@ -356,6 +440,8 @@ const Profile: React.FC<ProfileProps> = () => {
     setUploadedImage(null);
     setIdFrontImage(null);
     setIdBackImage(null);
+    setRemoveIdFront(false);
+    setRemoveIdBack(false);
     setErrors({});
     fetchCollectorData();
   };
@@ -645,12 +731,17 @@ const Profile: React.FC<ProfileProps> = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div>
                                 <div className="relative">
-                                  {idFrontImage || collectorData?.idProofFrontUrl ? (
+                                  {idFrontImage || (collectorData?.idProofFrontUrl && !removeIdFront) ? (
                                     <div className="relative">
                                       <img
                                         src={idFrontImage || collectorData?.idProofFrontUrl}
                                         alt="ID Front"
                                         className="w-full h-52 object-cover rounded-lg"
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          // toast.error("Front ID proof image is invalid or corrupted");
+                                        }}
                                       />
                                       <button
                                         type="button"
@@ -678,12 +769,17 @@ const Profile: React.FC<ProfileProps> = () => {
 
                               <div>
                                 <div className="relative">
-                                  {idBackImage || collectorData?.idProofBackUrl ? (
+                                  {idBackImage || (collectorData?.idProofBackUrl && !removeIdBack) ? (
                                     <div className="relative">
                                       <img
                                         src={idBackImage || collectorData?.idProofBackUrl}
                                         alt="ID Back"
                                         className="w-full h-52 object-cover rounded-lg"
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          // toast.error("Back ID proof image is invalid or corrupted");
+                                        }}
                                       />
                                       <button
                                         type="button"
@@ -719,6 +815,11 @@ const Profile: React.FC<ProfileProps> = () => {
                                 src={collectorData.idProofFrontUrl}
                                 alt="ID Front"
                                 className="w-full h-52 object-cover rounded-lg"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  // toast.error("Front ID proof image is invalid or corrupted");
+                                }}
                               />
                               <p className="mt-1 text-xs text-gray-500 text-center">Front Side</p>
                             </div>
@@ -727,6 +828,11 @@ const Profile: React.FC<ProfileProps> = () => {
                                 src={collectorData.idProofBackUrl}
                                 alt="ID Back"
                                 className="w-full h-52 object-cover rounded-lg"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  // toast.error("Back ID proof image is invalid or corrupted");
+                                }}
                               />
                               <p className="mt-1 text-xs text-gray-500 text-center">Back Side</p>
                             </div>
