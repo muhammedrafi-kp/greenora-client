@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 import { getCategories } from '../../../services/collectionService';
 import { ApiResponse } from '../../../types/common';
 import { ICategory } from '../../../types/collection';
@@ -7,14 +7,25 @@ import { ICategory } from '../../../types/collection';
 const Charges: React.FC = () => {
   const [showWaste, setShowWaste] = useState(true);
   const [categories, setCategories] = useState<ICategory[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res:ApiResponse<ICategory[]> = await getCategories(showWaste ? "waste" : "scrap");
-      console.log("response", res);
-      if (res.success) {
-        console.log(res.data);
-        setCategories(res.data);
+      setIsLoading(true);
+      try {
+        const res: ApiResponse<ICategory[]> = await getCategories(showWaste ? "waste" : "scrap");
+        console.log("response", res);
+        if (res.success) {
+          console.log(res.data);
+          setCategories(res.data);
+        } else {
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories', error);
+        setCategories([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCategories();
@@ -58,7 +69,12 @@ const Charges: React.FC = () => {
       </div>
 
       <div className="overflow-x-auto">
-        {filteredCategories.length > 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12 text-gray-600">
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            <span className="xs:text-md text-sm">Loading categories...</span>
+          </div>
+        ) : filteredCategories.length > 0 ? (
           <div className={`${filteredCategories.length > 5 ? 'max-h-[325px] overflow-y-auto [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2' : ''}`}>
             <table className="w-full">
               <thead className="bg-gray-50 sticky top-0 z-10">

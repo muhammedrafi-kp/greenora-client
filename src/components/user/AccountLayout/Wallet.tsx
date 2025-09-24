@@ -4,14 +4,14 @@ import { TbCoinRupeeFilled } from 'react-icons/tb';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
 import Modal from '../../common/Modal';
 import WalletSkeleton from '../skeltons/WalletSkelton';
-import { getWalletData, initiateAddMoney, verifyAddMoney, withdrawMoney } from '../../../services/paymentService';
+import { getWalletTransactions, initiateAddMoney, verifyAddMoney, withdrawMoney } from '../../../services/paymentService';
 import { toast } from 'react-hot-toast';
 import { ApiResponse } from '../../../types/common';
-import { IWallet } from '../../../types/payment';
+import { ITransaction } from '../../../types/payment';
 
 
 const Wallet: React.FC = () => {
-  const [walletData, setWalletData] = useState<IWallet | null>(null);
+  const [walletData, setWalletData] = useState<{ balance: number; transactions: ITransaction[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAddMoneyModalOpen, setIsAddMoneyModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -25,6 +25,10 @@ const Wallet: React.FC = () => {
   const [endDate, setEndDate] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [page, setPage] = useState<number>(1);
+  const [limit] = useState<number>(10);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   const isAnyFilterActive = () => {
     return startDate !== '' || endDate !== '' || selectedType !== 'all';
@@ -36,43 +40,59 @@ const Wallet: React.FC = () => {
     setSelectedType('all');
   };
 
-  const fetchWalletData = async () => {
-    setLoading(true);
+  const fetchWalletData = async (pageNum: number = 1, isNewFilter: boolean = false) => {
+    if (isNewFilter) {
+      setPage(1);
+      setHasMore(true);
+      setWalletData(prev => ({ balance: prev?.balance || 0, transactions: [] }));
+    }
+
+    const loadingSetter = isNewFilter || pageNum === 1 ? setLoading : setIsLoadingMore;
+    loadingSetter(true);
     try {
-      const res:ApiResponse<IWallet> = await getWalletData();
-      console.log("wallet data:", res);
+      const res: ApiResponse<{ transactions: ITransaction[], balance: number }> = await getWalletTransactions({
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        type: selectedType === 'all' ? undefined : selectedType,
+        page: pageNum,
+        limit,
+      });
       if (res.success) {
-        setWalletData(res.data);
+        setWalletData(prev => {
+          const previous = isNewFilter || !prev ? [] : (prev.transactions || []);
+          const existingIds = new Set(previous.map(t => t._id));
+          const newItems = (res.data.transactions || []).filter(t => !existingIds.has(t._id));
+          const merged = [...previous, ...newItems];
+          // Ensure newest transactions appear first
+          merged.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          return { balance: res.data.balance ?? prev?.balance ?? 0, transactions: merged };
+        });
+        setHasMore((res.data.transactions || []).length > 0);
       }
     } catch (error) {
+      // toast.error("Error fetching wallet data");
       console.error("Error fetching wallet data:", error);
     } finally {
-      setLoading(false);
+      loadingSetter(false);
     }
   };
 
   useEffect(() => {
-    fetchWalletData();
-  }, []);
+    fetchWalletData(1, true);
+  }, [startDate, endDate, selectedType]);
 
-  const filterTransactions = () => {
-    if (!walletData?.transactions) return [];
+  useEffect(() => {
+    if (page > 1 && !isLoadingMore) {
+      fetchWalletData(page, false);
+    }
+  }, [page]);
 
-    const sorted = [...walletData.transactions].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-
-    return sorted.filter(transaction => {
-      const transactionDate = new Date(transaction.timestamp).toISOString().split('T')[0];
-      const matchesType = selectedType === 'all' || transaction.type === selectedType;
-      const matchesStartDate = !startDate || transactionDate >= startDate;
-      const matchesEndDate = !endDate || transactionDate <= endDate;
-
-      return matchesType && matchesStartDate && matchesEndDate;
-    });
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isLoadingMore && hasMore) {
+      setPage(prev => prev + 1);
+    }
   };
-
-  const filteredTransactions = filterTransactions();
 
   const handleAddMoney = () => {
     setAmount(null);
@@ -114,7 +134,7 @@ const Wallet: React.FC = () => {
       setError(null);
 
       // Add money to the wallet
-      const res:ApiResponse<{ amount: number; orderId: string; }> = await initiateAddMoney(amount);
+      const res: ApiResponse<{ amount: number; orderId: string; }> = await initiateAddMoney(amount);
       console.log("initiatePayment response:", res);
       if (res.success) {
         const options: RazorpayOrderOptions = {
@@ -130,7 +150,7 @@ const Wallet: React.FC = () => {
           handler: async (response: any) => {
             try {
               console.log("resposne2 :", response)
-              const verifyResponse:ApiResponse<null> = await verifyAddMoney(response);
+              const verifyResponse: ApiResponse<null> = await verifyAddMoney(response);
 
               if (verifyResponse.success) {
                 console.log("verifyResponse:", verifyResponse);
@@ -138,9 +158,10 @@ const Wallet: React.FC = () => {
                 setIsAddMoneyModalOpen(false);
                 setAmount(null);
                 setError(null);
-                fetchWalletData();
+                fetchWalletData(1, true);
               }
             } catch (error) {
+              toast.error("Error during verification")
               console.log("error:", error);
             }
           }
@@ -166,10 +187,10 @@ const Wallet: React.FC = () => {
       setAmount(null);
       setError(null);
 
-      const res:ApiResponse<null> = await withdrawMoney(amount);
+      const res: ApiResponse<null> = await withdrawMoney(amount);
       if (res.success) {
         toast.success("Money withdrawn successfully");
-        fetchWalletData();
+        fetchWalletData(1, true);
       }
     }
   };
@@ -211,7 +232,7 @@ const Wallet: React.FC = () => {
       return <div className="text-center text-gray-500 py-8">Loading transactions...</div>;
     }
 
-    if (filteredTransactions.length === 0) {
+    if (walletData?.transactions.length === 0) {
       return (
         <div className="text-center text-gray-500 py-8">
           No transactions found
@@ -220,8 +241,8 @@ const Wallet: React.FC = () => {
     }
 
     return (
-      <div className="space-y-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-300px)] overflow-y-auto pr-2">
-        {filteredTransactions.map((transaction) => (
+      <div onScroll={handleScroll} className="space-y-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-300px)] overflow-y-auto pr-2">
+        {walletData?.transactions.map((transaction) => (
           <div
             key={transaction._id}
             className="flex items-center justify-between bg-white border border-gray-100 rounded-lg p-4"
@@ -229,9 +250,9 @@ const Wallet: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className={`
                 p-2 rounded-full 
-                ${transaction.type === 'credit' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
+                ${transaction.type === 'credit' || transaction.type === 'refund' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
               `}>
-                {transaction.type === 'credit' ? <FaCoins /> : <FaMoneyBillWave />}
+                {transaction.type === 'credit' || transaction.type === 'refund' ? <FaCoins /> : <FaMoneyBillWave />}
               </div>
               <div>
                 <h4 className="font-semibold text-sm">{transaction.serviceType}</h4>
@@ -249,12 +270,17 @@ const Wallet: React.FC = () => {
             </div>
             <div className={`
               font-semibold text-sm
-              ${transaction.type === 'credit' ? 'text-green-700' : 'text-red-700'}
+              ${transaction.type === 'credit' || transaction.type === 'refund' ? 'text-green-700' : 'text-red-700'}
             `}>
-              {transaction.type === 'credit' ? '+' : '-'} ₹{transaction.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {transaction.type === 'credit' || transaction.type === 'refund' ? '+' : '-'} ₹{transaction.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         ))}
+        {isLoadingMore && (
+          <div className="text-center py-4">
+            <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
+          </div>
+        )}
       </div>
     );
   };
@@ -308,7 +334,7 @@ const Wallet: React.FC = () => {
                       onChange={(e) => {
                         const newStartDate = e.target.value;
                         const today = new Date().toISOString().split('T')[0];
-                        
+
                         if (endDate && newStartDate > endDate) {
                           toast.error('Start date cannot be greater than end date');
                           return;
@@ -335,7 +361,7 @@ const Wallet: React.FC = () => {
                       onChange={(e) => {
                         const newEndDate = e.target.value;
                         const today = new Date().toISOString().split('T')[0];
-                        
+
                         if (startDate && newEndDate < startDate) {
                           toast.error('End date cannot be less than start date');
                           return;
@@ -584,7 +610,7 @@ const Wallet: React.FC = () => {
                         onChange={(e) => {
                           const newStartDate = e.target.value;
                           const today = new Date().toISOString().split('T')[0];
-                          
+
                           if (endDate && newStartDate > endDate) {
                             toast.error('Start date cannot be greater than end date');
                             return;
@@ -611,7 +637,7 @@ const Wallet: React.FC = () => {
                         onChange={(e) => {
                           const newEndDate = e.target.value;
                           const today = new Date().toISOString().split('T')[0];
-                          
+
                           if (startDate && newEndDate < startDate) {
                             toast.error('End date cannot be less than start date');
                             return;

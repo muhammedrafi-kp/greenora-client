@@ -48,14 +48,16 @@ const AssignedCollections: React.FC = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isDateRangePickerOpen, setIsDateRangePickerOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit] = useState(3);
+  const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
   const navigate = useNavigate();
 
   const fetchAssignedCollections = async (pageNum: number, status?: string) => {
     try {
-      let startDate: string | undefined;
-      let endDate: string | undefined;
+      setLoading(true);
+      let startDateStr: string | undefined;
+      let endDateStr: string | undefined;
 
       if (dateFilterType !== 'all') {
         const today = new Date();
@@ -65,26 +67,26 @@ const AssignedCollections: React.FC = () => {
 
         switch (dateFilterType) {
           case 'today':
-            startDate = today.toISOString().split('T')[0];
-            endDate = today.toISOString().split('T')[0];
+            startDateStr = today.toISOString().split('T')[0];
+            endDateStr = today.toISOString().split('T')[0];
             break;
           case 'yesterday':
-            startDate = yesterday.toISOString().split('T')[0];
-            endDate = yesterday.toISOString().split('T')[0];
+            startDateStr = yesterday.toISOString().split('T')[0];
+            endDateStr = yesterday.toISOString().split('T')[0];
             break;
           case 'custom':
             if (selectedDate) {
-              startDate = selectedDate.toISOString().split('T')[0];
-              endDate = selectedDate.toISOString().split('T')[0];
+              startDateStr = selectedDate.toISOString().split('T')[0];
+              endDateStr = selectedDate.toISOString().split('T')[0];
             }
             break;
           case 'range':
             if (selectedDate) {
-              startDate = selectedDate.toISOString().split('T')[0];
+              startDateStr = selectedDate.toISOString().split('T')[0];
               if (endDate) {
-                endDate = new Date(endDate).toISOString().split('T')[0];
+                endDateStr = new Date(endDate).toISOString().split('T')[0];
               } else {
-                endDate = startDate;
+                endDateStr = startDateStr;
               }
             }
             break;
@@ -93,22 +95,19 @@ const AssignedCollections: React.FC = () => {
 
       const params = {
         status: status !== 'all' ? status : undefined,
-        startDate,
-        endDate,
+        startDate: startDateStr,
+        endDate: endDateStr,
         page: pageNum,
         limit,
       }
       console.log("params ", params)
-      const res:ApiResponse<ICollection[]> = await getAssignedCollections(params);
+      const res: ApiResponse<{ collections: ICollection[], totalItems: number }> = await getAssignedCollections(params);
 
       console.log("collections ", res)
       if (res.success) {
-        if (pageNum === 1) {
-          setCollections(res.data);
-        } else {
-          setCollections(prev => [...prev, ...res.data]);
-        }
-        setHasMore(res.data.length === limit);
+        setCollections(res.data.collections);
+        setTotalItems(res.data.totalItems || 0);
+        setHasMore(pageNum * limit < (res.data.totalItems || 0));
       }
     } catch (error) {
       console.error('Error fetching collections:', error);
@@ -118,24 +117,13 @@ const AssignedCollections: React.FC = () => {
   };
 
   useEffect(() => {
+    setPage(1);
     fetchAssignedCollections(1, activeFilter);
   }, [activeFilter, dateFilterType, selectedDate, endDate]);
 
   useEffect(() => {
-    if (page > 1) {
-      fetchAssignedCollections(page, activeFilter);
-    }
+    fetchAssignedCollections(page, activeFilter);
   }, [page]);
-
-  const handleScroll = () => {
-    if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore) return;
-    setPage(prev => prev + 1);
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore]);
 
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
@@ -145,7 +133,7 @@ const AssignedCollections: React.FC = () => {
     setDateFilterType(type);
     setIsDatePickerOpen(false);
     setIsDateRangePickerOpen(false);
-    
+
     if (type === 'all') {
       setSelectedDate(null);
       setEndDate(null);
@@ -199,11 +187,10 @@ const AssignedCollections: React.FC = () => {
               ].map((status) => (
                 <button
                   key={status.value}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeFilter === status.value
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeFilter === status.value
                       ? 'bg-green-800 text-white shadow-md'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
+                    }`}
                   onClick={() => handleFilterClick(status.value)}
                 >
                   {status.label}
@@ -316,7 +303,7 @@ const AssignedCollections: React.FC = () => {
 
         {collections.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-            <div className="text-gray-500 text-lg">No collections found for the selected filters.</div>
+            <div className="text-gray-500 text-lg">No collections found</div>
             <p className="text-gray-400 mt-2">Try adjusting your filters to see more results.</p>
           </div>
         ) : (
@@ -339,18 +326,18 @@ const AssignedCollections: React.FC = () => {
                       <div className="flex items-start gap-3 text-sm text-gray-600">
                         <User className="w-5 h-5 mt-0.5 text-gray-400" />
                         <span className="flex-1">
-                          {collection.user.name}
+                          {collection?.user?.name}
                         </span>
                       </div>
                       <div className="flex items-start gap-3 text-sm text-gray-600">
                         <Phone className="w-5 h-5 mt-0.5 text-gray-400" />
                         <span className="flex-1">
-                          {collection.user.phone}
+                          {collection?.user?.phone}
                         </span>
                       </div>
                       <div className="flex items-start gap-3 text-sm text-gray-600">
                         <MapPin className="w-5 h-5 mt-0.5 text-gray-400" />
-                        <span className="flex-1">{collection.address.name}, {collection.address.addressLine}, {collection.address.locality}, {collection.address.pinCode}, {collection.address.mobile}</span>
+                        <span className="flex-1">{collection?.address?.name}, {collection?.address?.addressLine}, {collection?.address?.locality}, {collection?.address?.pinCode}, {collection?.address?.mobile}</span>
                       </div>
                     </div>
 
@@ -380,8 +367,8 @@ const AssignedCollections: React.FC = () => {
                           Start Collection
                         </button>
                       )}
-                    <button 
-                      onClick={() => navigate(`/collector/collection-details`, { state: { collection } })} 
+                    <button
+                      onClick={() => navigate(`/collector/collection-details`, { state: { collection } })}
                       className="px-6 py-2.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200"
                     >
                       View Details
@@ -390,8 +377,43 @@ const AssignedCollections: React.FC = () => {
                 </div>
               </div>
             ))}
+            {loading && (
+              <div className="flex items-center justify-center py-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-green-800 border-t-transparent"></div>
+              </div>
+            )}
           </div>
         )}
+        {/* Pagination Controls */}
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <div className="text-sm text-gray-600">Total: {totalItems}</div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              disabled={page === 1 || loading}
+              className={`px-3 py-2 rounded-lg border text-sm ${page === 1 || loading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}`}
+            >
+              Previous
+            </button>
+            {Array.from({ length: Math.max(1, Math.ceil(totalItems / limit)) }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                disabled={loading}
+                className={`px-3 py-2 rounded-lg border text-sm ${p === page ? 'bg-green-800 text-white border-green-800' : 'bg-white hover:bg-gray-50'} ${loading ? 'cursor-not-allowed opacity-70' : ''}`}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((prev) => prev + 1)}
+              disabled={!hasMore || loading}
+              className={`px-3 py-2 rounded-lg border text-sm ${!hasMore || loading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   );

@@ -92,11 +92,11 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                     {/* Profile Info */}
                                     <div className="p-3 border-b ">
                                         <div className="p-2 flex items-center space-x-3 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                                            <img
-                                                src="https://via.placeholder.com/40"
-                                                alt="Profile"
-                                                className="md:w-10 w-8 md:h-10 h-8 rounded-full border-2 border-[#0E2A39]"
-                                            />
+                                            <div className="md:w-10 w-8 md:h-10 h-8 rounded-full border-2 border-[#0E2A39] bg-gray-100 flex items-center justify-center">
+                                                <svg className="md:w-6 w-5 md:h-6 h-5 text-[#0E2A39]" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
                                             <div>
                                                 <h3 className="text-[#0E2A39] font-semibold md:text-sm text xs">Admin name</h3>
                                                 <p className="text-sm text-gray-500 md:text-sm text xs">admin@example.com</p>

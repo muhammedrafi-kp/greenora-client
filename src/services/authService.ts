@@ -160,3 +160,13 @@ export const resetPassword = async (role: string, token: string, password: strin
         throw error;
     }
 }
+
+export const logout = async (role: string): Promise<ApiResponse<null>> => {
+    try {
+        const res = await apiClient.post(`/user-service/${role}s/logout`);
+        return res.data;
+    } catch (error) {
+        console.error("Error logging out:", error);
+        throw error;
+    }
+}

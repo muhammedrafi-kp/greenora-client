@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Logout } from '../../redux/authSlice';
 import notificationAlert from '../../assets/notification-alert.mp3';
 import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '../../services/notificationService';
+import { logout } from '../../services/authService';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { setUnreadCount, incrementUnreadCount } from '../../redux/notificationSlice';
 import { TbCoinRupeeFilled } from 'react-icons/tb';
@@ -187,9 +188,19 @@ const NavBar: React.FC = () => {
         setIsLoginModalOpen(false);
     };
 
-    const handleLogout = () => {
-        dispatch(Logout());
-        setIsDropdownOpen(false);
+    const handleLogout = async () => {
+        try {
+            const res: ApiResponse<null> = await logout(role);
+            if (res.success) {
+               console.log("logged out");
+            }
+        } catch (error) {
+            
+            console.error("Error logging out:", error);
+        }finally{
+            dispatch(Logout());
+            setIsDropdownOpen(false);
+        }
     };
 
     // Function to mark notification as read

@@ -1,9 +1,9 @@
 import { apiClient } from "../apis/api";
 import { ApiResponse } from "../types/common";
-import { IWallet } from "../types/payment";
+import { IWallet, ITransaction } from "../types/payment";
 
 
-export const getWalletData = async ():Promise<ApiResponse<IWallet>> => {
+export const getWalletData = async (): Promise<ApiResponse<IWallet>> => {
     try {
         const response = await apiClient.get('/payment-service/wallet');
         return response.data;
@@ -13,7 +13,23 @@ export const getWalletData = async ():Promise<ApiResponse<IWallet>> => {
     }
 }
 
-export const initiateAddMoney = async (amount: number):Promise<ApiResponse<{amount:number,orderId:string}>> => {
+export const getWalletTransactions = async (params?: {
+    startDate?: string;
+    endDate?: string;
+    type?: string;
+    page?: number;
+    limit?: number;
+}): Promise<ApiResponse<{ transactions: ITransaction[], balance: number }>> => {
+    try {
+        const response = await apiClient.get('/payment-service/wallet/transactions', { params });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching wallet transactions:", error);
+        throw error;
+    }
+}
+
+export const initiateAddMoney = async (amount: number): Promise<ApiResponse<{ amount: number, orderId: string }>> => {
     try {
         const response = await apiClient.post('/payment-service/wallet/deposits/initiate', { amount });
         return response.data;
@@ -23,9 +39,9 @@ export const initiateAddMoney = async (amount: number):Promise<ApiResponse<{amou
     }
 }
 
-export const verifyAddMoney = async (razorpayVerificationData: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; }):Promise<ApiResponse<null>> => {
+export const verifyAddMoney = async (razorpayVerificationData: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; }): Promise<ApiResponse<null>> => {
     try {
-        const response = await apiClient.post('/payment-service/wallet/deposits/verify', razorpayVerificationData);
+        const response = await apiClient.post('/payment-service/wallet/deposits/verification', razorpayVerificationData);
         return response.data;
     } catch (error) {
         console.error("Error verifying deposit:", error);
@@ -33,7 +49,7 @@ export const verifyAddMoney = async (razorpayVerificationData: { razorpay_order_
     }
 }
 
-export const withdrawMoney = async (amount: number):Promise<ApiResponse<null>> => {
+export const withdrawMoney = async (amount: number): Promise<ApiResponse<null>> => {
     try {
         const response = await apiClient.post('/payment-service/wallet/withdrawals', { amount });
         return response.data;

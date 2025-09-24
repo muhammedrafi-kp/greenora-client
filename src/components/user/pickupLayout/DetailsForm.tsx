@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
-import { ChevronUp, ChevronDown, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, X, Search, Check } from 'lucide-react';
 import { setStep, setDetails } from '../../../redux/pickupSlice';
 import PriceTable from '../PriceTable';
 import { getCategories } from '../../../services/collectionService';
@@ -52,6 +52,9 @@ const DetailsForm = () => {
     preferredDate: '',
     items: ''
   });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (details) {
@@ -76,6 +79,13 @@ const DetailsForm = () => {
     [filteredCategories, formData.items]
   );
 
+  const filteredSearchCategories = useMemo(() =>
+    availableCategories.filter(category =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+    [availableCategories, searchTerm]
+  );
+
   // Handlers
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -95,6 +105,8 @@ const DetailsForm = () => {
       }]
     }));
     setNewItem({ categoryId: '', name: '', rate: 0, qty: 0 });
+    setIsDropdownOpen(false);
+    setSearchTerm('');
   }, [newItem]);
 
   const handleRemoveItem = useCallback((index: number) => {
@@ -122,6 +134,21 @@ const DetailsForm = () => {
 
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+        setSearchTerm('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -221,6 +248,18 @@ const DetailsForm = () => {
     return today.toISOString().split('T')[0];
   };
 
+  const handleCategorySelect = (category: ICategory) => {
+    setNewItem(prev => ({
+      ...prev,
+      categoryId: category._id,
+      name: category.name,
+      rate: category.rate
+    }));
+    setIsDropdownOpen(false);
+    setSearchTerm('');
+    setErrors(prev => ({ ...prev, category: '' }));
+  };
+
   // Render form
   const renderForm = useMemo(() => (
     <div className="bg-white border border-gray-200 px-6 py-4 rounded-xl shadow-sm">
@@ -244,29 +283,68 @@ const DetailsForm = () => {
               <label className="text-sm font-medium text-gray-700 mb-1 block">
                 {pickupType === 'waste' ? 'Waste Category' : 'Scrap Type'}
               </label>
-              <select
-                value={newItem.categoryId}
-                onChange={(e) => {
-                  const selectedCategory = categories.find(cat => cat._id === e.target.value);
-                  if (selectedCategory) {
-                    setNewItem(prev => ({
-                      ...prev,
-                      categoryId: selectedCategory._id,
-                      name: selectedCategory.name,
-                      rate: selectedCategory.rate
-                    }));
-                  }
-                  setErrors(prev => ({ ...prev, category: '' }));
-                }}
-                className={`w-full p-2.5 border rounded-lg bg-white text-sm font-medium text-gray-800 ${errors.category ? 'border-red-500' : 'border-gray-200'}`}
-              >
-                <option value="" className='text-gray-400' disabled>--Select category--</option>
-                {availableCategories.map((category) => (
-                  <option key={category._id} value={category._id} className='text-sm font-medium text-gray-800'>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`w-full p-2.5 border rounded-lg bg-white text-sm font-medium text-gray-800 text-left flex items-center justify-between hover:border-gray-300 transition-colors ${errors.category ? 'border-red-500' : 'border-gray-200'} ${isDropdownOpen ? 'ring-2 ring-green-100 border-green-300' : ''}`}
+                >
+                  <span className={newItem.categoryId ? 'text-gray-800' : 'text-gray-400'}>
+                    {newItem.categoryId ? newItem.name : '--Select category--'}
+                  </span>
+                  {isDropdownOpen ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden">
+                    <div className="p-2 border-b border-gray-100">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search categories..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-100 focus:border-green-300"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {filteredSearchCategories.length > 0 ? (
+                        filteredSearchCategories.map((category) => (
+                          <button
+                            key={category._id}
+                            type="button"
+                            onClick={() => handleCategorySelect(category)}
+                            className="w-full px-3 py-2.5 text-left hover:bg-green-50 flex items-center justify-between group transition-colors"
+                          >
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-800 group-hover:text-green-800">
+                                {category.name}
+                              </div>
+                              <div className="text-xs text-gray-500 group-hover:text-green-600">
+                                ₹{category.rate}/{pickupType === 'waste' ? 'bag' : 'kg'}
+                              </div>
+                            </div>
+                            {newItem.categoryId === category._id && (
+                              <Check className="h-4 w-4 text-green-600" />
+                            )}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-4 text-center text-sm text-gray-500">
+                          {searchTerm ? 'No categories found' : 'No categories available'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               {errors.category && (
                 <p className="mt-1 text-sm text-red-500">{errors.category}</p>
               )}
@@ -361,7 +439,7 @@ const DetailsForm = () => {
         </div>
       </div>
     </div>
-  ), [pickupType, showPriceTable, newItem, errors, formData, availableCategories, handleAddItemClick, handleRemoveItem, handleChange]);
+  ), [pickupType, showPriceTable, newItem, errors, formData, availableCategories, filteredSearchCategories, isDropdownOpen, searchTerm, handleAddItemClick, handleRemoveItem, handleChange, handleCategorySelect]);
 
   return (
     <div className="space-y-6">

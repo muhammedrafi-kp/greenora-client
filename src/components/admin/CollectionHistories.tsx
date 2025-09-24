@@ -152,7 +152,7 @@ const Requests: React.FC = () => {
       headers,
       data: collections.map((collection) => ({
         'Collection ID': collection.collectionId.toLocaleUpperCase(),
-        'User': collection.user.name,
+        'User': collection.user?.name,
         'Type': collection.type,
         'Status': collection.status,
         'Estimated Cost': collection.estimatedCost,
@@ -288,7 +288,7 @@ const Requests: React.FC = () => {
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none bg-white text-sm"
                     >
                       <option value="all">All</option>
-                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
                       <option value="scheduled">Scheduled</option>
                       <option value="completed">Completed</option>
                       <option value="cancelled">Cancelled</option>
@@ -447,8 +447,8 @@ const Requests: React.FC = () => {
                           #{collection.collectionId.toLocaleUpperCase()}
                         </td>
                         <td className="px-6 py-3">
-                          <div className="text-sm font-medium text-gray-900">{collection.user.name}</div>
-                          <div className="text-sm text-gray-500">{collection.user.email}</div>
+                          <div className="text-sm font-medium text-gray-900">{collection?.user?.name}</div>
+                          <div className="text-sm text-gray-500">{collection?.user?.email}</div>
                         </td>
                         <td className="px-6 py-3 text-sm text-gray-600">{collection.type}</td>
                         <td className="px-6 py-3">

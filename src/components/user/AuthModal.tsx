@@ -28,7 +28,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
     const [isLoading, setIsLoading] = useState(false);
 
     const dispatch = useDispatch();
-    
+
 
     const [formData, setFormData] = useState<IUserSignUpData>({
         name: '',
@@ -57,8 +57,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
             setIsLoading(true);
             try {
                 if (isLogin) {
-                    const res:ApiResponse<{token:string,role:string}> = await loginUser(formData.email, formData.password);
-                    console.log("login response:",res)
+                    const res: ApiResponse<{ token: string, role: string }> = await loginUser(formData.email, formData.password);
+                    console.log("login response:", res)
                     if (res.success) {
                         // Dispatch user login action with user data
                         dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
@@ -66,7 +66,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                         toast.success("Login successful!");
                     }
                 } else {
-                    const res:ApiResponse<null> = await signUpUser(formData);
+                    const res: ApiResponse<null> = await signUpUser(formData);
                     if (res.success) {
                         setShowOtpVerification(true); // Show OTP verification for signup
                     }
@@ -93,7 +93,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
         try {
             console.log("credentialResponse", credentialResponse)
 
-            const res:ApiResponse<{token:string,role:string}> = await googleCallbackUser(credentialResponse.credential);
+            const res: ApiResponse<{ token: string, role: string }> = await googleCallbackUser(credentialResponse.credential);
             console.log("response", res)
             if (res.success) {
                 dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
@@ -101,10 +101,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ closeModal, initialMode = 'login'
                 toast.success("Login successful!");
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Google login error:', error);
-            toast.error("Google login failed. Please try again.");
-        }finally{
+            if (error.status !== 403) {
+                toast.error("Google login failed. Please try again.");
+            }
+        } finally {
             setIsLoading(false)
         }
     };

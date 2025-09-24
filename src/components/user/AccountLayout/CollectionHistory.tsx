@@ -3,7 +3,7 @@ import { FaCheckCircle, FaTimesCircle, FaClock, FaEye } from 'react-icons/fa';
 import { getCollection,getCollectionHistory, paywithRazorpay, paywithWallet } from '../../../services/collectionService';
 import { getWalletData } from '../../../services/paymentService';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, CreditCard, Lock } from 'lucide-react';
+import { Wallet, CreditCard, Lock, RefreshCcw } from 'lucide-react';
 import { useRazorpay, RazorpayOrderOptions } from 'react-razorpay';
 import toast from 'react-hot-toast';
 import { ICollection } from '../../../types/collection';
@@ -100,16 +100,24 @@ const CollectionHistory: React.FC = () => {
     fetchPickupHistory(1, true);
   }, [startDate, endDate, selectedStatus, showWaste]);
 
-  const getStatusIconAndColor = (status: 'completed' | 'scheduled' | 'cancelled' | 'pending') => {
+  const getStatusIconAndColor = (
+    status: 'confirmed' | 'completed' | 'scheduled' | 'cancelled' | 'in_progress' | 'pending'
+  ): { icon: React.ReactElement; color: string } => {
     switch (status) {
       case 'completed':
         return { icon: <FaCheckCircle />, color: 'bg-green-100 text-green-600' };
       case 'scheduled':
         return { icon: <FaCheckCircle />, color: 'bg-blue-100 text-blue-600' };
+      case 'confirmed':
+        return { icon: <FaCheckCircle />, color: 'bg-blue-100 text-blue-600' };
       case 'cancelled':
         return { icon: <FaTimesCircle />, color: 'bg-red-100 text-red-600' };
       case 'pending':
         return { icon: <FaClock />, color: 'bg-yellow-100 text-yellow-600' };
+      case 'in_progress':
+        return { icon: <FaClock />, color: 'bg-yellow-100 text-yellow-600' };
+      default:
+        return { icon: <FaClock />, color: 'bg-gray-100 text-gray-600' };
     }
   };
 
@@ -379,15 +387,28 @@ const CollectionHistory: React.FC = () => {
           <h2 className="lg:text-xl xs:text-base text-sm font-bold flex items-center gap-2">
             Collection History
           </h2>
-          {/* Filter Icon for Small Screens */}
-          <button
-            onClick={() => setShowFilterModal(true)}
-            className="sm:hidden p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Refresh Button */}
+            <button
+              onClick={() => fetchPickupHistory(1, true)}
+              disabled={loading}
+              className={`p-2 rounded-lg border border-gray-200 hover:bg-gray-50 flex items-center gap-2 ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
+              title="Refresh collections"
+            >
+              <RefreshCcw className="w-4 h-4 text-gray-600" />
+              <span className="hidden sm:inline text-xs text-gray-700">Refresh</span>
+            </button>
+
+            {/* Filter Icon for Small Screens */}
+            <button
+              onClick={() => setShowFilterModal(true)}
+              className="sm:hidden p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Desktop Filters */}
@@ -666,7 +687,7 @@ const CollectionHistory: React.FC = () => {
         <div className="text-center text-gray-500 py-8">Loading collection history...</div>
       ) : collections.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
-          No collection history available.
+          No collection history available
         </div>
       ) : (
         <div

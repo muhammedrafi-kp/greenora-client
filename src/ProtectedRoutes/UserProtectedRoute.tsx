@@ -9,7 +9,7 @@ const UserProtectedRoute: React.FC = () => {
     if (!isLoggedIn || role !== 'user') {
 
         console.log("not logged in")
-        return <Navigate to="/" />;
+        return <Navigate to="/" replace />;
     }
     console.log("logged in")
     return <Outlet />;

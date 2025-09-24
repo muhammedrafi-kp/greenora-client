@@ -8,8 +8,7 @@ export const addDistrict = async (name: string): Promise<ApiResponse<IDistrict>>
     const res = await apiClient.post("/location-service/service-area/admin/district", { name });
     return res.data;
   } catch (error) {
-    console.error('Error fetching districts:', error);
-    throw new Error('Failed to create district.');
+    throw error
   }
 }
 
@@ -19,8 +18,7 @@ export const getDistrictsWithServiceAreas = async ():Promise<ApiResponse<IDistri
     const res = await apiClient.get("/location-service/service-area/admin/districts/service-areas");
     return res.data;
   } catch (error) {
-    console.error('Error fetching districts:', error);
-    throw new Error('Failed to fetch districts.');
+    throw error
   }
 }
 
@@ -41,7 +39,7 @@ export const updateDistrict = async (districtId: string, name: string):Promise<A
     return res.data;
   } catch (error) {
     console.error('Error updating district:', error);
-    throw new Error('Failed to update district.');
+    throw error
   }
 }
 
@@ -51,7 +49,7 @@ export const deleteDistrict = async (districtId: string):Promise<ApiResponse<nul
     return res.data;
   } catch (error) {
     console.error('Error deleting district:', error);
-    throw new Error('Failed to delete district.');
+    throw error
   }
 }
 
@@ -61,7 +59,7 @@ export const addServiceArea = async (serviceAreaData: object):Promise<ApiRespons
     return res.data;
   } catch (error) {
     console.error('Error adding service area:', error);
-    throw new Error('Failed to add service area.');
+    throw error
   }
 }
 
@@ -71,7 +69,7 @@ export const updateServiceArea = async (serviceAreaId: string, serviceAreaData: 
     return res.data;
   } catch (error) {
     console.error('Error updating service area:', error);
-    throw new Error('Failed to update service area.');
+    throw error
   }
 }
 
@@ -81,7 +79,6 @@ export const getDistricts = async ():Promise<ApiResponse<IDistrict[]>> => {
     const res = await apiClient.get(`/location-service/service-area/user/districts`);
     return res.data;
   } catch (error) {
-    console.error("Error fetching districts:", error);
     throw error;
   }
 }
@@ -91,7 +88,6 @@ export const getServiceAreas = async (districtId: string):Promise<ApiResponse<IS
     const res = await apiClient.get(`/location-service/service-area/user/service-areas/${districtId}`);
     return res.data;
   } catch (error) {
-    console.error("Error fetching service areas:", error);
     throw error;
   }
 }
@@ -101,7 +97,6 @@ export const getAddresses = async ():Promise<ApiResponse<IAddress[]>> => {
     const res = await apiClient.get(`/location-service/address/addresses`);
     return res.data;
   } catch (error) {
-    console.error("Error fetching addresses:", error);
     throw error;
   }
 }
@@ -111,7 +106,6 @@ export const addAddress = async (addressData: object):Promise<ApiResponse<IAddre
     const res = await apiClient.post("/location-service/address", addressData);
     return res.data;
   } catch (error) {
-    console.error("Error adding address:", error);
     throw error;
   }
 }
@@ -121,7 +115,6 @@ export const updateAddress = async (addressId: string, addressData: object):Prom
     const res = await apiClient.put(`/location-service/address/${addressId}`, addressData);
     return res.data;
   } catch (error) {
-    console.error("Error updating address:", error);
     throw error;
   }
 }
@@ -131,7 +124,6 @@ export const deleteAddress = async (addressId: string):Promise<ApiResponse<IAddr
     const res = await apiClient.delete(`/location-service/address/${addressId}`);
     return res.data;
   } catch (error) {
-    console.error("Error deleting address:", error);
     throw error;
   }
 }

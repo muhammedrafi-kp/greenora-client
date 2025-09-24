@@ -9,20 +9,13 @@ import {
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdChatBubbleOutline, MdOutlineLogout } from "react-icons/md";
 import notificationAlert from '../../../assets/notification-alert.mp3';
-import { io } from 'socket.io-client';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { useDispatch } from 'react-redux';
 import { Logout } from '../../../redux/authSlice';
 import { getUnreadNotificationCount } from '../../../services/notificationService';
 import { incrementUnreadCount, setUnreadCount } from '../../../redux/notificationSlice';
 import { ApiResponse } from '../../../types/common';
-
-
-const socket = io(import.meta.env.VITE_API_GATEWAY_URL, {
-    withCredentials: true,
-    transports: ['websocket'],
-    path: "/notification/socket.io",
-});
+import socket from "../../../sockets/notificationSocket";
 
 interface DecodedToken extends JwtPayload {
     userId: string;

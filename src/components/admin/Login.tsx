@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { loginAdmin } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux"; 
+import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/authSlice";
 import { ApiResponse } from "../../types/common";
 
@@ -26,14 +26,19 @@ const Login: React.FC = () => {
     try {
       console.log(email, password);
 
-      const res:ApiResponse<{token:string,role:string}> = await loginAdmin(email, password);
+      const res: ApiResponse<{ token: string, role: string }> = await loginAdmin(email, password);
       console.log("Login successful:", res);
 
       dispatch(loginSuccess({ token: res.data.token, role: res.data.role }));
 
       navigate("/admin/dashboard");
-    } catch (err) {
-      setError("Invalid email or password. Please try again.");
+    } catch (err: any) {
+
+      if (err.response.status > 500) {
+        setError("Something went wrong. Please try again.");
+      } else {
+        setError("Invalid email or password. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

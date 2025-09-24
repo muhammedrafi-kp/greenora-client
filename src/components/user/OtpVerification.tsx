@@ -15,6 +15,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
     const [timer, setTimer] = useState(30);
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [error, setError] = useState('');
     const dispatch = useDispatch();
 
@@ -83,11 +84,23 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
     };
 
     const handleResendOTP = async () => {
-        const res:ApiResponse<null> = await resendOtpUser(email);
-        console.log(res);
-        setOtp(['', '', '', '']);
-        setTimer(30);
+        setIsResending(true);
         setError('');
+        try {
+            const res:ApiResponse<null> = await resendOtpUser(email);
+            console.log(res);
+            if (res.success) {
+                setOtp(['', '', '', '']);
+                setTimer(30);
+            } else {
+                setError('Failed to resend OTP. Please try again.');
+            }
+        } catch (error: any) {
+            console.log(error);
+            setError('Failed to resend OTP. Please try again.');
+        } finally {
+            setIsResending(false);
+        }
     };
 
     return (
@@ -157,9 +170,10 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ closeModal, email }) 
                                 <button
                                     type="button"
                                     onClick={handleResendOTP}
-                                    className="text-green-900 hover:underline font-medium"
+                                    disabled={isResending}
+                                    className="text-green-900 hover:underline font-medium disabled:opacity-50"
                                 >
-                                    Resend OTP
+                                    {isResending ? 'Sending…' : 'Resend OTP'}
                                 </button>
                             )}
                         </p>

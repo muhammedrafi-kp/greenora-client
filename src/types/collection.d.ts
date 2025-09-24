@@ -5,7 +5,7 @@ export interface ICollection {
     districtId: string;
     serviceAreaId: string;
     type: string;
-    status: 'completed' | 'scheduled' | 'cancelled' | 'pending';
+    status: "pending" | "confirmed" | "scheduled" | "in_progress" | "cancelled" | "completed";
     payment: {
         paymentId?: string;
         advanceAmount?: number;
