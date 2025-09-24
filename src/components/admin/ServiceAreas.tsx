@@ -78,9 +78,9 @@ const ServiceAreas: React.FC = () => {
       if (res.success) {
         setDistricts(res.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       setError('Failed to fetch districts. Please try again later.');
-      console.error('Error fetching districts:', error);
+      console.error('Error fetching districts:', error.message);
     } finally {
       setLoading(false);
     }
@@ -97,6 +97,10 @@ const ServiceAreas: React.FC = () => {
       area.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+
+  // Districts available to add (exclude ones already present)
+  const existingDistrictNames = new Set(districts.map(d => d.name.toLowerCase()));
+  const availableDistrictOptions = keralaDistricts.filter(k => !existingDistrictNames.has(k.name.toLowerCase()));
 
   const toggleDistrict = (districtId: string) => {
     setExpandedDistricts(prev =>
@@ -200,12 +204,25 @@ const ServiceAreas: React.FC = () => {
     }
 
     if (modalType === 'add-district') {
-      console.log("district :", district);
-      const res:ApiResponse<IDistrict> = await addDistrict(district);
-      if (res.success) {
-        setDistricts([...districts, res.data]);
-        console.log("districts :", districts);
-        toast.success('New District added.');
+      try {
+        console.log("district :", district);
+        const res: ApiResponse<IDistrict> = await addDistrict(district);
+        if (res.success) {
+          setDistricts([...districts, { ...res.data, serviceAreas: [] }]);
+          console.log("districts :", districts);
+          toast.success('New District added');
+        } else {
+          toast.error(res.message || 'Failed to add district.');
+        }
+      } catch (error: any) {
+        if (error.response.data.message) {
+          toast.error(error.response.data.message,{
+            icon: '⚠️',
+          });
+        } else {
+          toast.error(error.message || 'Failed to add district.');
+        }
+
       }
     }
     else if (modalType === 'edit-district') {
@@ -229,12 +246,20 @@ const ServiceAreas: React.FC = () => {
       }
     }
     else if (modalType === 'add-area') {
-      console.log("formInput :", formInput);
-      const res: ApiResponse<IServiceArea> = await addServiceArea(formInput);
-      if (res.success) {
-        console.log("response :", res);
-        await fetchDistricts();
-        toast.success('New Service Area added.');
+      try {
+        console.log("formInput :", formInput);
+        const res: ApiResponse<IServiceArea> = await addServiceArea(formInput);
+        if (res.success) {
+          console.log("response :", res);
+          await fetchDistricts();
+          toast.success('New Service Area added.');
+        } else {
+          toast.error(res.message || 'Failed to add service area.');
+        }
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to add service area.', {
+          icon: '⚠️',
+        });
       }
     }
     else if (modalType === 'edit-area') {
@@ -283,13 +308,13 @@ const ServiceAreas: React.FC = () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_LOCATIONIQ_API_URL}/autocomplete`, {
-          params: {
-            key: import.meta.env.VITE_LOCATIONIQ_API_KEY,
-            q: query,
-            limit: 5,
-            dedupe: 1
-          }
+        params: {
+          key: import.meta.env.VITE_LOCATIONIQ_API_KEY,
+          q: query,
+          limit: 5,
+          dedupe: 1
         }
+      }
       );
       setLocationSuggestions(response.data);
     } catch (error) {
@@ -328,7 +353,7 @@ const ServiceAreas: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          
+
           try {
             // Perform reverse geocoding using LocationIQ API
             const response = await axios.get(
@@ -343,7 +368,7 @@ const ServiceAreas: React.FC = () => {
             });
 
             const locationData = response.data;
-            
+
             setFormInput({
               ...formInput,
               center: {
@@ -352,7 +377,7 @@ const ServiceAreas: React.FC = () => {
               },
               location: locationData.display_name
             });
-            
+
             setShowSuggestions(false);
           } catch (error) {
             console.error('Error getting location details:', error);
@@ -379,7 +404,7 @@ const ServiceAreas: React.FC = () => {
   // Add validation for postal code input
   const handleAddPostalCode = () => {
     const postalCodeRegex = /^\d{6}$/;  // Indian postal code format
-    
+
     if (!newPostalCode.trim()) {
       toast.error('Please enter a postal code');
       return;
@@ -505,7 +530,7 @@ const ServiceAreas: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {district.serviceAreas.map(area => (
+                          {district.serviceAreas.length > 0 && district.serviceAreas.map(area => (
                             <tr key={area._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                               <td className="px-6 py-3 font-medium text-gray-900">{area.name}</td>
                               <td className="px-6 py-3 text-gray-600">
@@ -578,10 +603,10 @@ const ServiceAreas: React.FC = () => {
                   onChange={(e) => setDistrict(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none z-10"
                 >
-                  <option value="" className='text-gray-400' disabled selected>--Select a district--</option>
-                  {keralaDistricts.map((district) => (
-                    <option key={district.id} value={district.name}>
-                      {district.name}
+                  <option value="" className='text-gray-400' disabled>--Select a district--</option>
+                  {availableDistrictOptions.map((d) => (
+                    <option key={d.id} value={d.name}>
+                      {d.name}
                     </option>
                   ))}
                 </select>
@@ -686,7 +711,7 @@ const ServiceAreas: React.FC = () => {
                     )}
                     <div className="flex flex-wrap gap-2">
                       {formInput.postalCodes.map((code, index) => (
-                        <div 
+                        <div
                           key={index}
                           className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg"
                         >
@@ -738,10 +763,10 @@ const ServiceAreas: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            setFormInput({ 
-                              ...formInput, 
-                              location: '', 
-                              center: { type: 'Point', coordinates: [0, 0] } 
+                            setFormInput({
+                              ...formInput,
+                              location: '',
+                              center: { type: 'Point', coordinates: [0, 0] }
                             });
                             setLocationSuggestions([]);
                             setShowSuggestions(false);

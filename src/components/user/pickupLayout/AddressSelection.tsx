@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDistricts,getServiceAreas,getAddresses, addAddress, deleteAddress, updateAddress,checkPinCode } from '../../../services/locationService';
 import { toast } from 'react-hot-toast';
 import { validateAddressForm, validatePinCodeInput, IAddressFormErrors, validateMobileInput } from '../../../utils/validations';
-import { MapPin, Pencil, Trash2, LocateFixed } from "lucide-react"
+import { MapPin, Pencil, Trash2, LocateFixed, ChevronDown, ChevronUp, Check } from "lucide-react"
 import axios from 'axios';
 import Modal from '../../common/Modal';
 import { useDispatch } from 'react-redux';
@@ -56,6 +56,10 @@ const AddressSelection = () => {
   const dispatch = useDispatch();
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedServiceArea, setSelectedServiceArea] = useState('');
+  const [isDistrictDropdownOpen, setIsDistrictDropdownOpen] = useState(false);
+  const [isServiceAreaDropdownOpen, setIsServiceAreaDropdownOpen] = useState(false);
+  const districtDropdownRef = useRef<HTMLDivElement>(null);
+  const serviceAreaDropdownRef = useRef<HTMLDivElement>(null);
 
   // fetch addresses
   const fetchAddresses = async () => {
@@ -97,6 +101,23 @@ const AddressSelection = () => {
     fetchDistricts();
   }, []);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (districtDropdownRef.current && !districtDropdownRef.current.contains(event.target as Node)) {
+        setIsDistrictDropdownOpen(false);
+      }
+      if (serviceAreaDropdownRef.current && !serviceAreaDropdownRef.current.contains(event.target as Node)) {
+        setIsServiceAreaDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // fetch service areas
   const fetchServiceAreas = async (districtId: string) => {
     setIsLoading(true);
@@ -122,23 +143,23 @@ const AddressSelection = () => {
     console.log("selectedAddress :", selectedAddress, address);
   };
 
-  // handle district change
-  const handleDistrictChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const districtId = e.target.value;
-    setSelectedDistrict(districtId);
+  // handle district select
+  const handleDistrictSelect = async (district: IDistrict) => {
+    setSelectedDistrict(district._id);
     setSelectedServiceArea('');
+    setIsDistrictDropdownOpen(false);
 
-    if (districtId) {
-      fetchServiceAreas(districtId);
+    if (district._id) {
+      fetchServiceAreas(district._id);
     } else {
       setServiceAreas([]);
     }
   };
 
-  // handle service area change
-  const handleServiceAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const serviceAreaId = e.target.value;
-    setSelectedServiceArea(serviceAreaId);
+  // handle service area select
+  const handleServiceAreaSelect = (serviceArea: IServiceArea) => {
+    setSelectedServiceArea(serviceArea._id);
+    setIsServiceAreaDropdownOpen(false);
   };
 
   // handle pin code change
@@ -371,37 +392,101 @@ const AddressSelection = () => {
             <label className="block xs:text-sm text-xs font-medium text-gray-700 mb-1">
               District
             </label>
-            <select
-              value={selectedDistrict}
-              onChange={handleDistrictChange}
-              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm font-medium"
-            >
-              <option value="" className='text-gray-400' disabled>--Select a district--</option>
-              {districts.map((district) => (
-                <option key={district._id} value={district._id} className='text-sm font-medium'>
-                  {district.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative" ref={districtDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDistrictDropdownOpen(!isDistrictDropdownOpen)}
+                className={`w-full p-2.5 border rounded-lg bg-white text-sm font-medium text-left flex items-center justify-between hover:border-gray-300 transition-colors ${isDistrictDropdownOpen ? 'ring-2 ring-green-100 border-green-300' : 'border-gray-200'}`}
+              >
+                <span className={selectedDistrict ? 'text-gray-800' : 'text-gray-400'}>
+                  {selectedDistrict ? districts.find(d => d._id === selectedDistrict)?.name : '--Select a district--'}
+                </span>
+                {isDistrictDropdownOpen ? (
+                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
+              
+              {isDistrictDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {districts.length > 0 ? (
+                    districts.map((district) => (
+                      <button
+                        key={district._id}
+                        type="button"
+                        onClick={() => handleDistrictSelect(district)}
+                        className="w-full px-3 py-2.5 text-left hover:bg-green-50 flex items-center justify-between group transition-colors"
+                      >
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-800 group-hover:text-green-800">
+                            {district.name}
+                          </div>
+                        </div>
+                        {selectedDistrict === district._id && (
+                          <Check className="h-4 w-4 text-green-600" />
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-sm text-gray-500">
+                      No districts available
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">
               Service Area
             </label>
-            <select
-              value={selectedServiceArea}
-              onChange={handleServiceAreaChange}
-              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm font-medium"
-              disabled={!selectedDistrict}
-            >
-              <option value="" className='text-gray-400' disabled>--Select a service area--</option>
-              {serviceAreas.map((area) => (
-                <option key={area._id} value={area._id} className='text-sm font-medium'>
-                  {area.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative" ref={serviceAreaDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsServiceAreaDropdownOpen(!isServiceAreaDropdownOpen)}
+                disabled={!selectedDistrict}
+                className={`w-full p-2.5 border rounded-lg bg-white text-sm font-medium text-left flex items-center justify-between hover:border-gray-300 transition-colors ${!selectedDistrict ? 'opacity-50 cursor-not-allowed' : ''} ${isServiceAreaDropdownOpen ? 'ring-2 ring-green-100 border-green-300' : 'border-gray-200'}`}
+              >
+                <span className={selectedServiceArea ? 'text-gray-800' : 'text-gray-400'}>
+                  {selectedServiceArea ? serviceAreas.find(s => s._id === selectedServiceArea)?.name : '--Select a service area--'}
+                </span>
+                {isServiceAreaDropdownOpen ? (
+                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
+              
+              {isServiceAreaDropdownOpen && selectedDistrict && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {serviceAreas.length > 0 ? (
+                    serviceAreas.map((area) => (
+                      <button
+                        key={area._id}
+                        type="button"
+                        onClick={() => handleServiceAreaSelect(area)}
+                        className="w-full px-3 py-2.5 text-left hover:bg-green-50 flex items-center justify-between group transition-colors"
+                      >
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-800 group-hover:text-green-800">
+                            {area.name}
+                          </div>
+                        </div>
+                        {selectedServiceArea === area._id && (
+                          <Check className="h-4 w-4 text-green-600" />
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-sm text-gray-500">
+                      No service areas available
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

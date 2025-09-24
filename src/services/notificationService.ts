@@ -4,7 +4,7 @@ import { INotification } from "../types/notification";
 
 export const getNotifications = async (pageNumber: number = 1):Promise<ApiResponse<INotification[]>> => {
     try {
-        const response = await apiClient.get(`/notification-service/notification/notifications?page=${pageNumber}`);
+        const response = await apiClient.get(`/notification-service/notifications?page=${pageNumber}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -14,7 +14,7 @@ export const getNotifications = async (pageNumber: number = 1):Promise<ApiRespon
 
 export const getUnreadNotificationCount = async ():Promise<ApiResponse<number>> => {
     try {
-        const response = await apiClient.get('/notification-service/notification/unread-count');
+        const response = await apiClient.get('/notification-service/notifications/unread/count');
         return response.data;
     } catch (error) {
         console.error("Error fetching unread notification count:", error);
@@ -24,7 +24,7 @@ export const getUnreadNotificationCount = async ():Promise<ApiResponse<number>> 
 
 export const markNotificationAsRead = async (notificationId: string):Promise<ApiResponse<null>> => {
     try {
-        const response = await apiClient.patch(`/notification-service/notification/read/${notificationId}`);
+        const response = await apiClient.patch(`/notification-service/notifications/read/${notificationId}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching unread notification count:", error);
@@ -34,7 +34,7 @@ export const markNotificationAsRead = async (notificationId: string):Promise<Api
 
 export const markAllNotificationsAsRead = async ():Promise<ApiResponse<null>> => {
     try {
-        const response = await apiClient.patch('/notification-service/notification/read-all');
+        const response = await apiClient.patch('/notification-service/notifications/read');
         return response.data;
     } catch (error) {
         console.error("Error fetching unread notification count:", error);

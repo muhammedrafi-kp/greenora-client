@@ -90,6 +90,16 @@ export const verifyRazorpayAdvance = async (paymentData: any) => {
   }
 }
 
+export const unlockPaymentLock = async () => {
+  try {
+    const response = await apiClient.post('/collection-service/collections/payment/unlock');
+    return response.data;
+  } catch (error) {
+    console.error("Error unlocking payment lock:", error);
+    throw error;
+  }
+}
+
 export const payAdvanceWithWallet = async (collectionData: any) => {
   try {
     const response = await apiClient.post('/collection-service/collections/payment/advance/wallet', collectionData);
@@ -99,7 +109,6 @@ export const payAdvanceWithWallet = async (collectionData: any) => {
     throw error;
   }
 }
-
 
 export const paywithRazorpay = async (collectionId: string, razorpayVerificationData: any) => {
   try {
@@ -216,6 +225,17 @@ export const getDashboardData = async () => {
     throw error;
   }
 }
+
+export const getCollectionGraphData = async () => {
+  try {
+    const response = await apiClient.get('/collection-service/collections/analytics/graph');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching collection graph data:", error);
+    throw error;
+  }
+}
+
 
 export const getCollectorDashboardData = async () => {
   try {

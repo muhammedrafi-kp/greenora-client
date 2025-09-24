@@ -153,7 +153,7 @@ const ProfileSection: React.FC = () => {
         try {
             const res:ApiResponse<IUser> = await updateUserData(formData);
             if (res.success) {
-                toast.success(res.message);
+                toast.success("User profile updated");
                 setIsEditing(false);
                 await fetchUserData();
             }

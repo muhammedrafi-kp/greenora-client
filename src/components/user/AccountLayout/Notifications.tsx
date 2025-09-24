@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getNotifications,markNotificationAsRead,markAllNotificationsAsRead } from '../../../services/notificationService';
-import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUnreadCount } from '../../../redux/notificationSlice';
 import { INotification } from '../../../types/notification';
 import { ApiResponse } from '../../../types/common';
-const socket = io(import.meta.env.VITE_NOTIFICATION_SERVICE_URL, {
-    withCredentials: true,
-    transports: ['websocket'],
-});
-
-console
+import socket from '../../../sockets/notificationSocket';
 
 const Notifications: React.FC = () => {
     const [notifications, setNotifications] = useState<INotification[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
     const [hasMore, setHasMore] = useState<boolean>(true);
     const navigate = useNavigate();
@@ -126,55 +120,63 @@ const Notifications: React.FC = () => {
                 )}
             </div>
 
-            <div 
-                onScroll={handleScroll}
-                className="space-y-3 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
-            >
-                {notifications && notifications.length > 0 ? (
-                    <>
-                        {notifications.map((notification) => (
-                            <div
-                                key={notification._id}
-                                onClick={() => handleNotificationClick(notification._id, notification.url)}
-                                className={`p-3 rounded-lg ${notification.isRead ? 'bg-gray-50' : 'bg-white'} border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative`}
-                            >
-                                {!notification.isRead && (
-                                    <div className="absolute right-2 top-2">
-                                        <div className="bg-red-500 h-1 rounded-full w-1"></div>
-                                    </div>
-                                )}
-                                <div className="flex justify-between items-center mt-2"> 
-                                    <h4 className={'text-gray-800 text-sm font-semibold'}>
-                                        {notification.title}
-                                    </h4>
-                                    <span className="text-gray-500 text-xs">
-                                        {new Date(notification.createdAt).toLocaleString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: 'numeric',
-                                            minute: '2-digit',
-                                            hour12: true
-                                        }).replace(' at ', ' ')}
-                                    </span>
-                                </div>
-                                <p className={`text-gray-600 text-sm mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
-                                    {notification.message}
-                                </p>
-                            </div>
-                        ))}
-                        {isLoading && (
-                            <div className="text-center py-4">
-                                <div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className="text-center text-gray-500 py-4">
-                        No notifications
-                    </div>
-                )}
-            </div>
+			<div 
+				onScroll={handleScroll}
+				className="space-y-3 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
+			>
+				{isLoading && notifications.length === 0 ? (
+					<div className="text-center py-10">
+						<div className="border-b-2 border-green-700 h-8 w-8 rounded-full animate-spin inline-block"></div>
+					</div>
+				) : (
+					<>
+						{notifications && notifications.length > 0 ? (
+							<>
+								{notifications.map((notification) => (
+									<div
+										key={notification._id}
+										onClick={() => handleNotificationClick(notification._id, notification.url)}
+										className={`p-3 rounded-lg ${notification.isRead ? 'bg-gray-50' : 'bg-white'} border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative`}
+									>
+										{!notification.isRead && (
+											<div className="absolute right-2 top-2">
+												<div className="bg-red-500 h-1 rounded-full w-1"></div>
+											</div>
+										)}
+										<div className="flex justify-between items-center mt-2"> 
+											<h4 className={'text-gray-800 text-sm font-semibold'}>
+												{notification.title}
+											</h4>
+											<span className="text-gray-500 text-xs">
+												{new Date(notification.createdAt).toLocaleString('en-US', {
+													year: 'numeric',
+													month: 'long',
+													day: 'numeric',
+													hour: 'numeric',
+													minute: '2-digit',
+													hour12: true
+												}).replace(' at ', ' ')}
+											</span>
+										</div>
+										<p className={`text-gray-600 text-sm mt-3 ${!notification.isRead ? 'font-medium' : 'font-normal'}`}>
+											{notification.message}
+										</p>
+									</div>
+								))}
+								{isLoading && notifications.length > 0 && (
+									<div className="text-center py-4">
+										<div className="border-b-2 border-green-700 h-6 rounded-full w-6 animate-spin inline-block"></div>
+									</div>
+								)}
+							</>
+						) : (
+							<div className="text-center text-gray-500 py-4">
+								No notifications
+							</div>
+						)}
+					</>
+				)}
+			</div>
         </div>
     );
 };

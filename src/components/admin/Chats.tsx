@@ -51,15 +51,23 @@ const AdminChat: React.FC = () => {
     const optionsRef = useRef<HTMLDivElement>(null);
     const [imageErrors] = useState<{ [key: string]: boolean }>({});
 
+		// Helper to get a numeric time for sorting (prefer updatedAt, fallback to createdAt)
+		const getChatSortTime = (chat: IChat): number => {
+			const updated = chat.updatedAt ? new Date(chat.updatedAt as unknown as string) : undefined;
+			const created = chat.createdAt ? new Date(chat.createdAt as unknown as string) : undefined;
+			return (updated ?? created ?? new Date(0)).getTime();
+		};
+
     useEffect(() => {
         const fetchChats = async () => {
             setIsLoading(true);
             try {
                 const res: ApiResponse<IChat[]> = await getChats();
                 console.log("chats response:", res);
-                if (res.success) {
-                    setChats(res.data);
-                    setFilteredChats(res.data);
+				if (res.success) {
+					setChats(res.data);
+					// Set initially sorted list by latest activity
+					setFilteredChats([...res.data].sort((a, b) => getChatSortTime(b) - getChatSortTime(a)));
                     // Fetch online users after chats are loaded
                     socket.emit("get_online_users");
                 } else {
@@ -75,14 +83,13 @@ const AdminChat: React.FC = () => {
     }, []);
 
     // Add effect to filter chats when userFilter changes
-    useEffect(() => {
-        if (userFilter === 'all') {
-            setFilteredChats(chats);
-        } else {
-            const filtered = chats.filter(chat => chat.participant2Role === userFilter);
-            setFilteredChats(filtered);
-        }
-    }, [userFilter, chats]);
+	useEffect(() => {
+		const base = userFilter === 'all'
+			? chats
+			: chats.filter(chat => chat.participant2Role === userFilter);
+		// Always show newest updated chats first
+		setFilteredChats([...base].sort((a, b) => getChatSortTime(b) - getChatSortTime(a)));
+	}, [userFilter, chats]);
 
     // Format time for messages and last message
     const formatTime = (date: Date) => {

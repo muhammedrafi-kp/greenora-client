@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Phone, Mail } from 'lucide-react';
 import { FaRegClipboard } from 'react-icons/fa';
 import { getCollectorData, getAvailableCollectors } from '../../services/userService';
 import { scheduleCollection, cancelCollection } from '../../services/collectionService';
@@ -22,7 +22,7 @@ interface ICollection {
     phone: string;
   };
   type: string;
-  status: 'pending' | 'scheduled' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'scheduled' | 'completed' | 'cancelled';
   payment: {
     paymentId: string;
     advanceAmount: number;
@@ -217,7 +217,9 @@ const CollectionDetailsPage: React.FC = () => {
 
   const handleCancel = async () => {
     if (!selectedReason) {
-      toast.error('Please select a cancellation reason');
+      toast.error('Please select a cancellation reason',{
+        icon:"⚠️"
+      });
       return;
     }
 
@@ -270,7 +272,7 @@ const CollectionDetailsPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            {collection.status === 'pending' && (
+            {collection.status === 'confirmed' && (
               <button
                 onClick={() => setShowScheduleModal(true)}
 
@@ -282,7 +284,7 @@ const CollectionDetailsPage: React.FC = () => {
                 Schedule Collection
               </button>
             )}
-            {(collection.status === 'pending' || collection.status === 'scheduled') && (
+            {(collection.status === 'confirmed' || collection.status === 'scheduled') && (
               <button
                 onClick={() => setShowCancelModal(true)}
                 className="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
@@ -392,14 +394,42 @@ const CollectionDetailsPage: React.FC = () => {
                 <User className="w-5 h-5 text-blue-600" /> Collector Information
               </h2>
               <div className="space-y-5">
+                {/* Profile Photo */}
+                {collector?.profileUrl && (
+                  <div className="flex justify-center mb-4">
+                    <img 
+                      src={collector.profileUrl} 
+                      alt="Collector Profile" 
+                      className="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm"
+                    />
+                  </div>
+                )}
+                
                 <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                   <span className="text-sm text-gray-600">Name</span>
                   <span className="text-sm font-medium">{collector?.name || 'Not assigned'}</span>
                 </div>
+                
                 <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                  <span className="text-sm text-gray-600 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-blue-600" />
+                    Email
+                  </span>
+                  <span className="text-sm font-medium">{collector?.email || 'Not available'}</span>
+                </div>
+                
+                <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                  <span className="text-sm text-gray-600 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-blue-600" />
+                    Phone
+                  </span>
+                  <span className="text-sm font-medium">{collector?.phone || 'Not available'}</span>
+                </div>
+                
+                {/* <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                   <span className="text-sm text-gray-600">Current Tasks</span>
                   <span className="text-sm font-medium">{collector?.taskCount || '0'}</span>
-                </div>
+                </div> */}
               </div>
             </div>
           )}

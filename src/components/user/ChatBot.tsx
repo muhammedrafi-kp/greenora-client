@@ -7,11 +7,11 @@ import { IoIosArrowDown } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
 // import io from 'socket.io-client';
 import { getUserData, getAdminData } from '../../services/userService';
-import { initiateChat, getGreenoBotResponse } from '../../services/chatService';
+import { initiateChat, getMessages, getGreenoBotResponse } from '../../services/chatService';
 import ReactMarkdown from 'react-markdown';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
-import { IChat,IMessage } from '../../types/chat';
+import { IChat, IMessage } from '../../types/chat';
 import "../../styles/scrollbar.css";
 import { ApiResponse } from '../../types/common';
 import { IAdmin, IUser } from '../../types/user';
@@ -81,8 +81,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ isMobileModal = false, onCloseMobileM
     const [user, setUser] = useState<IUser | null>(null);
     const [adminId, setAdminId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
+    const [chatError, setChatError] = useState<string | null>(null);
     const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout>();
+    const chatHistoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -181,12 +184,45 @@ const ChatBot: React.FC<ChatBotProps> = ({ isMobileModal = false, onCloseMobileM
                     console.log("chat response:", chatResponse);
 
                     if (chatResponse.success && chatResponse.data) {
-                        setIsLoading(false);
-                        const chatId = chatResponse.data._id;
+                        const chatId = chatResponse.data._id as string;
                         console.log("Existing chat found:", chatId);
                         socket.emit("join_room", { chatId, userId: userData._id });
                         socket.emit("get_chat_history", { chatId: chatId });
                         socket.emit("get_admin_online_status");
+
+                        // Fallback: If chat history via socket is not received in time, fetch via REST
+                        if (chatHistoryTimeoutRef.current) {
+                            clearTimeout(chatHistoryTimeoutRef.current);
+                        }
+                        chatHistoryTimeoutRef.current = setTimeout(async () => {
+                            try {
+                                const res: ApiResponse<IMessage[]> = await getMessages(chatId);
+                                if (res.success && Array.isArray(res.data)) {
+                                    const formattedMessages: IMessage[] = res.data.map((msg: IMessage) => ({
+                                        _id: msg._id,
+                                        chatId: msg.chatId,
+                                        message: typeof msg.message === 'string' ? msg.message : JSON.stringify(msg.message),
+                                        timestamp: new Date(msg.timestamp),
+                                        senderId: msg.senderId,
+                                        receiverId: msg.receiverId,
+                                        isRead: msg.isRead,
+                                    }));
+                                    setChatMessages(formattedMessages);
+                                } else {
+                                    const welcomeMessage: IBotMessage = {
+                                        message: "Welcome to Admin Support. How can we assist you today?",
+                                        isBot: true,
+                                        timestamp: new Date(),
+                                        status: 'read'
+                                    };
+                                    setBotMessages([welcomeMessage]);
+                                }
+                            } catch (err) {
+                                console.error("REST fallback for chat history failed:", err);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        }, 3000);
                     }
                 } catch (error) {
                     console.error("Error getting chat:", error);
@@ -216,6 +252,26 @@ const ChatBot: React.FC<ChatBotProps> = ({ isMobileModal = false, onCloseMobileM
         socket.on("admin_online_status", (status) => {
             console.log("admin online status:", status);
             setIsAdminOnline(status);
+        });
+
+        // Connection status handlers
+        socket.on('connect', () => {
+            console.log('Chat socket connected');
+            setIsSocketConnected(true);
+            setChatError(null);
+        });
+
+        socket.on('connect_error', (_: any) => {
+            // console.log('Chat socket connection error:', err);
+            setIsSocketConnected(false);
+            setChatError('We\'re having trouble connecting to support. Please try again later.');
+            setIsLoading(false);
+        });
+
+        socket.on('disconnect', (reason: any) => {
+            console.warn('Chat socket disconnected:', reason);
+            setIsSocketConnected(false);
+            setChatError('Connection lost. Please try again later.');
         });
 
         socket.on('receive_message', (message: IMessage) => {
@@ -253,6 +309,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ isMobileModal = false, onCloseMobileM
             console.log("Received chat history:", data);
             setIsLoading(false);
 
+            // Clear fallback timer if socket delivered history
+            if (chatHistoryTimeoutRef.current) {
+                clearTimeout(chatHistoryTimeoutRef.current);
+                chatHistoryTimeoutRef.current = null;
+            }
+
             if (chatMode === 'admin') {
                 if (data && data.messages && data.messages.length > 0) {
                     // Format the messages with proper timestamps and ensure message is a string
@@ -285,11 +347,18 @@ const ChatBot: React.FC<ChatBotProps> = ({ isMobileModal = false, onCloseMobileM
             socket.off('receive_message');
             socket.off('chat_history');
             socket.off('admin_online_status');
+            socket.off('connect');
+            socket.off('connect_error');
+            socket.off('disconnect');
             if (socket.connected && chatMode !== 'admin') {
                 socket.disconnect();
             }
             socket.off('admin_typing');
             socket.off('admin_stop_typing');
+            if (chatHistoryTimeoutRef.current) {
+                clearTimeout(chatHistoryTimeoutRef.current);
+                chatHistoryTimeoutRef.current = null;
+            }
         };
     }, [user, adminId, chatMode]);
 
@@ -690,7 +759,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ isMobileModal = false, onCloseMobileM
                         )}
                     </div>
                     {/* Input */}
-                    <form onSubmit={handleSubmit} className="p-3 sm:p-4 bg-white border-t">
+                    {chatMode === 'admin' && chatError && (
+                        <div className="p-3 sm:p-4 bg-white border-t text-red-600 text-sm">
+                            {chatError}
+                        </div>
+                    )}
+                    <form onSubmit={handleSubmit} className={`p-3 sm:p-4 bg-white border-t ${chatMode === 'admin' && (!isSocketConnected || !!chatError) ? 'hidden' : ''}`}>
                         <div className="flex gap-2 items-center relative">
                             <div ref={emojiPickerRef}>
                                 <button

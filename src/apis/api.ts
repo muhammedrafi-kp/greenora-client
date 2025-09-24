@@ -1,7 +1,7 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosRequestConfig } from "axios";
 import store from "../redux/store";
 import { loginSuccess, Logout } from "../redux/authSlice";
-import { toast } from "react-hot-toast";
+import toast from 'react-hot-toast';
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_GATEWAY_URL,
@@ -28,6 +28,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response: AxiosResponse) => response,
     async (error: AxiosError) => {
+
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
         if (originalRequest && error.response?.status === 401 && !originalRequest._retry) {
 
@@ -36,7 +37,7 @@ apiClient.interceptors.response.use(
             try {
                 const state = store.getState();
                 const role = state.auth.role;
-                console.log("state:",state)
+                console.log("state:", state)
                 console.log("role:", role);
                 const response = await axios.post(`${import.meta.env.VITE_API_GATEWAY_URL}/user-service/${role}s/refresh-token`,
                     {},
@@ -62,13 +63,18 @@ apiClient.interceptors.response.use(
             error.response.data !== null &&
             'message' in error.response.data &&
             error.response.data.message === "User is blocked") {
-            toast.error("Your account is blocked");
+            console.log("user is blocked")
+            toast.error("Your account is blocked", {
+                icon: '⚠️',
+            });
             store.dispatch(Logout());
             return Promise.reject(error);
         }
 
-
-        if ([500, 502, 503, 504].includes(error.response?.status || 0)) {
+        if ([500, 502, 503, 504].includes(error.response?.status || error?.status || 0)) {
+            toast.error("Internal server error", {
+                icon: '⚠️',
+            });
             // window.location.href = '/error/500';
         }
 
@@ -89,11 +95,22 @@ publicApiClient.interceptors.response.use(
             typeof error.response.data === 'object' &&
             error.response.data !== null &&
             'message' in error.response.data &&
-            error.response.data.message === "User is blocked.") {
-            toast.error("Your account is blocked.");
+            error.response.data.message === "User is blocked") {
+            console.log("user is blocked")
+            toast.error("Your account is blocked", {
+                icon: '⚠️',
+            });
             store.dispatch(Logout());
             return Promise.reject(error);
         }
+
+        if ([500, 502, 503, 504].includes(error.response?.status || error?.status || 0)) {
+            toast.error("Internal server error", {
+                icon: '⚠️',
+            });
+            // window.location.href = '/error/500';
+        }
+
         return Promise.reject(error);
     }
 );
