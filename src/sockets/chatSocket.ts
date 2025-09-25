@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
 const CHAT_SOCKET_URL = import.meta.env.VITE_API_GATEWAY_URL; 
+// const CHAT_SOCKET_URL = import.meta.env.VITE_CHAT_SERVICE_URL; 
 
 export const createSocketConnection = (url: string): Socket => {
   return io(url, {
