@@ -15,8 +15,9 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt } from "react-icons/fa";
-import { getCollectorRevenueData, getCollectorDashboardData } from '../../services/collectionService';
+import { getCollectorRevenueData, getCollectorDashboardData,getCollectorCollectionGraphData } from '../../services/collectionService';
 import { ApiResponse } from '../../types/common';
+import {ICollectorCollectionChartData} from "../../types/collection";
 
 interface IDashboardData {
   totalCollections: number;
@@ -48,10 +49,10 @@ interface CollectorData {
   monthlyEarnings: number;
 }
 
-interface CollectionType {
-  name: string;
-  value: number;
-}
+// interface CollectionType {
+//   name: string;
+//   value: number;
+// }
 
 // interface MonthlyData {
 //   name: string;
@@ -76,10 +77,10 @@ interface PerformanceData {
   onTimeRate: number;
 }
 
-interface WasteTypeData {
-  name: string;
-  weight: number;
-}
+// interface WasteTypeData {
+//   name: string;
+//   weight: number;
+// }
 
 const DashboardCard = ({ title, icon, children }: {
   title: string;
@@ -103,10 +104,15 @@ const Dashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<IDashboardData | null>(null);
   const [revenueData, setRevenueData] = useState<IRevenueData[]>([]);
   const [collectorData] = useState<CollectorData | null>(null);
-  const [collectionTypeData] = useState<CollectionType[]>([
-    { name: 'Waste', value: 90 },
-    { name: 'Scrap', value: 10 }
-  ]);
+  const [collectorGraphData, setCollectorGraphData] = useState<ICollectorCollectionChartData>({
+    collectionTypeData: [],
+    itemType: []
+  });
+  // Collection type data from API
+  const collectionTypeData = collectorGraphData.collectionTypeData.map(item => ({
+    name: item.type.charAt(0).toUpperCase() + item.type.slice(1),
+    value: item.count
+  }));
   // const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([
   //   { name: 'Jan', collections: 120, earnings: 15000 },
   //   { name: 'Feb', collections: 150, earnings: 18000 },
@@ -117,13 +123,11 @@ const Dashboard: React.FC = () => {
   // ]);
   const [todayPickups] = useState<PickupData[]>([]);
   const [performanceData] = useState<PerformanceData[]>([]);
-  const [wasteTypesData] = useState<WasteTypeData[]>([
-    { name: 'Plastic', weight: 5 },
-    { name: 'Paper', weight: 10 },
-    { name: 'Metal', weight: 2 },
-    { name: 'Glass', weight: 4 },
-    { name: 'Organic', weight: 7 }
-  ]);
+  // Waste types data from API
+  const wasteTypesData = collectorGraphData.itemType.map(item => ({
+    name: item.name,
+    weight: item.qty
+  }));
 
   useEffect(() => {
 
@@ -156,6 +160,20 @@ const Dashboard: React.FC = () => {
     };
 
     fetchRevenueData();
+
+    const fetchCollectorGraphData = async () => {
+      try {
+        const response = await getCollectorCollectionGraphData();
+        console.log("collector graph data", response);
+        if (response.success) {
+          setCollectorGraphData(response.data);
+        }
+      } catch (error) {
+        console.log('Failed to fetch collector graph data:', error);
+      }
+    };
+
+    fetchCollectorGraphData();
   }, [dateFilter, startDate, endDate]);
 
   // Colors for charts
@@ -212,7 +230,7 @@ const Dashboard: React.FC = () => {
  */}
         {/* Navigation Tabs */}
         <div className="mb-6 flex border-b">
-          <button
+          {/* <button
             onClick={() => setSelectedTab('schedule')}
             className={`px-4 py-2 font-medium text-sm ${selectedTab === 'schedule'
               ? 'text-blue-600 border-b-2 border-blue-600'
@@ -220,7 +238,7 @@ const Dashboard: React.FC = () => {
               }`}
           >
             Schedule
-          </button>
+          </button> */}
           <button
             onClick={() => setSelectedTab('overview')}
             className={`px-4 py-2 font-medium text-sm ${selectedTab === 'overview'
@@ -230,7 +248,7 @@ const Dashboard: React.FC = () => {
           >
             Overview
           </button>
-          <button
+          {/* <button
             onClick={() => setSelectedTab('performance')}
             className={`px-4 py-2 font-medium text-sm ${selectedTab === 'performance'
               ? 'text-blue-600 border-b-2 border-blue-600'
@@ -238,7 +256,7 @@ const Dashboard: React.FC = () => {
               }`}
           >
             Performance
-          </button>
+          </button> */}
         </div>
 
         {selectedTab === 'overview' && (

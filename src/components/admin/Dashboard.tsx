@@ -4,9 +4,10 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt } from "react-icons/fa";
 import { getDistricts, getServiceAreas } from '../../services/locationService';
-import { getDashboardData, getRevenueData } from '../../services/collectionService';
+import { getDashboardData, getRevenueData,getCollectionGraphData } from '../../services/collectionService';
 import { ApiResponse } from '../../types/common';
 import { IDistrict, IServiceArea } from '../../types/location';
+import { ICollectionChartData } from '../../types/collection';
 
 
 interface IRevenueData {
@@ -38,477 +39,342 @@ const AdminDashboard:React.FC = () => {
     scrapCollections: 0
   });
   const [revenueData, setRevenueData] = useState<IRevenueData[]>([]);
+  const [collectionGraphData, setCollectionGraphData] = useState<ICollectionChartData>({
+    collectionTypeData: [],
+    collectionStatusData: []
+  });
   // const [timeRange, setTimeRange] = useState('month');
   
-  // Filter states for pie charts
-  const [chartTimeFilter, setChartTimeFilter] = useState('last30days');
-  const [chartDistrictFilter, setChartDistrictFilter] = useState('all');
-  const [chartServiceAreaFilter, setChartServiceAreaFilter] = useState('all');
-  const [chartStatusFilter, setChartStatusFilter] = useState('all');
-  const [chartCollectorFilter, setChartCollectorFilter] = useState('all');
-  const [chartRevenueFilter, setChartRevenueFilter] = useState('all');
+  // Filter states for pie charts (commented out since we're using fetched data without filters)
+  // const [chartTimeFilter, setChartTimeFilter] = useState('last30days');
+  // const [chartDistrictFilter, setChartDistrictFilter] = useState('all');
+  // const [chartServiceAreaFilter, setChartServiceAreaFilter] = useState('all');
+  // const [chartStatusFilter, setChartStatusFilter] = useState('all');
+  // const [chartCollectorFilter, setChartCollectorFilter] = useState('all');
+  // const [chartRevenueFilter, setChartRevenueFilter] = useState('all');
 
   // Filter states for revenue chart
-  const [revenueTimeFilter, setRevenueTimeFilter] = useState('last30days');
-  const [revenueServiceAreaFilter, setRevenueServiceAreaFilter] = useState('all');
-  const [revenueStatusFilter, setRevenueStatusFilter] = useState('all');
-  const [revenueCollectorFilter, setRevenueCollectorFilter] = useState('all');
-  const [revenueTypeFilter, setRevenueTypeFilter] = useState('all');
-  const [revenueSortBy, setRevenueSortBy] = useState('total');
+  // const [revenueTimeFilter, setRevenueTimeFilter] = useState('last30days');
+  // const [revenueServiceAreaFilter, setRevenueServiceAreaFilter] = useState('all');
+  // const [revenueStatusFilter, setRevenueStatusFilter] = useState('all');
+  // const [revenueCollectorFilter, setRevenueCollectorFilter] = useState('all');
+  // const [revenueTypeFilter, setRevenueTypeFilter] = useState('all');
+  // const [revenueSortBy, setRevenueSortBy] = useState('total');
 
   // Filter states for collectors table
-  const [collectorTimeFilter, setCollectorTimeFilter] = useState('last30days');
-  const [collectorDistrictFilter, setCollectorDistrictFilter] = useState('all');
-  const [collectorServiceAreaFilter, setCollectorServiceAreaFilter] = useState('all');
-  const [collectorStatusFilter, setCollectorStatusFilter] = useState('all');
-  const [collectorSortBy, setCollectorSortBy] = useState('revenue');
-  const [collectorLimit, setCollectorLimit] = useState('all');
+  // const [collectorTimeFilter, setCollectorTimeFilter] = useState('last30days');
+  // const [collectorDistrictFilter, setCollectorDistrictFilter] = useState('all');
+  // const [collectorServiceAreaFilter, setCollectorServiceAreaFilter] = useState('all');
+  // const [collectorStatusFilter, setCollectorStatusFilter] = useState('all');
+  // const [collectorSortBy, setCollectorSortBy] = useState('revenue');
+  // const [collectorLimit, setCollectorLimit] = useState('all');
 
   // Filter states for items table
-  const [itemTimeFilter, setItemTimeFilter] = useState('last30days');
-  const [itemDistrictFilter, setItemDistrictFilter] = useState('all');
-  const [itemServiceAreaFilter, setItemServiceAreaFilter] = useState('all');
-  const [itemCategoryFilter, setItemCategoryFilter] = useState('all');
-  const [itemSortBy, setItemSortBy] = useState('revenue');
-  const [itemLimit, setItemLimit] = useState('all');
+  // const [itemTimeFilter, setItemTimeFilter] = useState('last30days');
+  // const [itemDistrictFilter, setItemDistrictFilter] = useState('all');
+  // const [itemServiceAreaFilter, setItemServiceAreaFilter] = useState('all');
+  // const [itemCategoryFilter, setItemCategoryFilter] = useState('all');
+  // const [itemSortBy, setItemSortBy] = useState('revenue');
+  // const [itemLimit, setItemLimit] = useState('all');
 
-  // Collection type distribution - now dynamic based on filters
+  // Collection type distribution - now using fetched data
   const collectionTypeData = useMemo(() => {
-    // This would be replaced with actual API call based on filters
-    let baseData = [
-      { name: 'Waste', value: 90 },
-      { name: 'Scrap', value: 10 },
-    ];
-    
-    // Apply time-based filters
-    switch (chartTimeFilter) {
-      case 'last7days':
-        baseData = [
-          { name: 'Waste', value: 85 },
-          { name: 'Scrap', value: 15 },
-        ];
-        break;
-      case 'last30days':
-        baseData = [
-          { name: 'Waste', value: 90 },
-          { name: 'Scrap', value: 10 },
-        ];
-        break;
-      case 'last3months':
-        baseData = [
-          { name: 'Waste', value: 88 },
-          { name: 'Scrap', value: 12 },
-        ];
-        break;
-      case 'last6months':
-        baseData = [
-          { name: 'Waste', value: 87 },
-          { name: 'Scrap', value: 13 },
-        ];
-        break;
-      case 'lastyear':
-        baseData = [
-          { name: 'Waste', value: 89 },
-          { name: 'Scrap', value: 11 },
-        ];
-        break;
-      default:
-        baseData = [
-          { name: 'Waste', value: 90 },
-          { name: 'Scrap', value: 10 },
-        ];
-    }
-    
-    // Apply district filter (simplified example)
-    if (chartDistrictFilter !== 'all') {
-      // In real implementation, this would filter based on actual district data
-      baseData = baseData.map(item => ({
-        ...item,
-        value: Math.floor(item.value * 0.8) // Simulate district-specific data
-      }));
-    }
-    
-    // Apply revenue filter
-    if (chartRevenueFilter === 'high') {
-      baseData = [
-        { name: 'Waste', value: 95 },
-        { name: 'Scrap', value: 5 },
-      ];
-    } else if (chartRevenueFilter === 'low') {
-      baseData = [
-        { name: 'Waste', value: 70 },
-        { name: 'Scrap', value: 30 },
-      ];
-    }
-    
-    return baseData;
-  }, [chartTimeFilter, chartDistrictFilter, chartServiceAreaFilter, chartRevenueFilter]);
+    return collectionGraphData.collectionTypeData || [];
+  }, [collectionGraphData.collectionTypeData]);
   
   // Revenue by district - now dynamic based on filters
-  const districtRevenueData = useMemo(() => {
-    // This would be replaced with actual API call based on filters
-    let baseData = [
-      { district: 'Palakkad', waste: 1440, scrap: 160, total: 1600 },
-      { district: 'Malappuram', waste: 330, scrap: 222, total: 552 },
-      { district: 'Kozhikode', waste: 0, scrap: 0, total: 0 },
-      { district: 'Thrissur', waste: 890, scrap: 110, total: 1000 },
-      { district: 'Ernakulam', waste: 1200, scrap: 300, total: 1500 },
-    ];
+  // const districtRevenueData = useMemo(() => {
+  //   let baseData = [
+  //     { district: 'Palakkad', waste: 1440, scrap: 160, total: 1600 },
+  //     { district: 'Malappuram', waste: 330, scrap: 222, total: 552 },
+  //     { district: 'Kozhikode', waste: 0, scrap: 0, total: 0 },
+  //     { district: 'Thrissur', waste: 890, scrap: 110, total: 1000 },
+  //     { district: 'Ernakulam', waste: 1200, scrap: 300, total: 1500 },
+  //   ];
     
     // Apply time-based filters
-    switch (revenueTimeFilter) {
-      case 'last7days':
-        baseData = baseData.map(item => ({
-          ...item,
-          waste: Math.floor(item.waste * 0.2),
-          scrap: Math.floor(item.scrap * 0.2),
-          total: Math.floor(item.total * 0.2)
-        }));
-        break;
-      case 'last30days':
-        baseData = baseData.map(item => ({
-          ...item,
-          waste: Math.floor(item.waste * 0.8),
-          scrap: Math.floor(item.scrap * 0.8),
-          total: Math.floor(item.total * 0.8)
-        }));
-        break;
-      case 'last3months':
-        baseData = baseData.map(item => ({
-          ...item,
-          waste: Math.floor(item.waste * 1.2),
-          scrap: Math.floor(item.scrap * 1.2),
-          total: Math.floor(item.total * 1.2)
-        }));
-        break;
-      case 'last6months':
-        baseData = baseData.map(item => ({
-          ...item,
-          waste: Math.floor(item.waste * 1.5),
-          scrap: Math.floor(item.scrap * 1.5),
-          total: Math.floor(item.total * 1.5)
-        }));
-        break;
-      case 'lastyear':
-        baseData = baseData.map(item => ({
-          ...item,
-          waste: Math.floor(item.waste * 2.0),
-          scrap: Math.floor(item.scrap * 2.0),
-          total: Math.floor(item.total * 2.0)
-        }));
-        break;
-    }
+    // switch (revenueTimeFilter) {
+    //   case 'last7days':
+    //     baseData = baseData.map(item => ({
+    //       ...item,
+    //       waste: Math.floor(item.waste * 0.2),
+    //       scrap: Math.floor(item.scrap * 0.2),
+    //       total: Math.floor(item.total * 0.2)
+    //     }));
+    //     break;
+    //   case 'last30days':
+    //     baseData = baseData.map(item => ({
+    //       ...item,
+    //       waste: Math.floor(item.waste * 0.8),
+    //       scrap: Math.floor(item.scrap * 0.8),
+    //       total: Math.floor(item.total * 0.8)
+    //     }));
+    //     break;
+    //   case 'last3months':
+    //     baseData = baseData.map(item => ({
+    //       ...item,
+    //       waste: Math.floor(item.waste * 1.2),
+    //       scrap: Math.floor(item.scrap * 1.2),
+    //       total: Math.floor(item.total * 1.2)
+    //     }));
+    //     break;
+    //   case 'last6months':
+    //     baseData = baseData.map(item => ({
+    //       ...item,
+    //       waste: Math.floor(item.waste * 1.5),
+    //       scrap: Math.floor(item.scrap * 1.5),
+    //       total: Math.floor(item.total * 1.5)
+    //     }));
+    //     break;
+    //   case 'lastyear':
+    //     baseData = baseData.map(item => ({
+    //       ...item,
+    //       waste: Math.floor(item.waste * 2.0),
+    //       scrap: Math.floor(item.scrap * 2.0),
+    //       total: Math.floor(item.total * 2.0)
+    //     }));
+    //     break;
+    // }
     
     // Apply revenue type filter
-    if (revenueTypeFilter === 'waste') {
-      baseData = baseData.map(item => ({
-        ...item,
-        scrap: 0,
-        total: item.waste
-      }));
-    } else if (revenueTypeFilter === 'scrap') {
-      baseData = baseData.map(item => ({
-        ...item,
-        waste: 0,
-        total: item.scrap
-      }));
-    }
+    // if (revenueTypeFilter === 'waste') {
+    //   baseData = baseData.map(item => ({
+    //     ...item,
+    //     scrap: 0,
+    //     total: item.waste
+    //   }));
+    // } else if (revenueTypeFilter === 'scrap') {
+    //   baseData = baseData.map(item => ({
+    //     ...item,
+    //     waste: 0,
+    //     total: item.scrap
+    //   }));
+    // }
     
     // Apply status filter (affects revenue calculation)
-    if (revenueStatusFilter === 'completed') {
-      baseData = baseData.map(item => ({
-        ...item,
-        waste: Math.floor(item.waste * 0.9),
-        scrap: Math.floor(item.scrap * 0.9),
-        total: Math.floor(item.total * 0.9)
-      }));
-    } else if (revenueStatusFilter === 'pending') {
-      baseData = baseData.map(item => ({
-        ...item,
-        waste: Math.floor(item.waste * 0.1),
-        scrap: Math.floor(item.scrap * 0.1),
-        total: Math.floor(item.total * 0.1)
-      }));
-    }
+    // if (revenueStatusFilter === 'completed') {
+    //   baseData = baseData.map(item => ({
+    //     ...item,
+    //     waste: Math.floor(item.waste * 0.9),
+    //     scrap: Math.floor(item.scrap * 0.9),
+    //     total: Math.floor(item.total * 0.9)
+    //   }));
+    // } else if (revenueStatusFilter === 'pending') {
+    //   baseData = baseData.map(item => ({
+    //     ...item,
+    //     waste: Math.floor(item.waste * 0.1),
+    //     scrap: Math.floor(item.scrap * 0.1),
+    //     total: Math.floor(item.total * 0.1)
+    //   }));
+    // }
     
     // Apply sorting
-    if (revenueSortBy === 'waste') {
-      baseData.sort((a, b) => b.waste - a.waste);
-    } else if (revenueSortBy === 'scrap') {
-      baseData.sort((a, b) => b.scrap - a.scrap);
-    } else if (revenueSortBy === 'total') {
-      baseData.sort((a, b) => b.total - a.total);
-    } else if (revenueSortBy === 'district') {
-      baseData.sort((a, b) => a.district.localeCompare(b.district));
-    }
+    // if (revenueSortBy === 'waste') {
+    //   baseData.sort((a, b) => b.waste - a.waste);
+    // } else if (revenueSortBy === 'scrap') {
+    //   baseData.sort((a, b) => b.scrap - a.scrap);
+    // } else if (revenueSortBy === 'total') {
+    //   baseData.sort((a, b) => b.total - a.total);
+    // } else if (revenueSortBy === 'district') {
+    //   baseData.sort((a, b) => a.district.localeCompare(b.district));
+    // }
     
     // Filter out districts with zero revenue if needed
-    if (revenueTypeFilter === 'waste') {
-      baseData = baseData.filter(item => item.waste > 0);
-    } else if (revenueTypeFilter === 'scrap') {
-      baseData = baseData.filter(item => item.scrap > 0);
-    }
+    // if (revenueTypeFilter === 'waste') {
+    //   baseData = baseData.filter(item => item.waste > 0);
+    // } else if (revenueTypeFilter === 'scrap') {
+    //   baseData = baseData.filter(item => item.scrap > 0);
+    // }
     
-    return baseData;
-  }, [revenueTimeFilter, revenueServiceAreaFilter, revenueStatusFilter, revenueCollectorFilter, revenueTypeFilter, revenueSortBy]);
+    // return baseData;
+  // }, [revenueTimeFilter, revenueServiceAreaFilter, revenueStatusFilter, revenueCollectorFilter, revenueTypeFilter, revenueSortBy]);
   
-  // Collection status distribution - now dynamic based on filters
+  // Collection status distribution - now using fetched data
   const statusData = useMemo(() => {
-    // This would be replaced with actual API call based on filters
-    let baseData = [
-      { name: 'Pending', value: 2 },
-      { name: 'Scheduled', value: 5 },
-      { name: 'In Progress', value: 2 },
-      { name: 'Completed', value: 6 },
-      { name: 'Cancelled', value: 2 },
-    ];
-    
-    // Apply time-based filters
-    switch (chartTimeFilter) {
-      case 'last7days':
-        baseData = [
-          { name: 'Pending', value: 1 },
-          { name: 'Scheduled', value: 3 },
-          { name: 'In Progress', value: 1 },
-          { name: 'Completed', value: 4 },
-          { name: 'Cancelled', value: 1 },
-        ];
-        break;
-      case 'last30days':
-        baseData = [
-          { name: 'Pending', value: 2 },
-          { name: 'Scheduled', value: 5 },
-          { name: 'In Progress', value: 2 },
-          { name: 'Completed', value: 6 },
-          { name: 'Cancelled', value: 2 },
-        ];
-        break;
-      case 'last3months':
-        baseData = [
-          { name: 'Pending', value: 3 },
-          { name: 'Scheduled', value: 7 },
-          { name: 'In Progress', value: 3 },
-          { name: 'Completed', value: 8 },
-          { name: 'Cancelled', value: 3 },
-        ];
-        break;
-      default:
-        baseData = [
-          { name: 'Pending', value: 2 },
-          { name: 'Scheduled', value: 5 },
-          { name: 'In Progress', value: 2 },
-          { name: 'Completed', value: 6 },
-          { name: 'Cancelled', value: 2 },
-        ];
-    }
-    
-    // Apply status filter
-    if (chartStatusFilter === 'active') {
-      return baseData.filter(item => 
-        ['Pending', 'Scheduled', 'In Progress'].includes(item.name)
-      );
-    } else if (chartStatusFilter === 'inactive') {
-      return baseData.filter(item => 
-        ['Completed', 'Cancelled'].includes(item.name)
-      );
-    } else if (chartStatusFilter !== 'all') {
-      return baseData.filter(item => 
-        item.name.toLowerCase().replace(' ', '') === chartStatusFilter.toLowerCase()
-      );
-    }
-    
-    // Apply district filter (simplified example)
-    if (chartDistrictFilter !== 'all') {
-      baseData = baseData.map(item => ({
-        ...item,
-        value: Math.floor(item.value * 0.7) // Simulate district-specific data
-      }));
-    }
-    
-    return baseData;
-  }, [chartStatusFilter, chartTimeFilter, chartDistrictFilter, chartCollectorFilter]);
+    return collectionGraphData.collectionStatusData || [];
+  }, [collectionGraphData.collectionStatusData]);
   
   // Monthly collection trends
-  const monthlyTrendsData = [
-    { month: 'Jan', waste: 12, scrap: 4 },
-    { month: 'Feb', waste: 8, scrap: 3 },
-    { month: 'Mar', waste: 15, scrap: 2 },
-    { month: 'Apr', waste: 7, scrap: 6 },
-    { month: 'May', waste: 13, scrap: 4 },
-    { month: 'Jun', waste: 8, scrap: 3 },
-  ];
+  // const monthlyTrendsData = [
+  //   { month: 'Jan', waste: 12, scrap: 4 },
+  //   { month: 'Feb', waste: 8, scrap: 3 },
+  //   { month: 'Mar', waste: 15, scrap: 2 },
+  //   { month: 'Apr', waste: 7, scrap: 6 },
+  //   { month: 'May', waste: 13, scrap: 4 },
+  //   { month: 'Jun', waste: 8, scrap: 3 },
+  // ];
   
   // Top collector performance - now dynamic based on filters
-  const collectorPerformanceData = useMemo(() => {
-    // This would be replaced with actual API call based on filters
-    let baseData = [
-      { name: 'collector.', collections: 5, revenue: 1500, rating: 4.8, district: 'Palakkad', status: 'active' },
-      { name: 'Leo', collections: 4, revenue: 1400, rating: 4.9, district: 'Malappuram', status: 'active' },
-      { name: 'John.', collections: 3, revenue: 1200, rating: 4.7, district: 'Kozhikode', status: 'active' },
-      { name: 'Rajesh', collections: 2, revenue: 1100, rating: 4.6, district: 'Thrissur', status: 'active' },
-      { name: 'Alex', collections: 1, revenue: 1000, rating: 4.6, district: 'Ernakulam', status: 'active' },
-      { name: 'Sarah', collections: 6, revenue: 1800, rating: 4.9, district: 'Palakkad', status: 'active' },
-      { name: 'Mike', collections: 3, revenue: 900, rating: 4.3, district: 'Malappuram', status: 'inactive' },
-      { name: 'Priya', collections: 4, revenue: 1300, rating: 4.8, district: 'Thrissur', status: 'active' },
-    ];
+  // const collectorPerformanceData = useMemo(() => {
+  //   // This would be replaced with actual API call based on filters
+  //   let baseData = [
+  //     { name: 'collector.', collections: 5, revenue: 1500, rating: 4.8, district: 'Palakkad', status: 'active' },
+  //     { name: 'Leo', collections: 4, revenue: 1400, rating: 4.9, district: 'Malappuram', status: 'active' },
+  //     { name: 'John.', collections: 3, revenue: 1200, rating: 4.7, district: 'Kozhikode', status: 'active' },
+  //     { name: 'Rajesh', collections: 2, revenue: 1100, rating: 4.6, district: 'Thrissur', status: 'active' },
+  //     { name: 'Alex', collections: 1, revenue: 1000, rating: 4.6, district: 'Ernakulam', status: 'active' },
+  //     { name: 'Sarah', collections: 6, revenue: 1800, rating: 4.9, district: 'Palakkad', status: 'active' },
+  //     { name: 'Mike', collections: 3, revenue: 900, rating: 4.3, district: 'Malappuram', status: 'inactive' },
+  //     { name: 'Priya', collections: 4, revenue: 1300, rating: 4.8, district: 'Thrissur', status: 'active' },
+  //   ];
     
-    // Apply time-based filters
-    switch (collectorTimeFilter) {
-      case 'last7days':
-        baseData = baseData.map(item => ({
-          ...item,
-          collections: Math.floor(item.collections * 0.3),
-          revenue: Math.floor(item.revenue * 0.3)
-        }));
-        break;
-      case 'last30days':
-        baseData = baseData.map(item => ({
-          ...item,
-          collections: Math.floor(item.collections * 0.8),
-          revenue: Math.floor(item.revenue * 0.8)
-        }));
-        break;
-      case 'last3months':
-        baseData = baseData.map(item => ({
-          ...item,
-          collections: Math.floor(item.collections * 1.2),
-          revenue: Math.floor(item.revenue * 1.2)
-        }));
-        break;
-      case 'last6months':
-        baseData = baseData.map(item => ({
-          ...item,
-          collections: Math.floor(item.collections * 1.5),
-          revenue: Math.floor(item.revenue * 1.5)
-        }));
-        break;
-      case 'lastyear':
-        baseData = baseData.map(item => ({
-          ...item,
-          collections: Math.floor(item.collections * 2.0),
-          revenue: Math.floor(item.revenue * 2.0)
-        }));
-        break;
-    }
+  //   // Apply time-based filters
+  //   switch (collectorTimeFilter) {
+  //     case 'last7days':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         collections: Math.floor(item.collections * 0.3),
+  //         revenue: Math.floor(item.revenue * 0.3)
+  //       }));
+  //       break;
+  //     case 'last30days':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         collections: Math.floor(item.collections * 0.8),
+  //         revenue: Math.floor(item.revenue * 0.8)
+  //       }));
+  //       break;
+  //     case 'last3months':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         collections: Math.floor(item.collections * 1.2),
+  //         revenue: Math.floor(item.revenue * 1.2)
+  //       }));
+  //       break;
+  //     case 'last6months':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         collections: Math.floor(item.collections * 1.5),
+  //         revenue: Math.floor(item.revenue * 1.5)
+  //       }));
+  //       break;
+  //     case 'lastyear':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         collections: Math.floor(item.collections * 2.0),
+  //         revenue: Math.floor(item.revenue * 2.0)
+  //       }));
+  //       break;
+  //   }
     
-    // Apply district filter
-    if (collectorDistrictFilter !== 'all') {
-      const selectedDistrict = districts.find(d => d._id === collectorDistrictFilter);
-      if (selectedDistrict) {
-        baseData = baseData.filter(item => item.district === selectedDistrict.name);
-      }
-    }
+  //   // Apply district filter
+  //   if (collectorDistrictFilter !== 'all') {
+  //     const selectedDistrict = districts.find(d => d._id === collectorDistrictFilter);
+  //     if (selectedDistrict) {
+  //       baseData = baseData.filter(item => item.district === selectedDistrict.name);
+  //     }
+  //   }
     
-    // Apply status filter
-    if (collectorStatusFilter === 'active') {
-      baseData = baseData.filter(item => item.status === 'active');
-    } else if (collectorStatusFilter === 'inactive') {
-      baseData = baseData.filter(item => item.status === 'inactive');
-    }
+  //   // Apply status filter
+  //   if (collectorStatusFilter === 'active') {
+  //     baseData = baseData.filter(item => item.status === 'active');
+  //   } else if (collectorStatusFilter === 'inactive') {
+  //     baseData = baseData.filter(item => item.status === 'inactive');
+  //   }
     
-    // Apply sorting
-    if (collectorSortBy === 'collections') {
-      baseData.sort((a, b) => b.collections - a.collections);
-    } else if (collectorSortBy === 'revenue') {
-      baseData.sort((a, b) => b.revenue - a.revenue);
-    } else if (collectorSortBy === 'rating') {
-      baseData.sort((a, b) => b.rating - a.rating);
-    } else if (collectorSortBy === 'name') {
-      baseData.sort((a, b) => a.name.localeCompare(b.name));
-    }
+  //   // Apply sorting
+  //   if (collectorSortBy === 'collections') {
+  //     baseData.sort((a, b) => b.collections - a.collections);
+  //   } else if (collectorSortBy === 'revenue') {
+  //     baseData.sort((a, b) => b.revenue - a.revenue);
+  //   } else if (collectorSortBy === 'rating') {
+  //     baseData.sort((a, b) => b.rating - a.rating);
+  //   } else if (collectorSortBy === 'name') {
+  //     baseData.sort((a, b) => a.name.localeCompare(b.name));
+  //   }
     
-    // Apply limit
-    if (collectorLimit !== 'all') {
-      const limit = parseInt(collectorLimit);
-      baseData = baseData.slice(0, limit);
-    }
+  //   // Apply limit
+  //   if (collectorLimit !== 'all') {
+  //     const limit = parseInt(collectorLimit);
+  //     baseData = baseData.slice(0, limit);
+  //   }
     
-    return baseData;
-  }, [collectorTimeFilter, collectorDistrictFilter, collectorServiceAreaFilter, collectorStatusFilter, collectorSortBy, collectorLimit, districts]);
+  //   return baseData;
+  // }, [collectorTimeFilter, collectorDistrictFilter, collectorServiceAreaFilter, collectorStatusFilter, collectorSortBy, collectorLimit, districts]);
   
   // Most collected items - now dynamic based on filters
-  const topItemsData = useMemo(() => {
-    // This would be replaced with actual API call based on filters
-    let baseData = [
-      { name: 'Cardboard', quantity: 25, revenue: 2000, category: 'paper', district: 'Palakkad' },
-      { name: 'Paper', quantity: 28, revenue: 2500, category: 'paper', district: 'Malappuram' },
-      { name: 'Glass', quantity: 10, revenue: 1000, category: 'glass', district: 'Kozhikode' },
-      { name: 'Plastic', quantity: 19, revenue: 1500, category: 'plastic', district: 'Thrissur' },
-      { name: 'Metal', quantity: 17, revenue: 2000, category: 'metal', district: 'Ernakulam' },
-      { name: 'Aluminum', quantity: 12, revenue: 1800, category: 'metal', district: 'Palakkad' },
-      { name: 'Textiles', quantity: 8, revenue: 1200, category: 'textile', district: 'Malappuram' },
-      { name: 'Electronics', quantity: 5, revenue: 3000, category: 'electronics', district: 'Thrissur' },
-    ];
+  // const topItemsData = useMemo(() => {
+  //   // This would be replaced with actual API call based on filters
+  //   let baseData = [
+  //     { name: 'Cardboard', quantity: 25, revenue: 2000, category: 'paper', district: 'Palakkad' },
+  //     { name: 'Paper', quantity: 28, revenue: 2500, category: 'paper', district: 'Malappuram' },
+  //     { name: 'Glass', quantity: 10, revenue: 1000, category: 'glass', district: 'Kozhikode' },
+  //     { name: 'Plastic', quantity: 19, revenue: 1500, category: 'plastic', district: 'Thrissur' },
+  //     { name: 'Metal', quantity: 17, revenue: 2000, category: 'metal', district: 'Ernakulam' },
+  //     { name: 'Aluminum', quantity: 12, revenue: 1800, category: 'metal', district: 'Palakkad' },
+  //     { name: 'Textiles', quantity: 8, revenue: 1200, category: 'textile', district: 'Malappuram' },
+  //     { name: 'Electronics', quantity: 5, revenue: 3000, category: 'electronics', district: 'Thrissur' },
+  //   ];
     
-    // Apply time-based filters
-    switch (itemTimeFilter) {
-      case 'last7days':
-        baseData = baseData.map(item => ({
-          ...item,
-          quantity: Math.floor(item.quantity * 0.3),
-          revenue: Math.floor(item.revenue * 0.3)
-        }));
-        break;
-      case 'last30days':
-        baseData = baseData.map(item => ({
-          ...item,
-          quantity: Math.floor(item.quantity * 0.8),
-          revenue: Math.floor(item.revenue * 0.8)
-        }));
-        break;
-      case 'last3months':
-        baseData = baseData.map(item => ({
-          ...item,
-          quantity: Math.floor(item.quantity * 1.2),
-          revenue: Math.floor(item.revenue * 1.2)
-        }));
-        break;
-      case 'last6months':
-        baseData = baseData.map(item => ({
-          ...item,
-          quantity: Math.floor(item.quantity * 1.5),
-          revenue: Math.floor(item.revenue * 1.5)
-        }));
-        break;
-      case 'lastyear':
-        baseData = baseData.map(item => ({
-          ...item,
-          quantity: Math.floor(item.quantity * 2.0),
-          revenue: Math.floor(item.revenue * 2.0)
-        }));
-        break;
-    }
+  //   // Apply time-based filters
+  //   switch (itemTimeFilter) {
+  //     case 'last7days':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         quantity: Math.floor(item.quantity * 0.3),
+  //         revenue: Math.floor(item.revenue * 0.3)
+  //       }));
+  //       break;
+  //     case 'last30days':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         quantity: Math.floor(item.quantity * 0.8),
+  //         revenue: Math.floor(item.revenue * 0.8)
+  //       }));
+  //       break;
+  //     case 'last3months':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         quantity: Math.floor(item.quantity * 1.2),
+  //         revenue: Math.floor(item.revenue * 1.2)
+  //       }));
+  //       break;
+  //     case 'last6months':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         quantity: Math.floor(item.quantity * 1.5),
+  //         revenue: Math.floor(item.revenue * 1.5)
+  //       }));
+  //       break;
+  //     case 'lastyear':
+  //       baseData = baseData.map(item => ({
+  //         ...item,
+  //         quantity: Math.floor(item.quantity * 2.0),
+  //         revenue: Math.floor(item.revenue * 2.0)
+  //       }));
+  //       break;
+  //   }
     
-    // Apply district filter
-    if (itemDistrictFilter !== 'all') {
-      const selectedDistrict = districts.find(d => d._id === itemDistrictFilter);
-      if (selectedDistrict) {
-        baseData = baseData.filter(item => item.district === selectedDistrict.name);
-      }
-    }
+  //   // Apply district filter
+  //   if (itemDistrictFilter !== 'all') {
+  //     const selectedDistrict = districts.find(d => d._id === itemDistrictFilter);
+  //     if (selectedDistrict) {
+  //       baseData = baseData.filter(item => item.district === selectedDistrict.name);
+  //     }
+  //   }
     
-    // Apply category filter
-    if (itemCategoryFilter !== 'all') {
-      baseData = baseData.filter(item => item.category === itemCategoryFilter);
-    }
+  //   // Apply category filter
+  //   if (itemCategoryFilter !== 'all') {
+  //     baseData = baseData.filter(item => item.category === itemCategoryFilter);
+  //   }
     
-    // Apply sorting
-    if (itemSortBy === 'quantity') {
-      baseData.sort((a, b) => b.quantity - a.quantity);
-    } else if (itemSortBy === 'revenue') {
-      baseData.sort((a, b) => b.revenue - a.revenue);
-    } else if (itemSortBy === 'name') {
-      baseData.sort((a, b) => a.name.localeCompare(b.name));
-    }
+  //   // Apply sorting
+  //   if (itemSortBy === 'quantity') {
+  //     baseData.sort((a, b) => b.quantity - a.quantity);
+  //   } else if (itemSortBy === 'revenue') {
+  //     baseData.sort((a, b) => b.revenue - a.revenue);
+  //   } else if (itemSortBy === 'name') {
+  //     baseData.sort((a, b) => a.name.localeCompare(b.name));
+  //   }
     
-    // Apply limit
-    if (itemLimit !== 'all') {
-      const limit = parseInt(itemLimit);
-      baseData = baseData.slice(0, limit);
-    }
+  //   // Apply limit
+  //   if (itemLimit !== 'all') {
+  //     const limit = parseInt(itemLimit);
+  //     baseData = baseData.slice(0, limit);
+  //   }
     
-    return baseData;
-  }, [itemTimeFilter, itemDistrictFilter, itemServiceAreaFilter, itemCategoryFilter, itemSortBy, itemLimit, districts]);
+  //   return baseData;
+  // }, [itemTimeFilter, itemDistrictFilter, itemServiceAreaFilter, itemCategoryFilter, itemSortBy, itemLimit, districts]);
 
   // const dashboardData = [
   //   {
@@ -550,6 +416,7 @@ const AdminDashboard:React.FC = () => {
     fetchDistricts();
     fetchRevenueData();
     fetchDashboardData();
+    fetchCollectionGraphData();
   }, []);
 
   useEffect(() => {
@@ -572,6 +439,19 @@ const AdminDashboard:React.FC = () => {
       setDashboardData(response.data);
     }
   };
+
+  const fetchCollectionGraphData = async () => {
+    try {
+      const response = await getCollectionGraphData();
+      console.log("collection graph data", response);
+      if (response.success) {
+        setCollectionGraphData(response.data);
+      }
+    } catch (error) {
+      console.log('Failed to fetch collection graph data:', error);
+    }
+  };
+
   const fetchDistricts = async () => {
     try {
       const res: ApiResponse<IDistrict[]> = await getDistricts();
@@ -892,11 +772,11 @@ const AdminDashboard:React.FC = () => {
       {/* Charts Row 1 - Collection Type and Status */}
       <div className="mt-6">
         {/* Chart Filters */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+        {/* <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-700">Chart Filters</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"> */}
             {/* Time Filter */}
-            <div className="relative">
+            {/* <div className="relative">
               <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700">
                 Time Period
               </label>
@@ -912,10 +792,10 @@ const AdminDashboard:React.FC = () => {
                 <option value="lastyear">Last Year</option>
                 <option value="alltime">All Time</option>
               </select>
-            </div>
+            </div> */}
 
             {/* District Filter */}
-            <div className="relative">
+            {/* <div className="relative">
               <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700">
                 District
               </label>
@@ -931,10 +811,10 @@ const AdminDashboard:React.FC = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Service Area Filter */}
-            <div className="relative">
+            {/* <div className="relative">
               <label className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-gray-700">
                 Service Area
               </label>
@@ -951,7 +831,7 @@ const AdminDashboard:React.FC = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Status Filter */}
             {/* <div className="relative">
@@ -1010,7 +890,7 @@ const AdminDashboard:React.FC = () => {
             </div> */}
 
             {/* Reset Filters Button */}
-            <div className="flex items-end">
+            {/* <div className="flex items-end">
               <button
                 onClick={() => {
                   setChartTimeFilter('last30days');
@@ -1024,9 +904,9 @@ const AdminDashboard:React.FC = () => {
               >
                 Reset Filters
               </button>
-            </div>
-          </div>
-        </div>
+            </div> */}
+          {/* </div>
+        </div> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Collection Type Distribution */}
@@ -1034,7 +914,7 @@ const AdminDashboard:React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-700">Collection Type Distribution</h2>
             <div className="text-sm text-gray-500">
-              Total: {collectionTypeData.reduce((sum, item) => sum + item.value, 0)} collections
+              Total: {collectionTypeData.reduce((sum, item) => sum + item.count, 0)} collections
             </div>
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -1046,8 +926,8 @@ const AdminDashboard:React.FC = () => {
                 labelLine={false}
                 outerRadius={100}
                 fill="#8884d8"
-                dataKey="value"
-                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                dataKey="count"
+                label={({type, percent}) => `${type}: ${(percent * 100).toFixed(0)}%`}
               >
                 {collectionTypeData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -1055,7 +935,7 @@ const AdminDashboard:React.FC = () => {
               </Pie>
               <Tooltip 
                 formatter={(value: number, name: string) => [
-                  `${value} collections (${((value / collectionTypeData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)`,
+                  `${value} collections (${((value / collectionTypeData.reduce((sum, item) => sum + item.count, 0)) * 100).toFixed(1)}%)`,
                   name
                 ]}
                 contentStyle={{
@@ -1075,7 +955,7 @@ const AdminDashboard:React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-700">Collection Status</h2>
             <div className="text-sm text-gray-500">
-              Total: {statusData.reduce((sum, item) => sum + item.value, 0)} collections
+              Total: {statusData.reduce((sum, item) => sum + item.count, 0)} collections
             </div>
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -1087,8 +967,8 @@ const AdminDashboard:React.FC = () => {
                 labelLine={false}
                 outerRadius={100}
                 fill="#8884d8"
-                dataKey="value"
-                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                dataKey="count"
+                label={({status, percent}) => `${status}: ${(percent * 100).toFixed(0)}%`}
               >
                 {statusData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -1096,7 +976,7 @@ const AdminDashboard:React.FC = () => {
               </Pie>
               <Tooltip 
                 formatter={(value: number, name: string) => [
-                  `${value} collections (${((value / statusData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)`,
+                  `${value} collections (${((value / statusData.reduce((sum, item) => sum + item.count, 0)) * 100).toFixed(1)}%)`,
                   name
                 ]}
                 contentStyle={{
@@ -1115,21 +995,21 @@ const AdminDashboard:React.FC = () => {
 
       {/* Charts Row 2 - Revenue and Trends */}
       <div className="mt-6 grid grid-cols-1 gap-6">
-        {/* Revenue by District */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex justify-between items-center mb-4">
+
+          {/* <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-700">Revenue by District</h2>
             <div className="text-sm text-gray-500">
               Total Revenue: ₹{districtRevenueData.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
             </div>
-          </div>
+          </div> */}
           
           {/* Revenue Chart Filters */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            {/* <h3 className="text-sm font-semibold mb-3 text-gray-600">Revenue Chart Filters</h3> */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 ">
-              {/* Time Filter */}
-              <div className="relative">
+          {/* <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="text-sm font-semibold mb-3 text-gray-600">Revenue Chart Filters</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 "> */}
+              
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Time Period
                 </label>
@@ -1145,7 +1025,7 @@ const AdminDashboard:React.FC = () => {
                   <option value="lastyear">Last Year</option>
                   <option value="alltime">All Time</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Service Area Filter */}
               {/* <div className="relative">
@@ -1186,7 +1066,7 @@ const AdminDashboard:React.FC = () => {
               </div> */}
 
               {/* Revenue Type Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Revenue Type
                 </label>
@@ -1199,7 +1079,7 @@ const AdminDashboard:React.FC = () => {
                   <option value="waste">Waste Only</option>
                   <option value="scrap">Scrap Only</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Sort By Filter */}
               {/* <div className="relative">
@@ -1219,7 +1099,7 @@ const AdminDashboard:React.FC = () => {
               </div> */}
 
               {/* Reset Revenue Filters Button */}
-              <div className="flex items-end">
+              {/* <div className="flex items-end">
                 <button
                   onClick={() => {
                     setRevenueTimeFilter('last30days');
@@ -1233,10 +1113,10 @@ const AdminDashboard:React.FC = () => {
                 >
                   Reset
                 </button>
-              </div>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
+              </div> */}
+            {/* </div>
+          </div> */}
+          {/* <ResponsiveContainer width="100%" height={300}>
             <BarChart
               data={districtRevenueData}
               margin={{
@@ -1293,10 +1173,10 @@ const AdminDashboard:React.FC = () => {
               <Bar dataKey="waste" name="Waste Revenue" fill="#0088FE" />
               <Bar dataKey="scrap" name="Scrap Revenue" fill="#00C49F" />
             </BarChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> */}
           
           {/* Revenue Summary */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 p-3 rounded-lg">
               <div className="text-sm text-blue-600 font-medium">Top District</div>
               <div className="text-lg font-bold text-blue-800">
@@ -1336,11 +1216,11 @@ const AdminDashboard:React.FC = () => {
                 {((districtRevenueData.reduce((sum, item) => sum + item.scrap, 0) / districtRevenueData.reduce((sum, item) => sum + item.total, 0)) * 100).toFixed(1)}% of total
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Monthly Collection Trends */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        {/* <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h2 className="text-xl font-semibold mb-4 text-gray-700">Monthly Collection Trends</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart
@@ -1361,26 +1241,26 @@ const AdminDashboard:React.FC = () => {
               <Bar dataKey="scrap" name="Scrap Collections" fill="#82ca9d" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
       </div>
 
       {/* Tables Row - Top Collectors and Top Items */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Collectors */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        {/* <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-700">Top Collectors</h2>
             <div className="text-sm text-gray-500">
               Total: {collectorPerformanceData.length} collectors
             </div>
-          </div>
+          </div> */}
           
           {/* Collector Table Filters */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          {/* <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-semibold mb-3 text-gray-600">Collector Table Filters</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"> */}
               {/* Time Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Time Period
                 </label>
@@ -1396,10 +1276,10 @@ const AdminDashboard:React.FC = () => {
                   <option value="lastyear">Last Year</option>
                   <option value="alltime">All Time</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* District Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   District
                 </label>
@@ -1415,10 +1295,10 @@ const AdminDashboard:React.FC = () => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Status Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Status
                 </label>
@@ -1431,10 +1311,10 @@ const AdminDashboard:React.FC = () => {
                   <option value="active">Active Only</option>
                   <option value="inactive">Inactive Only</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Sort By Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Sort By
                 </label>
@@ -1448,7 +1328,7 @@ const AdminDashboard:React.FC = () => {
                   <option value="rating">Rating</option>
                   <option value="name">Name</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Limit Filter */}
               {/* <div className="relative">
@@ -1468,7 +1348,7 @@ const AdminDashboard:React.FC = () => {
               </div> */}
 
               {/* Reset Button */}
-              <div className="flex items-end">
+              {/* <div className="flex items-end">
                 <button
                   onClick={() => {
                     setCollectorTimeFilter('last30days');
@@ -1482,10 +1362,11 @@ const AdminDashboard:React.FC = () => {
                 >
                   Reset
                 </button>
-              </div>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
+              </div> */}
+            {/* </div>
+          </div> */}
+
+          {/* <div className="overflow-x-auto">
             <table className="min-w-full bg-white">
               <thead>
                 <tr>
@@ -1514,10 +1395,10 @@ const AdminDashboard:React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div> */}
           
           {/* Collector Summary */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 p-3 rounded-lg">
               <div className="text-sm text-blue-600 font-medium">Top Performer</div>
               <div className="text-lg font-bold text-blue-800">
@@ -1557,24 +1438,25 @@ const AdminDashboard:React.FC = () => {
                 average
               </div>
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
 
         {/* Top Items */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex justify-between items-center mb-4">
+        {/* <div className="bg-white p-6 rounded-lg shadow-sm border"> */}
+          {/* <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-700">Most Collected Items</h2>
             <div className="text-sm text-gray-500">
               Total: {topItemsData.length} items
             </div>
-          </div>
+          </div> */}
           
           {/* Items Table Filters */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          {/* <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-semibold mb-3 text-gray-600">Items Table Filters</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"> */}
+
               {/* Time Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Time Period
                 </label>
@@ -1590,10 +1472,10 @@ const AdminDashboard:React.FC = () => {
                   <option value="lastyear">Last Year</option>
                   <option value="alltime">All Time</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* District Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   District
                 </label>
@@ -1609,10 +1491,10 @@ const AdminDashboard:React.FC = () => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Category Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Category
                 </label>
@@ -1629,10 +1511,10 @@ const AdminDashboard:React.FC = () => {
                   <option value="textile">Textile</option>
                   <option value="electronics">Electronics</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Sort By Filter */}
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="absolute -top-2 left-2 bg-gray-50 px-1 text-xs font-medium text-gray-700">
                   Sort By
                 </label>
@@ -1645,7 +1527,7 @@ const AdminDashboard:React.FC = () => {
                   <option value="quantity">Quantity</option>
                   <option value="name">Name</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Limit Filter */}
               {/* <div className="relative">
@@ -1665,7 +1547,7 @@ const AdminDashboard:React.FC = () => {
               </div> */}
 
               {/* Reset Button */}
-              <div className="flex items-end">
+              {/* <div className="flex items-end">
                 <button
                   onClick={() => {
                     setItemTimeFilter('last30days');
@@ -1679,10 +1561,11 @@ const AdminDashboard:React.FC = () => {
                 >
                   Reset
                 </button>
-              </div>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
+              </div> */}
+            {/* </div>
+          </div> */}
+
+          {/* <div className="overflow-x-auto">
             <table className="min-w-full bg-white">
               <thead>
                 <tr>
@@ -1707,10 +1590,10 @@ const AdminDashboard:React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div> */}
           
           {/* Items Summary */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 p-3 rounded-lg">
               <div className="text-sm text-blue-600 font-medium">Top Item</div>
               <div className="text-lg font-bold text-blue-800">
@@ -1750,8 +1633,9 @@ const AdminDashboard:React.FC = () => {
                 revenue
               </div>
             </div>
-          </div>
-        </div>
+          </div> */}
+
+        {/* </div> */}
       </div>
     </main>
   );

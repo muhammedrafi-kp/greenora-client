@@ -92,6 +92,8 @@ const Payment: React.FC = () => {
           toast.error('Payment already in progress', {
             icon: '⚠️',
           });
+          console.log("hello.....")
+          navigate("/");
         } else {
           // navigate('/pickup/failure', {
           //   state: { error: error.message || 'Something went wrong' }
@@ -190,6 +192,7 @@ const Payment: React.FC = () => {
           toast.error('Payment already in progress', {
             icon: '⚠️',
           });
+          navigate("/");
         } else {
           // navigate('/pickup/failure', {
           //   state: { error: error.message || 'Something went wrong' }

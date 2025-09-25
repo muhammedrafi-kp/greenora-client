@@ -247,7 +247,15 @@ export const getCollectorDashboardData = async () => {
   }
 }
 
-
+export const getCollectorCollectionGraphData = async () => {
+  try {
+    const response = await apiClient.get('/collection-service/collections/analytics/collector/graph');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching collection graph data:", error);
+    throw error;
+  }
+}
 
 
 
